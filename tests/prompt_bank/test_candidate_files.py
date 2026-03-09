@@ -25,6 +25,11 @@ def test_candidate_files_validate_and_reference_known_extractors() -> None:
         "structured_extraction",
         "retrieval",
     }
+    assert all(prompt.messages for prompt in prompts.values())
+    assert all(prompt.generation.max_output_tokens > 0 for prompt in prompts.values())
+    assert all(prompt.output_contract.id for prompt in prompts.values())
+    assert all(prompt.extractors.answer for prompt in prompts.values())
+    assert all(prompt.required_capabilities for prompt in prompts.values())
 
 
 def test_released_suites_reference_existing_candidate_prompts() -> None:

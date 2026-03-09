@@ -3,25 +3,44 @@ from __future__ import annotations
 from pydantic import Field
 
 from modelfingerprint.contracts._common import (
+    CanonicalizerId,
+    CapabilityId,
     ContractModel,
     ExtractorId,
-    OutputType,
+    MessageRole,
+    OutputContractId,
     Probability,
     PromptFamily,
     PromptId,
+    ReasoningMode,
+    ResponseFormat,
     RiskLevel,
     SuiteId,
 )
 
 
-class PromptVariable(ContractModel):
-    name: str = Field(min_length=1)
-    description: str = Field(min_length=1)
-    required: bool = True
+class PromptMessage(ContractModel):
+    role: MessageRole
+    content: str = Field(min_length=1)
 
 
 class OutputContract(ContractModel):
-    type: OutputType
+    id: OutputContractId
+    canonicalizer: CanonicalizerId
+
+
+class GenerationSpec(ContractModel):
+    temperature: float = Field(ge=0.0)
+    top_p: float = Field(gt=0.0, le=1.0)
+    max_output_tokens: int = Field(ge=1)
+    response_format: ResponseFormat
+    reasoning_mode: ReasoningMode
+
+
+class PromptExtractors(ContractModel):
+    answer: ExtractorId
+    reasoning: ExtractorId | None = None
+    transport: ExtractorId | None = None
 
 
 class PromptDefinition(ContractModel):
@@ -29,13 +48,24 @@ class PromptDefinition(ContractModel):
     name: str = Field(min_length=1)
     family: PromptFamily
     intent: str = Field(min_length=1)
-    template: str = Field(min_length=1)
-    variables: list[PromptVariable] = Field(default_factory=list)
+    messages: list[PromptMessage] = Field(min_length=1)
+    generation: GenerationSpec
     output_contract: OutputContract
-    extractor: ExtractorId
+    extractors: PromptExtractors
+    required_capabilities: list[CapabilityId] = Field(min_length=1)
     weight_hint: Probability = 1.0
     tags: list[str] = Field(default_factory=list)
     risk_level: RiskLevel
+
+    @property
+    def extractor(self) -> ExtractorId:
+        """Compatibility bridge during the v2 migration."""
+        return self.extractors.answer
+
+    @property
+    def template(self) -> str:
+        """Compatibility bridge during the v2 migration."""
+        return "\n\n".join(message.content for message in self.messages)
 
 
 class SuiteDefinition(ContractModel):

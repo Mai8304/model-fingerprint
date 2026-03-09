@@ -17,6 +17,8 @@ KNOWN_EXTRACTOR_IDS = frozenset(
         "minimal_diff_v1",
         "structured_extraction_v1",
         "retrieval_v1",
+        "reasoning_trace_v1",
+        "completion_metadata_v1",
     }
 )
 
@@ -33,8 +35,16 @@ def load_candidate_prompts(directory: Path) -> dict[str, PromptDefinition]:
 
         if prompt.id in prompts:
             raise PromptBankValidationError(f"duplicate prompt id: {prompt.id}")
-        if prompt.extractor not in KNOWN_EXTRACTOR_IDS:
-            raise PromptBankValidationError(f"unknown extractor: {prompt.extractor}")
+
+        for extractor_id in (
+            prompt.extractors.answer,
+            prompt.extractors.reasoning,
+            prompt.extractors.transport,
+        ):
+            if extractor_id is None:
+                continue
+            if extractor_id not in KNOWN_EXTRACTOR_IDS:
+                raise PromptBankValidationError(f"unknown extractor: {extractor_id}")
 
         prompts[prompt.id] = prompt
 

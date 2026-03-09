@@ -2,12 +2,31 @@ id: p010
 name: distractor_sensitive_lookup
 family: retrieval
 intent: measure confusion under similar distractors
-template: |
-  Retrieve the requested items from the long text and preserve their order in JSON output.
-variables: []
+messages:
+  - role: system
+    content: Return only the requested JSON object. Do not add commentary.
+  - role: user
+    content: |
+      Retrieve the requested items from the long text and preserve their order in JSON output.
+
+      Requested entities in order: alpha, beta, gamma.
+      Text: alpha-2 is a distractor, alpha is valid, gamma-9 is a distractor, beta is valid, gamma is valid.
+
+      Return JSON only with fields expected_needles and found_needles.
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 160
+  response_format: json_object
+  reasoning_mode: capture_if_available
 output_contract:
-  type: json
-extractor: retrieval_v1
+  id: retrieval_v2
+  canonicalizer: retrieval_v2
+extractors:
+  answer: retrieval_v1
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+required_capabilities: [chat_completions, json_object_response]
 weight_hint: 0.8
 tags: [retrieval, distractor]
 risk_level: low

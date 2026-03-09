@@ -2,12 +2,24 @@ id: p002
 name: short_incident_recommendation
 family: style_brief
 intent: distinguish concise incident-response advice
-template: |
-  In at most two sentences, recommend what to do first after a database failover alert.
-variables: []
+messages:
+  - role: user
+    content: |
+      In at most two sentences, recommend what to do first after a database failover alert.
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 160
+  response_format: text
+  reasoning_mode: capture_if_available
 output_contract:
-  type: plain_text
-extractor: style_brief_v1
+  id: plain_text_v2
+  canonicalizer: plain_text_v2
+extractors:
+  answer: style_brief_v1
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+required_capabilities: [chat_completions]
 weight_hint: 0.7
 tags: [style, ops, concise]
 risk_level: low

@@ -2,12 +2,24 @@ id: p001
 name: concise_architecture_tradeoff
 family: style_brief
 intent: distinguish compact trade-off framing
-template: |
-  Use no more than 120 characters to explain why event sourcing is not the default architecture for every system.
-variables: []
+messages:
+  - role: user
+    content: |
+      Use no more than 120 characters to explain why event sourcing is not the default architecture for every system.
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 120
+  response_format: text
+  reasoning_mode: capture_if_available
 output_contract:
-  type: plain_text
-extractor: style_brief_v1
+  id: plain_text_v2
+  canonicalizer: plain_text_v2
+extractors:
+  answer: style_brief_v1
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+required_capabilities: [chat_completions]
 weight_hint: 0.8
 tags: [style, architecture, concise]
 risk_level: low

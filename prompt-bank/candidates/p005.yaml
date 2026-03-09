@@ -2,12 +2,30 @@ id: p005
 name: one_hunk_patch
 family: minimal_diff
 intent: measure minimal patch behavior
-template: |
-  Return a unified diff only. Change one line, do not refactor, do not reorder.
-variables: []
+messages:
+  - role: user
+    content: |
+      Return a unified diff only. Change one line, do not refactor, do not reorder.
+
+      Original file:
+      print("old")
+
+      Change it to:
+      print("new")
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 160
+  response_format: text
+  reasoning_mode: capture_if_available
 output_contract:
-  type: plain_text
-extractor: minimal_diff_v1
+  id: plain_text_v2
+  canonicalizer: plain_text_v2
+extractors:
+  answer: minimal_diff_v1
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+required_capabilities: [chat_completions]
 weight_hint: 0.85
 tags: [diff, minimal]
 risk_level: low

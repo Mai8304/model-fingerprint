@@ -1,57 +1,144 @@
 {
   "$defs": {
+    "GenerationSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "max_output_tokens": {
+          "minimum": 1,
+          "title": "Max Output Tokens",
+          "type": "integer"
+        },
+        "reasoning_mode": {
+          "enum": [
+            "ignore",
+            "capture_if_available",
+            "require_visible"
+          ],
+          "title": "Reasoning Mode",
+          "type": "string"
+        },
+        "response_format": {
+          "enum": [
+            "text",
+            "json_object"
+          ],
+          "title": "Response Format",
+          "type": "string"
+        },
+        "temperature": {
+          "minimum": 0.0,
+          "title": "Temperature",
+          "type": "number"
+        },
+        "top_p": {
+          "exclusiveMinimum": 0.0,
+          "maximum": 1.0,
+          "title": "Top P",
+          "type": "number"
+        }
+      },
+      "required": [
+        "temperature",
+        "top_p",
+        "max_output_tokens",
+        "response_format",
+        "reasoning_mode"
+      ],
+      "title": "GenerationSpec",
+      "type": "object"
+    },
     "OutputContract": {
       "additionalProperties": false,
       "properties": {
-        "type": {
-          "enum": [
-            "plain_text",
-            "json",
-            "tagged_text"
-          ],
-          "title": "Type",
+        "canonicalizer": {
+          "pattern": "^[a-z0-9_]+_v[1-9]\\d*$",
+          "title": "Canonicalizer",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z0-9_]+_v[1-9]\\d*$",
+          "title": "Id",
           "type": "string"
         }
       },
       "required": [
-        "type"
+        "id",
+        "canonicalizer"
       ],
       "title": "OutputContract",
       "type": "object"
     },
-    "PromptVariable": {
+    "PromptExtractors": {
       "additionalProperties": false,
       "properties": {
-        "description": {
-          "minLength": 1,
-          "title": "Description",
+        "answer": {
+          "pattern": "^[a-z_]+_v[1-9]\\d*$",
+          "title": "Answer",
           "type": "string"
         },
-        "name": {
-          "minLength": 1,
-          "title": "Name",
-          "type": "string"
+        "reasoning": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z_]+_v[1-9]\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reasoning"
         },
-        "required": {
-          "default": true,
-          "title": "Required",
-          "type": "boolean"
+        "transport": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z_]+_v[1-9]\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Transport"
         }
       },
       "required": [
-        "name",
-        "description"
+        "answer"
       ],
-      "title": "PromptVariable",
+      "title": "PromptExtractors",
+      "type": "object"
+    },
+    "PromptMessage": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "minLength": 1,
+          "title": "Content",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "system",
+            "user",
+            "assistant"
+          ],
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "content"
+      ],
+      "title": "PromptMessage",
       "type": "object"
     }
   },
   "additionalProperties": false,
   "properties": {
-    "extractor": {
-      "pattern": "^[a-z_]+_v[1-9]\\d*$",
-      "title": "Extractor",
-      "type": "string"
+    "extractors": {
+      "$ref": "#/$defs/PromptExtractors"
     },
     "family": {
       "enum": [
@@ -64,6 +151,9 @@
       "title": "Family",
       "type": "string"
     },
+    "generation": {
+      "$ref": "#/$defs/GenerationSpec"
+    },
     "id": {
       "pattern": "^p\\d{3}$",
       "title": "Id",
@@ -74,6 +164,14 @@
       "title": "Intent",
       "type": "string"
     },
+    "messages": {
+      "items": {
+        "$ref": "#/$defs/PromptMessage"
+      },
+      "minItems": 1,
+      "title": "Messages",
+      "type": "array"
+    },
     "name": {
       "minLength": 1,
       "title": "Name",
@@ -81,6 +179,19 @@
     },
     "output_contract": {
       "$ref": "#/$defs/OutputContract"
+    },
+    "required_capabilities": {
+      "items": {
+        "enum": [
+          "chat_completions",
+          "json_object_response",
+          "visible_reasoning"
+        ],
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Required Capabilities",
+      "type": "array"
     },
     "risk_level": {
       "enum": [
@@ -98,18 +209,6 @@
       "title": "Tags",
       "type": "array"
     },
-    "template": {
-      "minLength": 1,
-      "title": "Template",
-      "type": "string"
-    },
-    "variables": {
-      "items": {
-        "$ref": "#/$defs/PromptVariable"
-      },
-      "title": "Variables",
-      "type": "array"
-    },
     "weight_hint": {
       "default": 1.0,
       "maximum": 1.0,
@@ -123,9 +222,11 @@
     "name",
     "family",
     "intent",
-    "template",
+    "messages",
+    "generation",
     "output_contract",
-    "extractor",
+    "extractors",
+    "required_capabilities",
     "risk_level"
   ],
   "title": "PromptDefinition",

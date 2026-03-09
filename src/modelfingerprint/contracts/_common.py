@@ -13,7 +13,16 @@ PromptFamily = Literal[
 ]
 
 RiskLevel = Literal["low", "medium", "high"]
-OutputType = Literal["plain_text", "json", "tagged_text"]
+MessageRole = Literal["system", "user", "assistant"]
+ResponseFormat = Literal["text", "json_object"]
+ReasoningMode = Literal["ignore", "capture_if_available", "require_visible"]
+CapabilityId = Literal[
+    "chat_completions",
+    "json_object_response",
+    "visible_reasoning",
+]
+OutputContractId = Annotated[str, StringConstraints(pattern=r"^[a-z0-9_]+_v[1-9]\d*$")]
+CanonicalizerId = Annotated[str, StringConstraints(pattern=r"^[a-z0-9_]+_v[1-9]\d*$")]
 SuiteId = Annotated[
     str,
     StringConstraints(pattern=r"^(research-set|fingerprint-suite|quick-check)-v[1-9]\d*$"),

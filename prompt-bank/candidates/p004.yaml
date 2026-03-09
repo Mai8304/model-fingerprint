@@ -2,12 +2,28 @@ id: p004
 name: tagged_status_summary
 family: strict_format
 intent: detect tagged output obedience
-template: |
-  Reply using only <status> and <reason> tags, with no extra text.
-variables: []
+messages:
+  - role: system
+    content: Return only the requested tags. Do not add extra commentary.
+  - role: user
+    content: |
+      Reply using only <status> and <reason> tags, with no extra text.
+
+      Status is blocked. Reason is Tests are failing.
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 96
+  response_format: text
+  reasoning_mode: capture_if_available
 output_contract:
-  type: tagged_text
-extractor: strict_format_v1
+  id: tagged_text_v2
+  canonicalizer: tagged_text_v2
+extractors:
+  answer: strict_format_v1
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+required_capabilities: [chat_completions]
 weight_hint: 0.7
 tags: [format, tags]
 risk_level: low
