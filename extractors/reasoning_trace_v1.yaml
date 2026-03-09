@@ -1,0 +1,8 @@
+name: reasoning_trace_v1
+family: strict_format
+version: 1
+features:
+  - step_count
+  - uses_numbered_outline
+  - hedge_density
+  - backtrack_markers

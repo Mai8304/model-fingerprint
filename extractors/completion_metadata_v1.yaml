@@ -1,0 +1,8 @@
+name: completion_metadata_v1
+family: strict_format
+version: 1
+features:
+  - reasoning_visible
+  - reasoning_tokens
+  - finish_reason
+  - latency_bucket_ms

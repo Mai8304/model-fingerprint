@@ -1,0 +1,8 @@
+name: surface_contract_v1
+family: strict_format
+version: 1
+features:
+  - had_markdown_fence
+  - has_extra_text
+  - field_order_match
+  - constraint_retention

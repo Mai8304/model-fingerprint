@@ -16,11 +16,14 @@ from modelfingerprint.extractors.base import (
     SurfaceExtractorInput,
     ensure_json_serializable,
 )
+from modelfingerprint.extractors.completion_metadata import extract_completion_metadata
 from modelfingerprint.extractors.minimal_diff import extract_minimal_diff
+from modelfingerprint.extractors.reasoning_trace import extract_reasoning_trace
 from modelfingerprint.extractors.retrieval import extract_retrieval
 from modelfingerprint.extractors.strict_format import extract_strict_format
 from modelfingerprint.extractors.structured_extraction import extract_structured_extraction
 from modelfingerprint.extractors.style_brief import extract_style_brief
+from modelfingerprint.extractors.surface_contract import extract_surface_contract
 
 SURFACE_EXTRACTOR_NAME = "surface_contract_v1"
 
@@ -120,5 +123,8 @@ def build_default_registry(directory: Path) -> ExtractorRegistry:
         "minimal_diff_v1": extract_minimal_diff,
         "structured_extraction_v1": extract_structured_extraction,
         "retrieval_v1": extract_retrieval,
+        "reasoning_trace_v1": extract_reasoning_trace,
+        "completion_metadata_v1": extract_completion_metadata,
+        SURFACE_EXTRACTOR_NAME: extract_surface_contract,
     }
     return ExtractorRegistry.from_directory(directory, handlers=handlers)
