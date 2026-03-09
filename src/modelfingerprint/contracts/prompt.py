@@ -6,9 +6,9 @@ from modelfingerprint.contracts._common import (
     ContractModel,
     ExtractorId,
     OutputType,
+    Probability,
     PromptFamily,
     PromptId,
-    Probability,
     RiskLevel,
 )
 

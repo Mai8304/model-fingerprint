@@ -22,7 +22,7 @@ class RepositoryPaths:
         object.__setattr__(self, "root", self.root.resolve())
 
     @classmethod
-    def from_working_directory(cls, start: Path | None = None) -> "RepositoryPaths":
+    def from_working_directory(cls, start: Path | None = None) -> RepositoryPaths:
         return cls(root=resolve_repository_root(start))
 
     @property

@@ -4,7 +4,6 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
-
 PromptFamily = Literal[
     "style_brief",
     "strict_format",

@@ -8,7 +8,6 @@ from jsonschema import Draft202012Validator
 
 from modelfingerprint.contracts.schema_export import SCHEMA_EXPORTS
 
-
 ROOT = Path(__file__).resolve().parents[2]
 
 

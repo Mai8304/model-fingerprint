@@ -4,7 +4,6 @@ import typer
 
 from modelfingerprint import __version__
 
-
 app = typer.Typer(
     add_completion=False,
     help="CLI for file-based model fingerprint workflows.",

@@ -3,12 +3,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from modelfingerprint.contracts._common import ContractModel
 from modelfingerprint.contracts.calibration import CalibrationArtifact
 from modelfingerprint.contracts.profile import ProfileArtifact
 from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.contracts.run import RunArtifact
 from modelfingerprint.settings import resolve_repository_root
-
 
 SCHEMA_EXPORTS = {
     "prompt": Path("schemas/prompt.schema.json"),
@@ -17,7 +17,7 @@ SCHEMA_EXPORTS = {
     "calibration": Path("schemas/calibration.schema.json"),
 }
 
-SCHEMA_MODELS = {
+SCHEMA_MODELS: dict[str, type[ContractModel]] = {
     "prompt": PromptDefinition,
     "run": RunArtifact,
     "profile": ProfileArtifact,
