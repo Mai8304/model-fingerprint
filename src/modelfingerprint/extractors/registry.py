@@ -6,12 +6,14 @@ from pathlib import Path
 import yaml
 
 from modelfingerprint.contracts.prompt import PromptDefinition
+from modelfingerprint.contracts.run import CanonicalizedOutput, NormalizedCompletion
 from modelfingerprint.extractors.base import (
     ExtractorDescriptor,
     ExtractorHandler,
     ExtractorValidationError,
     FeatureMap,
     RegisteredExtractor,
+    SurfaceExtractorInput,
     ensure_json_serializable,
 )
 from modelfingerprint.extractors.minimal_diff import extract_minimal_diff
@@ -19,6 +21,8 @@ from modelfingerprint.extractors.retrieval import extract_retrieval
 from modelfingerprint.extractors.strict_format import extract_strict_format
 from modelfingerprint.extractors.structured_extraction import extract_structured_extraction
 from modelfingerprint.extractors.style_brief import extract_style_brief
+
+SURFACE_EXTRACTOR_NAME = "surface_contract_v1"
 
 
 class ExtractorRegistry:
@@ -58,9 +62,53 @@ class ExtractorRegistry:
     def get_for_prompt(self, prompt: PromptDefinition) -> RegisteredExtractor:
         return self.get(prompt.extractor)
 
-    def extract(self, prompt: PromptDefinition, raw_output: str) -> FeatureMap:
-        resolved = self.get_for_prompt(prompt)
-        feature_map = resolved.handler(raw_output)
+    def has(self, name: str) -> bool:
+        return name in self._descriptors and name in self._handlers
+
+    def extract_answer(
+        self,
+        prompt: PromptDefinition,
+        canonical_output: CanonicalizedOutput,
+    ) -> FeatureMap:
+        resolved = self.get(prompt.extractors.answer)
+        feature_map = resolved.handler(canonical_output)
+        ensure_json_serializable(feature_map)
+        return feature_map
+
+    def extract_reasoning(
+        self,
+        prompt: PromptDefinition,
+        reasoning_text: str,
+    ) -> FeatureMap:
+        if prompt.extractors.reasoning is None:
+            return {}
+        resolved = self.get(prompt.extractors.reasoning)
+        feature_map = resolved.handler(reasoning_text)
+        ensure_json_serializable(feature_map)
+        return feature_map
+
+    def extract_transport(
+        self,
+        prompt: PromptDefinition,
+        completion: NormalizedCompletion,
+    ) -> FeatureMap:
+        if prompt.extractors.transport is None:
+            return {}
+        resolved = self.get(prompt.extractors.transport)
+        feature_map = resolved.handler(completion)
+        ensure_json_serializable(feature_map)
+        return feature_map
+
+    def extract_surface(
+        self,
+        *,
+        raw_output: str,
+        canonical_output: CanonicalizedOutput,
+    ) -> FeatureMap:
+        resolved = self.get(SURFACE_EXTRACTOR_NAME)
+        feature_map = resolved.handler(
+            SurfaceExtractorInput(raw_output=raw_output, canonical_output=canonical_output)
+        )
         ensure_json_serializable(feature_map)
         return feature_map
 

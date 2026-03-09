@@ -1,14 +1,20 @@
 from __future__ import annotations
 
-import json
+from collections.abc import Mapping, Sequence
 
+from modelfingerprint.contracts.run import CanonicalizedOutput
 from modelfingerprint.extractors.base import FeatureMap
 
 
-def extract_retrieval(raw_output: str) -> FeatureMap:
-    payload = json.loads(raw_output)
-    expected = list(payload.get("expected_needles", []))
-    found = list(payload.get("found_needles", []))
+def extract_retrieval(canonical_output: object) -> FeatureMap:
+    if not isinstance(canonical_output, CanonicalizedOutput):
+        raise TypeError("retrieval_v1 expects CanonicalizedOutput input")
+    payload = canonical_output.payload
+    if not isinstance(payload, Mapping):
+        raise TypeError("retrieval canonical payload must be a mapping")
+
+    expected = _string_list(payload.get("expected_needles", []))
+    found = _string_list(payload.get("found_needles", []))
     expected_set = set(expected)
     hits_in_found_order = [needle for needle in found if needle in expected_set]
     wrong_needles = [needle for needle in found if needle not in expected_set]
@@ -21,3 +27,9 @@ def extract_retrieval(raw_output: str) -> FeatureMap:
         "confusion_pattern": ",".join(wrong_needles),
         "position_sensitivity": len(hits_in_found_order) / max(len(expected), 1),
     }
+
+
+def _string_list(value: object) -> list[str]:
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        return [str(item) for item in value]
+    raise TypeError("expected a list of strings")

@@ -3,6 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Literal
 
+from modelfingerprint.canonicalizers.base import CanonicalizationError
+from modelfingerprint.canonicalizers.registry import (
+    CanonicalizerRegistry,
+)
+from modelfingerprint.canonicalizers.registry import (
+    build_default_registry as build_default_canonicalizer_registry,
+)
 from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.contracts.run import (
     CanonicalizationEvent,
@@ -15,7 +22,7 @@ from modelfingerprint.contracts.run import (
     UsageMetadata,
 )
 from modelfingerprint.extractors.base import FeatureMap
-from modelfingerprint.extractors.registry import ExtractorRegistry
+from modelfingerprint.extractors.registry import SURFACE_EXTRACTOR_NAME, ExtractorRegistry
 
 PromptExecutionStatus = Literal[
     "completed",
@@ -42,8 +49,13 @@ class PromptExecutionResult:
 
 
 class FeaturePipeline:
-    def __init__(self, registry: ExtractorRegistry) -> None:
+    def __init__(
+        self,
+        registry: ExtractorRegistry,
+        canonicalizers: CanonicalizerRegistry | None = None,
+    ) -> None:
         self._registry = registry
+        self._canonicalizers = canonicalizers or build_default_canonicalizer_registry()
 
     def build_run_artifact(
         self,
@@ -62,11 +74,83 @@ class FeaturePipeline:
 
         for execution in executions:
             features: FeatureMap = {}
-            if execution.status == "completed":
+            status = execution.status
+            canonical_output = execution.canonical_output
+            canonicalization_events = list(execution.canonicalization_events)
+            error = execution.error
+            usage = execution.usage or (
+                execution.completion.usage if execution.completion is not None else None
+            )
+
+            if status == "completed":
                 prompt_count_completed += 1
                 if execution.raw_output is not None:
                     answer_visible_count += 1
-                    features = self._registry.extract(execution.prompt, execution.raw_output)
+                    if canonical_output is None:
+                        try:
+                            canonical_output, new_events = self._canonicalizers.canonicalize(
+                                execution.prompt,
+                                execution.raw_output,
+                            )
+                            canonicalization_events.extend(new_events)
+                        except CanonicalizationError as exc:
+                            status = "canonicalization_error"
+                            error = PromptExecutionError(
+                                kind=exc.code,
+                                message=exc.message,
+                                retryable=False,
+                            )
+                if (
+                    status == "completed"
+                    and execution.raw_output is not None
+                    and canonical_output is not None
+                ):
+                    features.update(
+                        _namespace(
+                            "answer",
+                            self._registry.extract_answer(execution.prompt, canonical_output),
+                        )
+                    )
+                    if (
+                        execution.completion is not None
+                        and execution.completion.reasoning_visible
+                        and execution.completion.reasoning_text
+                        and execution.prompt.extractors.reasoning is not None
+                        and self._registry.has(execution.prompt.extractors.reasoning)
+                    ):
+                        features.update(
+                            _namespace(
+                                "reasoning",
+                                self._registry.extract_reasoning(
+                                    execution.prompt,
+                                    execution.completion.reasoning_text,
+                                ),
+                            )
+                        )
+                    if (
+                        execution.completion is not None
+                        and execution.prompt.extractors.transport is not None
+                        and self._registry.has(execution.prompt.extractors.transport)
+                    ):
+                        features.update(
+                            _namespace(
+                                "transport",
+                                self._registry.extract_transport(
+                                    execution.prompt,
+                                    execution.completion,
+                                ),
+                            )
+                        )
+                    if self._registry.has(SURFACE_EXTRACTOR_NAME):
+                        features.update(
+                            _namespace(
+                                "surface",
+                                self._registry.extract_surface(
+                                    raw_output=execution.raw_output,
+                                    canonical_output=canonical_output,
+                                ),
+                            )
+                        )
                     if features:
                         prompt_count_scoreable += 1
                 if execution.completion is not None and execution.completion.reasoning_visible:
@@ -74,16 +158,16 @@ class FeaturePipeline:
 
             prompt_results.append(
                 PromptRunResult(
-                    status=execution.status,
+                    status=status,
                     prompt_id=execution.prompt.id,
                     raw_output=execution.raw_output,
-                    usage=execution.usage,
+                    usage=usage,
                     request_snapshot=execution.request_snapshot,
                     completion=execution.completion,
-                    canonical_output=execution.canonical_output,
-                    canonicalization_events=execution.canonicalization_events,
+                    canonical_output=canonical_output,
+                    canonicalization_events=canonicalization_events,
                     features=features,
-                    error=execution.error,
+                    error=error,
                 )
             )
 
@@ -105,3 +189,7 @@ def _ratio(numerator: int, denominator: int) -> float:
     if denominator == 0:
         return 0.0
     return numerator / denominator
+
+
+def _namespace(prefix: str, feature_map: FeatureMap) -> FeatureMap:
+    return {f"{prefix}.{name}": value for name, value in feature_map.items()}

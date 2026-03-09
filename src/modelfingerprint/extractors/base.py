@@ -4,12 +4,19 @@ import json
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from modelfingerprint.contracts._common import ContractModel, FeaturePrimitive, PromptFamily
+from modelfingerprint.contracts.run import CanonicalizedOutput
 
 FeatureMap = dict[str, FeaturePrimitive]
-ExtractorHandler = Callable[[str], FeatureMap]
+ExtractorHandler = Callable[[object], FeatureMap]
+
+
+@dataclass(frozen=True)
+class SurfaceExtractorInput:
+    raw_output: str
+    canonical_output: CanonicalizedOutput
 
 
 class ExtractorValidationError(ValueError):
@@ -21,6 +28,12 @@ class ExtractorDescriptor(ContractModel):
     family: PromptFamily
     version: int = Field(gt=0)
     features: list[str] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_unique_features(self) -> ExtractorDescriptor:
+        if len(self.features) != len(set(self.features)):
+            raise ValueError("extractor features must be unique")
+        return self
 
 
 @dataclass(frozen=True)

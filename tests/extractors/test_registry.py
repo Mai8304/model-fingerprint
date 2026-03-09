@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from modelfingerprint.contracts.prompt import PromptDefinition
+from modelfingerprint.contracts.run import CanonicalizedOutput
 from modelfingerprint.extractors.base import ExtractorValidationError
 from modelfingerprint.extractors.registry import ExtractorRegistry
 
@@ -60,8 +61,11 @@ def test_registry_rejects_unknown_extractor_names() -> None:
 def test_registry_enforces_json_serializable_feature_maps() -> None:
     registry = ExtractorRegistry.from_directory(
         ROOT / "extractors",
-        handlers={"style_brief_v1": lambda text: {"bad": {text}}},
+        handlers={"style_brief_v1": lambda text: {"bad": {1, 2}}},
     )
 
     with pytest.raises(ExtractorValidationError):
-        registry.extract(build_prompt("style_brief_v1"), "example")
+        registry.extract_answer(
+            build_prompt("style_brief_v1"),
+            CanonicalizedOutput(format_id="plain_text_v2", payload={"text": "example"}),
+        )
