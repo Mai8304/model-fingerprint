@@ -23,7 +23,7 @@ class EndpointProfileValidationError(ValueError):
 def load_endpoint_profiles(directory: Path) -> dict[str, EndpointProfile]:
     profiles: dict[str, EndpointProfile] = {}
 
-    for path in sorted(directory.glob("*.yaml")):
+    for path in sorted(directory.rglob("*.yaml")):
         profile = EndpointProfile.model_validate(_read_yaml(path))
         if profile.id in profiles:
             raise EndpointProfileValidationError(f"duplicate endpoint profile id: {profile.id}")

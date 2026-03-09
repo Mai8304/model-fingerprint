@@ -4,12 +4,14 @@ from datetime import date
 from pathlib import Path
 from typing import Protocol, cast
 
-from modelfingerprint.adapters.openai_chat import ChatCompletionTransport
+from modelfingerprint.adapters.openai_chat import ChatCompletionResult
 from modelfingerprint.contracts.endpoint import EndpointProfile
 from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.contracts.run import (
     PromptExecutionError,
     PromptRequestSnapshot,
+    ProtocolCompatibility,
+    RunArtifact,
     UsageMetadata,
 )
 from modelfingerprint.extractors.registry import ExtractorRegistry, build_default_registry
@@ -34,6 +36,10 @@ class PromptExecutionTransport(Protocol):
     def execute(self, prompt: PromptDefinition) -> PromptExecutionResult: ...
 
 
+class LegacyCompletionTransport(Protocol):
+    def complete(self, prompt: PromptDefinition) -> ChatCompletionResult: ...
+
+
 class EndpointAwareTransport(Protocol):
     endpoint: EndpointProfile
 
@@ -42,7 +48,7 @@ class SuiteRunner:
     def __init__(
         self,
         paths: RepositoryPaths,
-        transport: ChatCompletionTransport,
+        transport: object,
         registry: ExtractorRegistry | None = None,
     ) -> None:
         self._paths = paths
@@ -74,6 +80,7 @@ class SuiteRunner:
             claimed_model=claimed_model,
             executions=executions,
         )
+        artifact = self._enrich_artifact(artifact, prompts, suite.prompt_ids)
 
         return RunWriter(self._paths).write(artifact, run_date or date.today())
 
@@ -101,7 +108,8 @@ class SuiteRunner:
             executor = cast(PromptExecutionTransport, self._transport)
             return executor.execute(prompt)
 
-        result = self._transport.complete(prompt)
+        legacy_transport = cast(LegacyCompletionTransport, self._transport)
+        result = legacy_transport.complete(prompt)
         return PromptExecutionResult(
             prompt=prompt,
             raw_output=result.content,
@@ -110,4 +118,45 @@ class SuiteRunner:
                 output_tokens=result.output_tokens,
                 total_tokens=result.total_tokens,
             ),
+        )
+
+    def _enrich_artifact(
+        self,
+        artifact: RunArtifact,
+        prompts: dict[str, PromptDefinition],
+        prompt_ids: list[str],
+    ) -> RunArtifact:
+        endpoint_profile_id = None
+        trace_dir = None
+        if hasattr(self._transport, "endpoint"):
+            endpoint_aware = cast(EndpointAwareTransport, self._transport)
+            endpoint_profile_id = endpoint_aware.endpoint.id
+        if hasattr(self._transport, "trace_dir"):
+            trace_dir = getattr(self._transport, "trace_dir")
+
+        issues = [
+            prompt.error.message
+            for prompt in artifact.prompts
+            if prompt.error is not None and prompt.error.message not in ("",)
+        ]
+        protocol_compatibility = ProtocolCompatibility(
+            satisfied=not any(
+                prompt.status == "unsupported_capability" for prompt in artifact.prompts
+            ),
+            required_capabilities=sorted(
+                {
+                    capability
+                    for prompt_id in prompt_ids
+                    for capability in prompts[prompt_id].required_capabilities
+                }
+            ),
+            issues=issues,
+        )
+
+        return artifact.model_copy(
+            update={
+                "endpoint_profile_id": endpoint_profile_id,
+                "trace_dir": None if trace_dir is None else str(trace_dir),
+                "protocol_compatibility": protocol_compatibility,
+            }
         )

@@ -1,19 +1,26 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import date
 from pathlib import Path
 
 import typer
 
 from modelfingerprint import __version__
-from modelfingerprint.adapters.openai_chat import ChatCompletionResult
 from modelfingerprint.contracts.calibration import CalibrationArtifact
+from modelfingerprint.contracts.endpoint import EndpointProfile
 from modelfingerprint.contracts.profile import ProfileArtifact
 from modelfingerprint.contracts.prompt import PromptDefinition
-from modelfingerprint.contracts.run import RunArtifact
+from modelfingerprint.contracts.run import NormalizedCompletion, RunArtifact, UsageMetadata
+from modelfingerprint.dialects.openai_chat import OpenAIChatDialectAdapter
 from modelfingerprint.services.calibrator import Calibrator
 from modelfingerprint.services.comparator import compare_run
+from modelfingerprint.services.endpoint_profiles import (
+    EndpointProfileValidationError,
+    load_endpoint_profiles,
+)
+from modelfingerprint.services.feature_pipeline import PromptExecutionResult
 from modelfingerprint.services.profile_builder import build_profile
 from modelfingerprint.services.prompt_bank import (
     FINGERPRINT_SUITE_ID,
@@ -28,6 +35,7 @@ from modelfingerprint.services.suite_runner import SuiteRunner
 from modelfingerprint.services.verdicts import decide_verdict
 from modelfingerprint.settings import RepositoryPaths
 from modelfingerprint.storage.filesystem import ensure_directories
+from modelfingerprint.transports.live_runner import LiveRunner
 
 app = typer.Typer(
     add_completion=False,
@@ -66,6 +74,19 @@ def validate_prompts(
     typer.echo(f"validated {len(prompts)} prompt definitions and {len(suites)} suites")
 
 
+@app.command("validate-endpoints")
+def validate_endpoints(
+    root: Path = typer.Option(Path.cwd(), "--root", exists=True, file_okay=False),
+) -> None:
+    try:
+        profiles = load_endpoint_profiles(root / "endpoint-profiles")
+    except (EndpointProfileValidationError, FileNotFoundError, ValueError) as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
+
+    typer.echo(f"validated {len(profiles)} endpoint profiles")
+
+
 @app.command("show-suite")
 def show_suite(
     suite_id: str,
@@ -97,6 +118,11 @@ def show_run(path: Path, json_output: bool = typer.Option(False, "--json")) -> N
     typer.echo(f"run_id: {artifact.run_id}")
     typer.echo(f"suite_id: {artifact.suite_id}")
     typer.echo(f"prompt_count: {len(artifact.prompts)}")
+    if artifact.endpoint_profile_id is not None:
+        typer.echo(f"endpoint_profile_id: {artifact.endpoint_profile_id}")
+    typer.echo(f"answer_coverage_ratio: {_format_ratio(artifact.answer_coverage_ratio)}")
+    typer.echo(f"reasoning_coverage_ratio: {_format_ratio(artifact.reasoning_coverage_ratio)}")
+    typer.echo(f"protocol_status: {_run_protocol_status(artifact)}")
 
 
 @app.command("show-profile")
@@ -110,6 +136,12 @@ def show_profile(path: Path, json_output: bool = typer.Option(False, "--json")) 
     typer.echo(f"model_id: {artifact.model_id}")
     typer.echo(f"suite_id: {artifact.suite_id}")
     typer.echo(f"sample_count: {artifact.sample_count}")
+    typer.echo(f"answer_coverage_ratio: {_format_ratio(artifact.answer_coverage_ratio)}")
+    typer.echo(f"reasoning_coverage_ratio: {_format_ratio(artifact.reasoning_coverage_ratio)}")
+    typer.echo(
+        "prompt_weights: "
+        + ", ".join(f"{prompt.prompt_id}={prompt.weight:.4f}" for prompt in artifact.prompts)
+    )
 
 
 @app.command("run-suite")
@@ -118,22 +150,62 @@ def run_suite(
     target_label: str = typer.Option(..., "--target-label"),
     claimed_model: str | None = typer.Option(None, "--claimed-model"),
     root: Path = typer.Option(Path.cwd(), "--root", exists=True, file_okay=False),
-    fixture_responses: Path = typer.Option(..., "--fixture-responses", exists=True, dir_okay=False),
+    fixture_responses: Path | None = typer.Option(
+        None,
+        "--fixture-responses",
+        exists=True,
+        dir_okay=False,
+    ),
+    endpoint_profile: str | None = typer.Option(None, "--endpoint-profile"),
     run_date: str = typer.Option("2026-03-09", "--run-date"),
 ) -> None:
-    payload = json.loads(fixture_responses.read_text(encoding="utf-8"))
+    if (fixture_responses is None) == (endpoint_profile is None):
+        raise typer.BadParameter("provide exactly one of --fixture-responses or --endpoint-profile")
 
-    class FixtureTransport:
-        def complete(self, prompt: PromptDefinition) -> ChatCompletionResult:
-            item = payload[prompt.id]
-            return ChatCompletionResult(
-                content=item["content"],
-                input_tokens=item["input_tokens"],
-                output_tokens=item["output_tokens"],
-                total_tokens=item["total_tokens"],
-            )
+    paths = RepositoryPaths(root=root)
+    transport: object
+    if fixture_responses is not None:
+        payload = json.loads(fixture_responses.read_text(encoding="utf-8"))
 
-    runner = SuiteRunner(RepositoryPaths(root=root), transport=FixtureTransport())
+        class FixtureTransport:
+            def execute(self, prompt: PromptDefinition) -> PromptExecutionResult:
+                item = payload[prompt.id]
+                reasoning_text = item.get("reasoning_content")
+                completion = NormalizedCompletion(
+                    answer_text=item["content"],
+                    reasoning_text=reasoning_text,
+                    reasoning_visible=isinstance(reasoning_text, str) and reasoning_text != "",
+                    finish_reason=item.get("finish_reason"),
+                    usage=UsageMetadata(
+                        input_tokens=item["input_tokens"],
+                        output_tokens=item["output_tokens"],
+                        reasoning_tokens=item.get("reasoning_tokens", 0),
+                        total_tokens=item["total_tokens"],
+                    ),
+                )
+                return PromptExecutionResult(
+                    prompt=prompt,
+                    raw_output=item["content"],
+                    usage=completion.usage,
+                    completion=completion,
+                )
+
+        transport = FixtureTransport()
+    else:
+        profiles = load_endpoint_profiles(paths.endpoint_profiles_dir)
+        endpoint = profiles.get(endpoint_profile or "")
+        if endpoint is None:
+            raise typer.BadParameter(f"unknown endpoint profile id: {endpoint_profile}")
+        api_key = _load_endpoint_api_key(endpoint)
+        trace_dir = paths.traces_dir / run_date / f"{target_label}.{suite_id}"
+        transport = LiveRunner(
+            endpoint=endpoint,
+            api_key=api_key,
+            dialect=_build_dialect(endpoint),
+            trace_dir=trace_dir,
+        )
+
+    runner = SuiteRunner(paths, transport=transport)
     path = runner.run_suite(
         suite_id=suite_id,
         target_label=target_label,
@@ -199,6 +271,14 @@ def compare_command(
         "claimed_model": comparison.claimed_model,
         "claimed_model_similarity": comparison.claimed_model_similarity,
         "consistency": comparison.consistency,
+        "answer_similarity": comparison.answer_similarity,
+        "reasoning_similarity": comparison.reasoning_similarity,
+        "transport_similarity": comparison.transport_similarity,
+        "surface_similarity": comparison.surface_similarity,
+        "answer_coverage_ratio": comparison.answer_coverage_ratio,
+        "reasoning_coverage_ratio": comparison.reasoning_coverage_ratio,
+        "protocol_status": comparison.protocol_status,
+        "protocol_issues": list(comparison.protocol_issues),
         "verdict": verdict,
     }
 
@@ -213,6 +293,15 @@ def compare_command(
     typer.echo(f"margin: {payload['margin']:.4f}")
     typer.echo(f"claimed_model_similarity: {payload['claimed_model_similarity']:.4f}")
     typer.echo(f"consistency: {payload['consistency']:.4f}")
+    typer.echo(f"answer_similarity: {_format_ratio(comparison.answer_similarity)}")
+    typer.echo(f"reasoning_similarity: {_format_ratio(comparison.reasoning_similarity)}")
+    typer.echo(f"transport_similarity: {_format_ratio(comparison.transport_similarity)}")
+    typer.echo(f"surface_similarity: {_format_ratio(comparison.surface_similarity)}")
+    typer.echo(f"answer_coverage_ratio: {_format_ratio(comparison.answer_coverage_ratio)}")
+    typer.echo(
+        f"reasoning_coverage_ratio: {_format_ratio(comparison.reasoning_coverage_ratio)}"
+    )
+    typer.echo(f"protocol_status: {comparison.protocol_status}")
     typer.echo(f"verdict: {payload['verdict']}")
 
 
@@ -222,6 +311,35 @@ def _load_run(path: Path) -> RunArtifact:
 
 def _load_profile(path: Path) -> ProfileArtifact:
     return ProfileArtifact.model_validate(json.loads(path.read_text(encoding="utf-8")))
+
+
+def _format_ratio(value: float | None) -> str:
+    if value is None:
+        return "n/a"
+    return f"{value:.4f}"
+
+
+def _run_protocol_status(artifact: RunArtifact) -> str:
+    if artifact.protocol_compatibility is None:
+        return "unknown"
+    if artifact.protocol_compatibility.satisfied:
+        return "compatible"
+    return "incompatible_protocol"
+
+
+def _build_dialect(endpoint: EndpointProfile) -> OpenAIChatDialectAdapter:
+    if endpoint.dialect == "openai_chat_v1":
+        return OpenAIChatDialectAdapter()
+    raise typer.BadParameter(f"unsupported dialect: {endpoint.dialect}")
+
+
+def _load_endpoint_api_key(endpoint: EndpointProfile) -> str:
+    api_key = os.getenv(endpoint.auth.env_var)
+    if not api_key:
+        raise typer.BadParameter(
+            f"missing API key in environment variable {endpoint.auth.env_var}"
+        )
+    return api_key
 
 
 if __name__ == "__main__":

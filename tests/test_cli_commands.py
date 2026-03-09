@@ -13,10 +13,55 @@ ROOT = Path(__file__).resolve().parents[1]
 runner = CliRunner()
 
 
-def test_validate_prompts_and_show_suite_commands() -> None:
+def test_validate_prompts_validate_endpoints_and_show_suite_commands(tmp_path: Path) -> None:
+    endpoint_dir = tmp_path / "endpoint-profiles"
+    endpoint_dir.mkdir(parents=True)
+    (endpoint_dir / "siliconflow-openai-chat.yaml").write_text(
+        """
+id: siliconflow-openai-chat
+dialect: openai_chat_v1
+base_url: https://api.siliconflow.cn/v1
+model: Pro/zai-org/GLM-5
+auth:
+  kind: bearer_env
+  env_var: MODEL_FINGERPRINT_API_KEY
+capabilities:
+  exposes_reasoning_text: true
+  supports_json_object_response: true
+  supports_temperature: true
+  supports_top_p: true
+  supports_output_token_cap: true
+request_mapping:
+  output_token_cap_field: max_tokens
+  json_response_shape:
+    type: json_object
+response_mapping:
+  answer_text_path: choices.0.message.content
+  reasoning_text_path: choices.0.message.reasoning_content
+  finish_reason_path: choices.0.finish_reason
+  usage_paths:
+    prompt_tokens: usage.prompt_tokens
+    output_tokens: usage.completion_tokens
+    total_tokens: usage.total_tokens
+    reasoning_tokens: usage.completion_tokens_details.reasoning_tokens
+timeout_policy:
+  connect_seconds: 10
+  read_seconds: 120
+retry_policy:
+  max_attempts: 3
+  retryable_statuses: [408, 429, 500, 502, 503, 504]
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+
     result = runner.invoke(app, ["validate-prompts", "--root", str(ROOT)])
     assert result.exit_code == 0
     assert "validated 10 prompt definitions" in result.stdout
+
+    endpoint_result = runner.invoke(app, ["validate-endpoints", "--root", str(tmp_path)])
+    assert endpoint_result.exit_code == 0
+    assert "validated 1 endpoint profiles" in endpoint_result.stdout
 
     suite = runner.invoke(app, ["show-suite", "quick-check-v1", "--root", str(ROOT)])
     assert suite.exit_code == 0
@@ -24,7 +69,7 @@ def test_validate_prompts_and_show_suite_commands() -> None:
     assert "p009" in suite.stdout
 
 
-def test_show_run_and_show_profile_commands(tmp_path: Path) -> None:
+def test_show_run_and_show_profile_commands_print_v2_coverage_fields(tmp_path: Path) -> None:
     run_path = tmp_path / "sample-run.json"
     run_path.write_text(
         json.dumps(
@@ -34,16 +79,26 @@ def test_show_run_and_show_profile_commands(tmp_path: Path) -> None:
                     "suite_id": "fingerprint-suite-v1",
                     "target_label": "suspect-a",
                     "claimed_model": "gpt-5.3",
+                    "endpoint_profile_id": "siliconflow-openai-chat",
+                    "answer_coverage_ratio": 1.0,
+                    "reasoning_coverage_ratio": 0.5,
+                    "protocol_compatibility": {
+                        "satisfied": False,
+                        "required_capabilities": ["chat_completions", "visible_reasoning"],
+                        "issues": ["reasoning coverage is below the profile expectation"],
+                    },
                     "prompts": [
                         {
                             "prompt_id": "p001",
+                            "status": "completed",
                             "raw_output": "sample output",
                             "usage": {
                                 "input_tokens": 10,
                                 "output_tokens": 5,
+                                "reasoning_tokens": 0,
                                 "total_tokens": 15,
                             },
-                            "features": {"char_len": 12},
+                            "features": {"answer.char_len": 12},
                         }
                     ],
                 }
@@ -61,12 +116,17 @@ def test_show_run_and_show_profile_commands(tmp_path: Path) -> None:
                     "model_id": "gpt-5.3",
                     "suite_id": "fingerprint-suite-v1",
                     "sample_count": 2,
+                    "answer_coverage_ratio": 1.0,
+                    "reasoning_coverage_ratio": 0.5,
                     "prompts": [
                         {
                             "prompt_id": "p001",
                             "weight": 0.8,
+                            "answer_coverage_ratio": 1.0,
+                            "reasoning_coverage_ratio": 0.5,
+                            "expected_reasoning_visible": 0.5,
                             "features": {
-                                "char_len": {
+                                "answer.char_len": {
                                     "kind": "numeric",
                                     "median": 42.0,
                                     "mad": 2.0,
@@ -84,9 +144,11 @@ def test_show_run_and_show_profile_commands(tmp_path: Path) -> None:
 
     show_run = runner.invoke(app, ["show-run", str(run_path)])
     assert show_run.exit_code == 0
-    assert "suspect-a.fingerprint-suite-v1" in show_run.stdout
-    assert "prompt_count: 1" in show_run.stdout
+    assert "answer_coverage_ratio: 1.0000" in show_run.stdout
+    assert "reasoning_coverage_ratio: 0.5000" in show_run.stdout
+    assert "protocol_status: incompatible_protocol" in show_run.stdout
 
-    show_profile = runner.invoke(app, ["show-profile", str(profile_path), "--json"])
+    show_profile = runner.invoke(app, ["show-profile", str(profile_path)])
     assert show_profile.exit_code == 0
-    assert '"model_id": "gpt-5.3"' in show_profile.stdout
+    assert "reasoning_coverage_ratio: 0.5000" in show_profile.stdout
+    assert "prompt_weights: p001=0.8000" in show_profile.stdout
