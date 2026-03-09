@@ -158,6 +158,7 @@ class FeaturePipeline:
                                 self._registry.extract_surface(
                                     raw_output=execution.raw_output,
                                     canonical_output=canonical_output,
+                                    canonicalization_events=canonicalization_events,
                                 ),
                             )
                         )

@@ -1,0 +1,51 @@
+id: p022
+name: high_density_context_retrieval
+family: context_retrieval
+intent: 用当前有效实体、已撤销实体、近似字符串和段落定位混合的长上下文测试检索与排除干扰项
+messages:
+  - role: system
+    content: |
+      只返回 JSON 对象，不要输出 markdown，不要附加解释。
+  - role: user
+    content: |
+      阅读下面四段文本，找出当前有效的 alpha、beta、gamma、zephyr，并按首次出现顺序返回。被撤销、仅历史出现、被否定或只是干扰项的名字不能放进 found_entities。
+
+      [p1] alpha-2 was only a draft alias. alpha became active after the final review. zephyr-old remained archived.
+      [p2] beta stayed active through the freeze. gamma appeared in a rejected proposal, but gamma itself was later approved.
+      [p3] delta was cancelled. zephyr is active in the current registry. gamma-9 is a distractor only.
+      [p4] beta-legacy was retired last quarter. alpha remains active.
+
+      返回 JSON，对象字段必须且只能包含：
+      - task_result
+      - evidence
+      - unknowns
+      - violations
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 340
+  response_format: text
+  reasoning_mode: capture_if_available
+output_contract:
+  id: tolerant_json_v3
+  canonicalizer: tolerant_json_v3
+extractors:
+  answer: context_retrieval_v3
+  score: context_retrieval_score_v3
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+evaluation:
+  reference:
+    expected_task_result:
+      found_entities: [alpha, beta, gamma, zephyr]
+      excluded_entities: [alpha-2, zephyr-old, delta, gamma-9, beta-legacy]
+    expected_evidence:
+      paragraph_map:
+        alpha: p1
+        beta: p2
+        gamma: p2
+        zephyr: p3
+required_capabilities: [chat_completions]
+weight_hint: 0.95
+tags: [v3, retrieval, negation, ordering]
+risk_level: low

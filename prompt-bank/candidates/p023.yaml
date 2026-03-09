@@ -1,0 +1,62 @@
+id: p023
+name: tri_state_abstention_resolution
+family: abstention
+intent: 用可答、信息不足和冲突未解混合的问题组测试 answer 与 abstain 分类能力
+messages:
+  - role: system
+    content: |
+      只返回 JSON 对象，不要输出 markdown，不要附加解释。信息不足用 unknown，冲突未解用 conflict_unresolved。
+  - role: user
+    content: |
+      只根据下面记录回答问题。
+
+      [e1] Priya approved retrying failed background jobs after the rollback.
+      [e2] The rollback finished before 03:00 UTC.
+      [e3] One note says the change was approved on Friday.
+      [e4] Another note says the approval date is still unconfirmed.
+      [e5] The notes do not identify who restarted the workers.
+
+      回答下列问题：
+      - q1: Was retrying failed background jobs approved?
+      - q2: Who restarted the workers?
+      - q3: What action should happen after the rollback?
+      - q4: On which date was the change approved?
+
+      返回 JSON，对象字段必须且只能包含：
+      - task_result
+      - evidence
+      - unknowns
+      - violations
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 340
+  response_format: text
+  reasoning_mode: capture_if_available
+output_contract:
+  id: tolerant_json_v3
+  canonicalizer: tolerant_json_v3
+extractors:
+  answer: abstention_v3
+  score: abstention_score_v3
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+evaluation:
+  reference:
+    expected_task_result:
+      q1:
+        status: answer
+        value: yes
+      q2:
+        status: unknown
+        value: null
+      q3:
+        status: answer
+        value: retry failed background jobs
+      q4:
+        status: conflict_unresolved
+        value: null
+required_capabilities: [chat_completions]
+weight_hint: 0.97
+tags: [v3, abstention, conflict]
+risk_level: low

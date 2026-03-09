@@ -9,6 +9,12 @@ from modelfingerprint.extractors._v2_helpers import (
     require_payload,
     string_list,
 )
+from modelfingerprint.extractors._v3_helpers import (
+    shared_evidence,
+    shared_task_result,
+    shared_unknowns,
+    shared_violations,
+)
 from modelfingerprint.extractors.base import FeatureMap
 
 
@@ -48,6 +54,55 @@ def score_evidence_grounding(prompt: object, canonical_output: object) -> Featur
     nullable_fields = [name for name, value in expected.items() if value is None]
     abstention_hits = sum(
         task_result.get(name) is None or name in unknown_fields for name in nullable_fields
+    )
+    required_fields = [name for name, value in expected.items() if value is not None]
+    evidence_hits = sum(
+        evidence_slot_count({name: evidence.get(name)}) > 0
+        for name in required_fields
+        if task_result.get(name) == expected[name]
+    )
+
+    return {
+        "value_accuracy": ratio(value_matches, total_fields),
+        "abstention_compliance": ratio(abstention_hits, len(nullable_fields)),
+        "evidence_alignment": ratio(evidence_hits, len(required_fields)),
+        "violation_free": len(violations) == 0,
+    }
+
+
+def extract_evidence_grounding_v3(canonical_output: object) -> FeatureMap:
+    payload = require_payload(canonical_output, extractor_name="evidence_grounding_v3")
+    task_result = shared_task_result(payload)
+    evidence = shared_evidence(payload)
+    unknowns = shared_unknowns(payload)
+    violations = shared_violations(payload)
+
+    return {
+        "filled_field_count": sum(value is not None for value in task_result.values()),
+        "unknown_field_count": len(unknowns),
+        "evidence_field_count": evidence_slot_count(evidence),
+        "violation_count": len(violations),
+    }
+
+
+def score_evidence_grounding_v3(prompt: object, canonical_output: object) -> FeatureMap:
+    if not isinstance(prompt, PromptDefinition):
+        raise TypeError("evidence_grounding_score_v3 expects PromptDefinition input")
+    payload = require_payload(canonical_output, extractor_name="evidence_grounding_score_v3")
+    task_result = shared_task_result(payload)
+    evidence = shared_evidence(payload)
+    unknowns = set(shared_unknowns(payload))
+    violations = shared_violations(payload)
+    expected = object_mapping(
+        prompt_reference(prompt, key="expected_task_result"),
+        field_name="expected_task_result",
+    )
+
+    total_fields = len(expected)
+    value_matches = sum(task_result.get(name) == value for name, value in expected.items())
+    nullable_fields = [name for name, value in expected.items() if value is None]
+    abstention_hits = sum(
+        task_result.get(name) is None or name in unknowns for name in nullable_fields
     )
     required_fields = [name for name, value in expected.items() if value is not None]
     evidence_hits = sum(

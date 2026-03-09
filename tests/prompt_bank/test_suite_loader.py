@@ -113,6 +113,18 @@ prompt_ids: [p001, p002]
     validate_suite_subset(suites["fingerprint-suite-v1"], suites["quick-check-v1"])
 
 
+def test_repository_v3_suite_is_loadable_and_has_expected_prompt_ids() -> None:
+    root = Path(__file__).resolve().parents[2]
+    suites = load_suites(root / "prompt-bank" / "suites")
+
+    suite = suites["fingerprint-suite-v3"]
+    quick_check = suites["quick-check-v3"]
+
+    assert suite.prompt_ids == ["p021", "p022", "p023", "p024", "p025"]
+    assert set(quick_check.prompt_ids) < set(suite.prompt_ids)
+    assert "quick-check-v2" in suites
+
+
 def test_duplicate_prompt_ids_and_unknown_extractors_are_rejected(
     tmp_path: Path,
 ) -> None:

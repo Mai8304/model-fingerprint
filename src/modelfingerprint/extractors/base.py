@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import json
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from pydantic import Field, model_validator
 
 from modelfingerprint.contracts._common import ContractModel, FeaturePrimitive, PromptFamily
-from modelfingerprint.contracts.run import CanonicalizedOutput
+from modelfingerprint.contracts.run import CanonicalizationEvent, CanonicalizedOutput
 
 FeatureMap = dict[str, FeaturePrimitive]
 ExtractorHandler = Callable[[object], FeatureMap]
@@ -18,6 +18,7 @@ ScoreExtractorHandler = Callable[[object, CanonicalizedOutput], FeatureMap]
 class SurfaceExtractorInput:
     raw_output: str
     canonical_output: CanonicalizedOutput
+    canonicalization_events: list[CanonicalizationEvent] = field(default_factory=list)
 
 
 class ExtractorValidationError(ValueError):

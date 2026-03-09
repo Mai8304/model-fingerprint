@@ -1,0 +1,8 @@
+name: evidence_grounding_score_v3
+family: evidence_grounding
+version: 3
+features:
+  - value_accuracy
+  - abstention_compliance
+  - evidence_alignment
+  - violation_free

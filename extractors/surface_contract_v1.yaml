@@ -4,5 +4,10 @@ version: 1
 features:
   - had_markdown_fence
   - has_extra_text
+  - parse_repaired
+  - repair_event_count
+  - has_extra_prefix_text
+  - has_extra_suffix_text
+  - key_alias_normalized
   - field_order_match
   - constraint_retention

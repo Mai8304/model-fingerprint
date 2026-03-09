@@ -82,3 +82,30 @@ def test_registry_surfaces_typed_canonicalization_errors() -> None:
         registry.canonicalize(build_prompt("strict_json_v2"), "not-json")
 
     assert exc_info.value.code == "invalid_json"
+
+
+def test_registry_supports_tolerant_json_v3_handler() -> None:
+    registry = CanonicalizerRegistry(
+        {
+            "tolerant_json_v3": lambda raw_output: (
+                CanonicalizedOutput(
+                    format_id="tolerant_json_v3",
+                    payload={"task_result": {}, "evidence": {}, "unknowns": {}, "violations": []},
+                ),
+                [
+                    CanonicalizationEvent(
+                        code="stripped_prefix_text",
+                        message="removed explanatory text before JSON object",
+                    )
+                ],
+            )
+        }
+    )
+
+    canonical_output, events = registry.canonicalize(
+        build_prompt("tolerant_json_v3"),
+        '结果如下：{"task_result":{},"evidence":{},"unknowns":{},"violations":[]}',
+    )
+
+    assert canonical_output.format_id == "tolerant_json_v3"
+    assert events[0].code == "stripped_prefix_text"

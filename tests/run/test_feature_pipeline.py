@@ -90,7 +90,11 @@ def build_registry() -> ExtractorRegistry:
                     "name": "surface_contract_v1",
                     "family": "state_tracking",
                     "version": 1,
-                    "features": ["had_markdown_fence"],
+                    "features": [
+                        "had_markdown_fence",
+                        "parse_repaired",
+                        "repair_event_count",
+                    ],
                 }
             ),
         },
@@ -106,7 +110,9 @@ def build_registry() -> ExtractorRegistry:
                 "reasoning_tokens": completion.usage.reasoning_tokens
             },
             "surface_contract_v1": lambda surface_input: {
-                "had_markdown_fence": surface_input.raw_output.strip().startswith("```")
+                "had_markdown_fence": surface_input.raw_output.strip().startswith("```"),
+                "parse_repaired": len(surface_input.canonicalization_events) > 0,
+                "repair_event_count": len(surface_input.canonicalization_events),
             },
         },
         score_handlers={
@@ -189,6 +195,8 @@ def test_feature_pipeline_extracts_multi_channel_features_and_preserves_events()
     assert prompt_result.features["answer.resolved_object_count"] == 1
     assert prompt_result.features["reasoning.step_count"] == 2
     assert prompt_result.features["surface.had_markdown_fence"] is True
+    assert prompt_result.features["surface.parse_repaired"] is True
+    assert prompt_result.features["surface.repair_event_count"] == 1
     assert prompt_result.features["transport.reasoning_tokens"] == 24
     assert artifact.answer_coverage_ratio == 1.0
     assert artifact.reasoning_coverage_ratio == 1.0

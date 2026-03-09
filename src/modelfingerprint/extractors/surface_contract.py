@@ -9,6 +9,7 @@ from modelfingerprint.extractors.base import FeatureMap, SurfaceExtractorInput
 
 EXPECTED_FIELD_ORDER = {
     "strict_json_v2": ["answer", "confidence"],
+    "tolerant_json_v3": ["task_result", "evidence", "unknowns", "violations"],
     "structured_extraction_v2": ["requested_fields", "extracted", "evidence", "hallucinated"],
     "retrieval_v2": ["expected_needles", "found_needles"],
 }
@@ -22,6 +23,7 @@ def extract_surface_contract(surface_input: object) -> FeatureMap:
 
     raw_output = surface_input.raw_output.strip()
     format_id = surface_input.canonical_output.format_id
+    event_codes = {event.code for event in surface_input.canonicalization_events}
     had_markdown_fence = "```" in raw_output
     unfenced_output, _ = strip_markdown_fence(raw_output)
 
@@ -42,6 +44,11 @@ def extract_surface_contract(surface_input: object) -> FeatureMap:
     return {
         "had_markdown_fence": had_markdown_fence,
         "has_extra_text": has_extra_text,
+        "parse_repaired": len(surface_input.canonicalization_events) > 0,
+        "repair_event_count": len(surface_input.canonicalization_events),
+        "has_extra_prefix_text": "stripped_prefix_text" in event_codes,
+        "has_extra_suffix_text": "stripped_suffix_text" in event_codes,
+        "key_alias_normalized": "normalized_key_alias" in event_codes,
         "field_order_match": field_order_match,
         "constraint_retention": constraint_retention,
     }

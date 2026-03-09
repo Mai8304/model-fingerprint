@@ -1,0 +1,4 @@
+id: fingerprint-suite-v3
+name: fingerprint suite v3
+description: high-density v3 fingerprint suite with 5 multi-signal prompts
+prompt_ids: [p021, p022, p023, p024, p025]

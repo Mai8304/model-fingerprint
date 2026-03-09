@@ -1,0 +1,9 @@
+name: abstention_v3
+family: abstention
+version: 3
+features:
+  - answered_count
+  - unknown_count
+  - conflict_count
+  - evidence_field_count
+  - violation_count

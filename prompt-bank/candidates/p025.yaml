@@ -1,0 +1,57 @@
+id: p025
+name: dense_representation_alignment
+family: representation_alignment
+intent: 用中英混合别名、旧名、新名、缩写歧义和无效行测试实体归一与歧义保留能力
+messages:
+  - role: system
+    content: |
+      只返回 JSON 对象，不要输出 markdown，不要附加解释。无法唯一确定的缩写必须保留为 ambiguous。
+  - role: user
+    content: |
+      根据下面说明做实体归一，并剔除无效项。
+
+      - Alice W.、Alice Wong、王艾丽 指向同一个人 alice_wong
+      - DB-east、华东数据库集群、db-cluster-east 指向同一个资源 db_cluster_east
+      - Zephyr Core、zephyr-core、Project Zephyr 指向同一个服务 zephyr_core
+      - OW 可能表示 OpenWhale，也可能表示 Ops Watch，不能强行归一
+      - Legacy row: temp-note is not an entity and must be rejected
+
+      返回 JSON，对象字段必须且只能包含：
+      - task_result
+      - evidence
+      - unknowns
+      - violations
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 360
+  response_format: text
+  reasoning_mode: capture_if_available
+output_contract:
+  id: tolerant_json_v3
+  canonicalizer: tolerant_json_v3
+extractors:
+  answer: representation_alignment_v3
+  score: representation_alignment_score_v3
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+evaluation:
+  reference:
+    expected_task_result:
+      canonical_entities: [alice_wong, db_cluster_east, zephyr_core]
+      alias_map:
+        Alice W.: alice_wong
+        Alice Wong: alice_wong
+        王艾丽: alice_wong
+        DB-east: db_cluster_east
+        华东数据库集群: db_cluster_east
+        db-cluster-east: db_cluster_east
+        Zephyr Core: zephyr_core
+        zephyr-core: zephyr_core
+        Project Zephyr: zephyr_core
+      ambiguous_mentions: [OW]
+      rejected_items: [temp-note]
+required_capabilities: [chat_completions]
+weight_hint: 0.96
+tags: [v3, alignment, bilingual, ambiguity]
+risk_level: low

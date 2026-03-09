@@ -1,0 +1,9 @@
+name: abstention_score_v3
+family: abstention
+version: 3
+features:
+  - answer_accuracy
+  - unknown_accuracy
+  - conflict_accuracy
+  - evidence_alignment
+  - violation_free

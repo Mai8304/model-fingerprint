@@ -1,0 +1,10 @@
+name: context_retrieval_score_v3
+family: context_retrieval
+version: 3
+features:
+  - entity_recall
+  - entity_precision
+  - order_accuracy
+  - paragraph_accuracy
+  - exclusion_accuracy
+  - confusion_free

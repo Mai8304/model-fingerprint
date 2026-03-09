@@ -1,0 +1,8 @@
+name: state_tracking_v3
+family: state_tracking
+version: 3
+features:
+  - resolved_object_count
+  - derivation_count
+  - default_count
+  - violation_count

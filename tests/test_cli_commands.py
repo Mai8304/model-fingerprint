@@ -57,7 +57,7 @@ retry_policy:
 
     result = runner.invoke(app, ["validate-prompts", "--root", str(ROOT)])
     assert result.exit_code == 0
-    assert "validated 20 prompt definitions and 4 suites" in result.stdout
+    assert "validated 25 prompt definitions and 6 suites" in result.stdout
 
     endpoint_result = runner.invoke(app, ["validate-endpoints", "--root", str(tmp_path)])
     assert endpoint_result.exit_code == 0

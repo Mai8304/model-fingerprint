@@ -1,0 +1,9 @@
+name: representation_alignment_v3
+family: representation_alignment
+version: 3
+features:
+  - canonical_count
+  - alias_count
+  - ambiguous_count
+  - rejected_count
+  - violation_count
