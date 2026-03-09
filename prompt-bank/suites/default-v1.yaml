@@ -1,0 +1,9 @@
+id: default-v1
+name: default v1
+description: Placeholder default suite metadata until the v1 candidate pool is seeded.
+prompt_ids:
+  - p001
+  - p002
+  - p003
+  - p004
+  - p005

@@ -10,6 +10,7 @@ from modelfingerprint.contracts._common import (
     PromptFamily,
     PromptId,
     RiskLevel,
+    SuiteId,
 )
 
 
@@ -35,3 +36,10 @@ class PromptDefinition(ContractModel):
     weight_hint: Probability = 1.0
     tags: list[str] = Field(default_factory=list)
     risk_level: RiskLevel
+
+
+class SuiteDefinition(ContractModel):
+    id: SuiteId
+    name: str = Field(min_length=1)
+    prompt_ids: list[PromptId] = Field(min_length=1)
+    description: str | None = None

@@ -1,0 +1,6 @@
+id: screening-v1
+name: screening v1
+description: Placeholder screening suite metadata until the v1 candidate pool is seeded.
+prompt_ids:
+  - p001
+  - p002
