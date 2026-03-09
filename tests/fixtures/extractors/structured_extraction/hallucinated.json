@@ -1,0 +1,9 @@
+{
+  "requested_fields": ["name", "role"],
+  "extracted": {
+    "name": "Alice",
+    "city": "Paris"
+  },
+  "evidence": ["name"],
+  "hallucinated": ["city"]
+}
