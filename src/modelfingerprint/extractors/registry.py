@@ -13,6 +13,11 @@ from modelfingerprint.extractors.base import (
     RegisteredExtractor,
     ensure_json_serializable,
 )
+from modelfingerprint.extractors.minimal_diff import extract_minimal_diff
+from modelfingerprint.extractors.retrieval import extract_retrieval
+from modelfingerprint.extractors.strict_format import extract_strict_format
+from modelfingerprint.extractors.style_brief import extract_style_brief
+from modelfingerprint.extractors.structured_extraction import extract_structured_extraction
 
 
 class ExtractorRegistry:
@@ -57,3 +62,14 @@ class ExtractorRegistry:
         feature_map = resolved.handler(raw_output)
         ensure_json_serializable(feature_map)
         return feature_map
+
+
+def build_default_registry(directory: Path) -> ExtractorRegistry:
+    handlers = {
+        "style_brief_v1": extract_style_brief,
+        "strict_format_v1": extract_strict_format,
+        "minimal_diff_v1": extract_minimal_diff,
+        "structured_extraction_v1": extract_structured_extraction,
+        "retrieval_v1": extract_retrieval,
+    }
+    return ExtractorRegistry.from_directory(directory, handlers=handlers)
