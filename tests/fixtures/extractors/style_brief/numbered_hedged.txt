@@ -1,0 +1,3 @@
+Probably use CRUD first.
+1. It is simpler.
+2. It is cheaper.
