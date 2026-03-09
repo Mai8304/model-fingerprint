@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.12+, Typer, Pydantic v2, PyYAML, jsonschema, pytest, Ruff, mypy
 
-**Progress Update (2026-03-09):** Milestone A / P0, Milestone B / P1, and Milestone C / P2 completed and verified. Remaining delivery order is P3.
+**Progress Update (2026-03-09):** Milestones A through D completed and verified. The standalone toolkit now supports prompt validation, suite execution, profile building, calibration, comparison, reporting, and end-to-end golden-path verification.
 
 ---
 
@@ -64,6 +64,9 @@ Acceptance anchor:
 - `pytest tests/profile tests/calibration tests/comparison -q` passes
 
 ### Milestone D: Operators can use the tool end-to-end
+
+Status:
+- Completed on 2026-03-09
 
 Outcome:
 - CLI validates protocol files

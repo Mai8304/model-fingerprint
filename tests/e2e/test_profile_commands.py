@@ -8,7 +8,6 @@ from typer.testing import CliRunner
 
 from modelfingerprint.cli import app
 
-
 ROOT = Path(__file__).resolve().parents[2]
 runner = CliRunner()
 

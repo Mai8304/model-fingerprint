@@ -4,7 +4,6 @@ from datetime import date
 from pathlib import Path
 
 from modelfingerprint.adapters.openai_chat import ChatCompletionTransport
-from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.contracts.run import UsageMetadata
 from modelfingerprint.extractors.registry import ExtractorRegistry, build_default_registry
 from modelfingerprint.services.feature_pipeline import FeaturePipeline, PromptExecutionResult

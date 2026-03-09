@@ -9,7 +9,6 @@ from modelfingerprint.cli import app
 from modelfingerprint.contracts.profile import ProfileArtifact
 from modelfingerprint.contracts.run import RunArtifact
 
-
 ROOT = Path(__file__).resolve().parents[1]
 runner = CliRunner()
 

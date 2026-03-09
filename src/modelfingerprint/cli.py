@@ -8,10 +8,10 @@ import typer
 
 from modelfingerprint import __version__
 from modelfingerprint.adapters.openai_chat import ChatCompletionResult
-from modelfingerprint.contracts.prompt import PromptDefinition
-from modelfingerprint.contracts.profile import ProfileArtifact
-from modelfingerprint.contracts.run import RunArtifact
 from modelfingerprint.contracts.calibration import CalibrationArtifact
+from modelfingerprint.contracts.profile import ProfileArtifact
+from modelfingerprint.contracts.prompt import PromptDefinition
+from modelfingerprint.contracts.run import RunArtifact
 from modelfingerprint.services.calibrator import Calibrator
 from modelfingerprint.services.comparator import compare_run
 from modelfingerprint.services.profile_builder import build_profile
@@ -49,14 +49,17 @@ def main(
 
 
 @app.command("validate-prompts")
-def validate_prompts(root: Path = typer.Option(Path.cwd(), "--root", exists=True, file_okay=False)) -> None:
+def validate_prompts(
+    root: Path = typer.Option(Path.cwd(), "--root", exists=True, file_okay=False),
+) -> None:
     try:
         prompts = load_candidate_prompts(root / "prompt-bank" / "candidates")
         suites = load_suites(root / "prompt-bank" / "suites")
         validate_suite_references(prompts, suites)
         validate_suite_subset(suites["default-v1"], suites["screening-v1"])
     except (KeyError, PromptBankValidationError, FileNotFoundError) as exc:
-        raise typer.Exit(str(exc)) from exc
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
 
     typer.echo(f"validated {len(prompts)} candidate prompts and {len(suites)} suites")
 
