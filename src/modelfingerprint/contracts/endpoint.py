@@ -53,6 +53,7 @@ class EndpointProfile(ContractModel):
     id: str = Field(min_length=1)
     dialect: str = Field(min_length=1)
     base_url: HttpUrl
+    model: str = Field(min_length=1)
     auth: EndpointAuth
     capabilities: EndpointCapabilities
     request_mapping: RequestMapping

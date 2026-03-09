@@ -11,6 +11,7 @@ def test_endpoint_profile_parses_valid_payload() -> None:
         "id": "siliconflow-openai-chat",
         "dialect": "openai_chat_v1",
         "base_url": "https://api.siliconflow.cn/v1",
+        "model": "Pro/zai-org/GLM-5",
         "auth": {
             "kind": "bearer_env",
             "env_var": "MODEL_FINGERPRINT_API_KEY",
@@ -50,6 +51,7 @@ def test_endpoint_profile_parses_valid_payload() -> None:
     profile = EndpointProfile.model_validate(payload)
 
     assert profile.dialect == "openai_chat_v1"
+    assert profile.model == "Pro/zai-org/GLM-5"
     assert profile.capabilities.exposes_reasoning_text is True
     assert profile.response_mapping.reasoning_text_path == "choices.0.message.reasoning_content"
 
@@ -61,6 +63,7 @@ def test_endpoint_profile_rejects_impossible_capability_combinations() -> None:
                 "id": "broken-openai-chat",
                 "dialect": "openai_chat_v1",
                 "base_url": "https://api.example.com/v1",
+                "model": "broken-model",
                 "auth": {
                     "kind": "bearer_env",
                     "env_var": "MODEL_FINGERPRINT_API_KEY",

@@ -232,6 +232,11 @@
       "title": "Id",
       "type": "string"
     },
+    "model": {
+      "minLength": 1,
+      "title": "Model",
+      "type": "string"
+    },
     "request_mapping": {
       "$ref": "#/$defs/RequestMapping"
     },
@@ -249,6 +254,7 @@
     "id",
     "dialect",
     "base_url",
+    "model",
     "auth",
     "capabilities",
     "request_mapping",
