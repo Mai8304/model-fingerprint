@@ -1,0 +1,8 @@
+name: retrieval_v1
+family: retrieval
+version: 1
+features:
+  - needle_hit_count
+  - wrong_needle_type
+  - order_preservation
+  - confusion_pattern
