@@ -1,0 +1,51 @@
+id: p016
+name: timeline_questions_with_unknown_owner
+family: abstention
+intent: 用事件时间线中的未知责任人测试答案正确性与未知处理
+messages:
+  - role: system
+    content: |
+      只返回 JSON 对象，不要输出 markdown。没有足够信息的问题必须返回 null，并把问题编号写入 unknowns。
+  - role: user
+    content: |
+      只根据下面时间线回答 q1、q2、q3。
+
+      [e1] 09:00 the cache cluster entered degraded mode.
+      [e2] 09:07 failover finished successfully.
+      [e3] 09:08 the on-call engineer restarted the background workers.
+      [e4] The log does not identify the engineer by name.
+
+      问题：
+      - q1: Did failover finish successfully?
+      - q2: Who restarted the background workers?
+      - q3: What happened immediately after failover finished?
+
+      返回 JSON，对象字段必须且只能包含：
+      - answers
+      - unknowns
+      - evidence
+      - violations
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 280
+  response_format: text
+  reasoning_mode: capture_if_available
+output_contract:
+  id: strict_json_v2
+  canonicalizer: strict_json_v2
+extractors:
+  answer: abstention_v1
+  score: abstention_score_v1
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+evaluation:
+  reference:
+    expected_answers:
+      q1: "yes"
+      q2: null
+      q3: background workers were restarted
+required_capabilities: [chat_completions]
+weight_hint: 0.9
+tags: [v2, abstain, timeline]
+risk_level: low

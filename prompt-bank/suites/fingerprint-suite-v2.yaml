@@ -1,0 +1,4 @@
+id: fingerprint-suite-v2
+name: fingerprint suite v2
+description: correctness-weighted v2 fingerprint suite with 10 multi-signal prompts
+prompt_ids: [p011, p012, p013, p014, p015, p016, p017, p018, p019, p020]

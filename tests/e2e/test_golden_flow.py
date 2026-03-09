@@ -238,6 +238,9 @@ def test_golden_flow_fixture_execution_to_v2_verdict(tmp_path: Path) -> None:
 
     assert compare.exit_code == 0
     assert '"top1_model": "gpt-5.3"' in compare.stdout
+    assert '"content_similarity"' in compare.stdout
+    assert '"capability_similarity"' in compare.stdout
+    assert '"capability_coverage_ratio"' in compare.stdout
     assert '"protocol_status": "compatible"' in compare.stdout
     assert '"answer_coverage_ratio": 1.0' in compare.stdout
     assert '"verdict": "match"' in compare.stdout

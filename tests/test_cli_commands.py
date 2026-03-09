@@ -57,7 +57,7 @@ retry_policy:
 
     result = runner.invoke(app, ["validate-prompts", "--root", str(ROOT)])
     assert result.exit_code == 0
-    assert "validated 10 prompt definitions" in result.stdout
+    assert "validated 20 prompt definitions and 4 suites" in result.stdout
 
     endpoint_result = runner.invoke(app, ["validate-endpoints", "--root", str(tmp_path)])
     assert endpoint_result.exit_code == 0
@@ -82,6 +82,18 @@ def test_show_run_and_show_profile_commands_print_v2_coverage_fields(tmp_path: P
                     "endpoint_profile_id": "siliconflow-openai-chat",
                     "answer_coverage_ratio": 1.0,
                     "reasoning_coverage_ratio": 0.5,
+                    "capability_probe": {
+                        "probe_mode": "minimal",
+                        "probe_version": "v1",
+                        "coverage_ratio": 0.75,
+                        "capabilities": {
+                            "thinking": {
+                                "status": "supported",
+                                "detail": "reasoning visible",
+                                "evidence": {"field": "reasoning"},
+                            }
+                        },
+                    },
                     "protocol_compatibility": {
                         "satisfied": False,
                         "required_capabilities": ["chat_completions", "visible_reasoning"],
@@ -118,6 +130,16 @@ def test_show_run_and_show_profile_commands_print_v2_coverage_fields(tmp_path: P
                     "sample_count": 2,
                     "answer_coverage_ratio": 1.0,
                     "reasoning_coverage_ratio": 0.5,
+                    "capability_profile": {
+                        "coverage_ratio": 0.75,
+                        "capabilities": {
+                            "thinking": {
+                                "distribution": {
+                                    "supported": 1.0,
+                                }
+                            }
+                        },
+                    },
                     "prompts": [
                         {
                             "prompt_id": "p001",
@@ -146,9 +168,11 @@ def test_show_run_and_show_profile_commands_print_v2_coverage_fields(tmp_path: P
     assert show_run.exit_code == 0
     assert "answer_coverage_ratio: 1.0000" in show_run.stdout
     assert "reasoning_coverage_ratio: 0.5000" in show_run.stdout
+    assert "capability_coverage_ratio: 0.7500" in show_run.stdout
     assert "protocol_status: incompatible_protocol" in show_run.stdout
 
     show_profile = runner.invoke(app, ["show-profile", str(profile_path)])
     assert show_profile.exit_code == 0
     assert "reasoning_coverage_ratio: 0.5000" in show_profile.stdout
+    assert "capability_coverage_ratio: 0.7500" in show_profile.stdout
     assert "prompt_weights: p001=0.8000" in show_profile.stdout

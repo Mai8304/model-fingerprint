@@ -7,6 +7,8 @@ from pydantic import Field, field_validator
 from modelfingerprint.contracts._common import (
     ContractModel,
     Probability,
+    ProbeCapabilityId,
+    ProbeCapabilityStatus,
     PromptId,
     SuiteId,
 )
@@ -51,11 +53,29 @@ class ProfilePromptSummary(ContractModel):
     features: dict[str, FeatureSummary] = Field(min_length=1)
 
 
+class CapabilityStateDistribution(ContractModel):
+    distribution: dict[ProbeCapabilityStatus, Probability] = Field(min_length=1)
+
+    @field_validator("distribution")
+    @classmethod
+    def validate_distribution(cls, value: dict[str, float]) -> dict[str, float]:
+        total = sum(value.values())
+        if total <= 0.0:
+            raise ValueError("distribution must have positive total mass")
+        return value
+
+
+class CapabilityProfileSummary(ContractModel):
+    coverage_ratio: Probability | None = None
+    capabilities: dict[ProbeCapabilityId, CapabilityStateDistribution] = Field(min_length=1)
+
+
 class ProfileArtifact(ContractModel):
     model_id: str = Field(min_length=1)
     suite_id: SuiteId
     sample_count: int = Field(gt=0)
     answer_coverage_ratio: Probability | None = None
     reasoning_coverage_ratio: Probability | None = None
+    capability_profile: CapabilityProfileSummary | None = None
     protocol_expectations: dict[str, object] | None = None
     prompts: list[ProfilePromptSummary] = Field(min_length=1)

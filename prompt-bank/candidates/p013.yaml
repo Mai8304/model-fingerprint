@@ -1,0 +1,46 @@
+id: p013
+name: current_entity_retrieval_with_negation
+family: context_retrieval
+intent: 用当前生效与已撤销实体混合的长上下文测试检索与排除干扰项
+messages:
+  - role: system
+    content: |
+      只返回 JSON 对象，不要输出 markdown，不要补全不存在的信息。
+  - role: user
+    content: |
+      阅读下面三段文本，找出当前有效的 alpha、beta、gamma，并标注它们第一次出现的段落编号。被撤销、被否定或仅作为干扰项出现的实体必须进入 excluded_entities。
+
+      [p1] alpha-2 is a draft alias and should not be treated as active. alpha became active after the final review.
+      [p2] beta remained active. gamma was mentioned in a rejected proposal, but gamma itself was later approved.
+      [p3] delta was cancelled. gamma-9 is a distractor only.
+
+      返回 JSON，对象字段必须且只能包含：
+      - found_entities
+      - paragraph_map
+      - excluded_entities
+      - confusions
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 260
+  response_format: text
+  reasoning_mode: capture_if_available
+output_contract:
+  id: strict_json_v2
+  canonicalizer: strict_json_v2
+extractors:
+  answer: context_retrieval_v1
+  score: context_retrieval_score_v1
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+evaluation:
+  reference:
+    expected_found_entities: [alpha, beta, gamma]
+    expected_paragraph_map:
+      alpha: p1
+      beta: p2
+      gamma: p2
+required_capabilities: [chat_completions]
+weight_hint: 0.9
+tags: [v2, retrieval, negation]
+risk_level: low

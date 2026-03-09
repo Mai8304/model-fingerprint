@@ -7,6 +7,9 @@ from pydantic import Field, model_validator
 from modelfingerprint.contracts._common import (
     ContractModel,
     FeaturePrimitive,
+    Probability,
+    ProbeCapabilityId,
+    ProbeCapabilityStatus,
     PromptId,
     SuiteId,
 )
@@ -26,7 +29,7 @@ class PromptRequestSnapshot(ContractModel):
 
 
 class NormalizedCompletion(ContractModel):
-    answer_text: str = Field(min_length=1)
+    answer_text: str = ""
     reasoning_text: str | None = None
     reasoning_visible: bool = False
     finish_reason: str | None = None
@@ -56,6 +59,21 @@ class ProtocolCompatibility(ContractModel):
     satisfied: bool
     required_capabilities: list[str] = Field(default_factory=list)
     issues: list[str] = Field(default_factory=list)
+
+
+class CapabilityProbeOutcome(ContractModel):
+    status: ProbeCapabilityStatus
+    detail: str | None = None
+    http_status: int | None = Field(default=None, ge=100, le=599)
+    latency_ms: int | None = Field(default=None, ge=0)
+    evidence: dict[str, FeaturePrimitive] = Field(default_factory=dict)
+
+
+class CapabilityProbeResult(ContractModel):
+    probe_mode: str = Field(min_length=1)
+    probe_version: str = Field(min_length=1)
+    coverage_ratio: Probability
+    capabilities: dict[ProbeCapabilityId, CapabilityProbeOutcome] = Field(min_length=1)
 
 
 class PromptRunResult(ContractModel):
@@ -99,6 +117,7 @@ class RunArtifact(ContractModel):
     prompt_count_scoreable: int | None = Field(default=None, ge=0)
     answer_coverage_ratio: float | None = Field(default=None, ge=0.0, le=1.0)
     reasoning_coverage_ratio: float | None = Field(default=None, ge=0.0, le=1.0)
+    capability_probe: CapabilityProbeResult | None = None
     protocol_compatibility: ProtocolCompatibility | None = None
     trace_dir: str | None = None
     prompts: list[PromptRunResult] = Field(min_length=1)

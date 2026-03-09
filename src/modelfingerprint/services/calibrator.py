@@ -24,10 +24,38 @@ from modelfingerprint.settings import RepositoryPaths
 from modelfingerprint.storage.filesystem import ensure_directories
 
 CHANNEL_WEIGHTS = {
-    "answer": 0.7,
+    "score": 0.45,
+    "answer": 0.25,
     "reasoning": 0.1,
     "transport": 0.1,
     "surface": 0.1,
+}
+COMPARISON_DIMENSION_WEIGHTS = {
+    "content": 0.7,
+    "capability": 0.3,
+}
+CAPABILITY_WEIGHTS = {
+    "thinking": 0.35,
+    "tools": 0.30,
+    "streaming": 0.20,
+    "image": 0.15,
+}
+CAPABILITY_MATCH_SCORES: dict[str, dict[str, float]] = {
+    "supported": {
+        "supported": 1.0,
+        "accepted_but_ignored": 0.55,
+        "unsupported": 0.0,
+    },
+    "accepted_but_ignored": {
+        "supported": 0.75,
+        "accepted_but_ignored": 1.0,
+        "unsupported": 0.35,
+    },
+    "unsupported": {
+        "supported": 0.35,
+        "accepted_but_ignored": 0.55,
+        "unsupported": 1.0,
+    },
 }
 ProtocolStatus = Literal["compatible", "insufficient_evidence", "incompatible_protocol"]
 
@@ -36,15 +64,19 @@ ProtocolStatus = Literal["compatible", "insufficient_evidence", "incompatible_pr
 class ProfileMatchScore:
     model_id: str
     overall_similarity: float
+    content_similarity: float | None
     prompt_scores: dict[str, float]
+    capability_similarity: float | None
     answer_similarity: float | None
     reasoning_similarity: float | None
     transport_similarity: float | None
     surface_similarity: float | None
     answer_coverage_ratio: float
     reasoning_coverage_ratio: float
+    capability_coverage_ratio: float
     protocol_status: ProtocolStatus
     protocol_issues: tuple[str, ...]
+    hard_mismatches: tuple[str, ...]
     consistency: float
 
 
@@ -152,7 +184,9 @@ def score_run_against_profile(run: RunArtifact, profile: ProfileArtifact) -> Pro
             channel_weighted_scores[channel] += channel_score * profile_prompt.weight
             channel_weight_totals[channel] += profile_prompt.weight
 
-    overall = 0.0 if prompt_weight_sum == 0 else prompt_weighted_total / prompt_weight_sum
+    content_similarity = (
+        0.0 if prompt_weight_sum == 0 else prompt_weighted_total / prompt_weight_sum
+    )
     consistency = 0.0 if prompt_weight_sum == 0 else consistency_weight / prompt_weight_sum
     answer_coverage_ratio = (
         run.answer_coverage_ratio
@@ -170,10 +204,21 @@ def score_run_against_profile(run: RunArtifact, profile: ProfileArtifact) -> Pro
         answer_coverage_ratio=answer_coverage_ratio,
         reasoning_coverage_ratio=reasoning_coverage_ratio,
     )
+    (
+        capability_similarity,
+        capability_coverage_ratio,
+        hard_mismatches,
+    ) = _score_capability_dimension(run, profile)
+    overall = _combine_dimension_scores(
+        content_similarity=content_similarity,
+        capability_similarity=capability_similarity,
+    )
     return ProfileMatchScore(
         model_id=profile.model_id,
         overall_similarity=overall,
+        content_similarity=content_similarity,
         prompt_scores=prompt_scores,
+        capability_similarity=capability_similarity,
         answer_similarity=_channel_similarity(
             "answer",
             channel_weighted_scores,
@@ -196,8 +241,10 @@ def score_run_against_profile(run: RunArtifact, profile: ProfileArtifact) -> Pro
         ),
         answer_coverage_ratio=answer_coverage_ratio,
         reasoning_coverage_ratio=reasoning_coverage_ratio,
+        capability_coverage_ratio=capability_coverage_ratio,
         protocol_status=protocol_status,
         protocol_issues=tuple(protocol_issues),
+        hard_mismatches=hard_mismatches,
         consistency=consistency,
     )
 
@@ -261,10 +308,10 @@ def derive_reasoning_coverage(run: RunArtifact) -> float:
 
 
 def weighted_average(values: dict[str, float], weights: dict[str, float]) -> float:
-    total_weight = sum(weights[channel] for channel in values)
+    total_weight = sum(weights.get(channel, 0.0) for channel in values)
     if total_weight == 0.0:
         return 0.0
-    return sum(values[channel] * weights[channel] for channel in values) / total_weight
+    return sum(values[channel] * weights.get(channel, 0.0) for channel in values) / total_weight
 
 
 def _score_prompt_channels(
@@ -324,6 +371,88 @@ def determine_protocol_status(
         return "insufficient_evidence", issues
 
     return "compatible", issues
+
+
+def _score_capability_dimension(
+    run: RunArtifact,
+    profile: ProfileArtifact,
+) -> tuple[float | None, float, tuple[str, ...]]:
+    if run.capability_probe is None or profile.capability_profile is None:
+        return None, 0.0, ()
+
+    total_weight = 0.0
+    scored_weight = 0.0
+    weighted_score = 0.0
+    hard_mismatches: list[str] = []
+
+    for capability, summary in profile.capability_profile.capabilities.items():
+        capability_weight = CAPABILITY_WEIGHTS.get(capability, 0.0)
+        if capability_weight == 0.0:
+            continue
+        total_weight += capability_weight
+
+        outcome = run.capability_probe.capabilities.get(capability)
+        if outcome is None or outcome.status == "insufficient_evidence":
+            continue
+
+        reference_distribution = {
+            status: probability
+            for status, probability in summary.distribution.items()
+            if status != "insufficient_evidence"
+        }
+        reference_mass = sum(reference_distribution.values())
+        if reference_mass <= 0.0:
+            continue
+
+        normalized_distribution = {
+            status: probability / reference_mass
+            for status, probability in reference_distribution.items()
+        }
+        capability_score = 0.0
+        for reference_status, probability in normalized_distribution.items():
+            capability_score += probability * CAPABILITY_MATCH_SCORES.get(reference_status, {}).get(
+                outcome.status,
+                0.0,
+            )
+
+        weighted_score += capability_score * capability_weight
+        scored_weight += capability_weight
+
+        if (
+            capability in {"thinking", "tools"}
+            and summary.distribution.get("supported", 0.0) >= 0.8
+            and outcome.status == "unsupported"
+        ):
+            hard_mismatches.append(capability)
+
+    if total_weight == 0.0:
+        return None, 0.0, tuple(sorted(set(hard_mismatches)))
+    if scored_weight == 0.0:
+        return None, 0.0, tuple(sorted(set(hard_mismatches)))
+
+    return (
+        weighted_score / scored_weight,
+        scored_weight / total_weight,
+        tuple(sorted(set(hard_mismatches))),
+    )
+
+
+def _combine_dimension_scores(
+    *,
+    content_similarity: float | None,
+    capability_similarity: float | None,
+) -> float:
+    weighted_total = 0.0
+    weight_sum = 0.0
+    if content_similarity is not None:
+        weighted_total += content_similarity * COMPARISON_DIMENSION_WEIGHTS["content"]
+        weight_sum += COMPARISON_DIMENSION_WEIGHTS["content"]
+    if capability_similarity is not None:
+        weighted_total += capability_similarity * COMPARISON_DIMENSION_WEIGHTS["capability"]
+        weight_sum += COMPARISON_DIMENSION_WEIGHTS["capability"]
+    if weight_sum == 0.0:
+        return 0.0
+    return weighted_total / weight_sum
 
 
 def _merge_protocol_expectations(

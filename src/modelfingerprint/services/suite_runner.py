@@ -8,6 +8,7 @@ from modelfingerprint.adapters.openai_chat import ChatCompletionResult
 from modelfingerprint.contracts.endpoint import EndpointProfile
 from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.contracts.run import (
+    CapabilityProbeResult,
     PromptExecutionError,
     PromptRequestSnapshot,
     ProtocolCompatibility,
@@ -25,6 +26,7 @@ from modelfingerprint.services.prompt_bank import (
     QUICK_CHECK_SUITE_ID,
     load_candidate_prompts,
     load_suites,
+    validate_release_suite_subsets,
     validate_suite_references,
     validate_suite_subset,
 )
@@ -61,11 +63,13 @@ class SuiteRunner:
         target_label: str,
         claimed_model: str | None = None,
         run_date: date | None = None,
+        capability_probe_payload: dict[str, object] | None = None,
     ) -> Path:
         prompts = load_candidate_prompts(self._paths.prompt_bank_dir / "candidates")
         suites = load_suites(self._paths.prompt_bank_dir / "suites")
         validate_suite_references(prompts, suites)
         validate_suite_subset(suites[FINGERPRINT_SUITE_ID], suites[QUICK_CHECK_SUITE_ID])
+        validate_release_suite_subsets(suites)
         suite = suites[suite_id]
         executions: list[PromptExecutionResult] = []
 
@@ -80,7 +84,12 @@ class SuiteRunner:
             claimed_model=claimed_model,
             executions=executions,
         )
-        artifact = self._enrich_artifact(artifact, prompts, suite.prompt_ids)
+        artifact = self._enrich_artifact(
+            artifact,
+            prompts,
+            suite.prompt_ids,
+            capability_probe_payload=capability_probe_payload,
+        )
 
         return RunWriter(self._paths).write(artifact, run_date or date.today())
 
@@ -125,6 +134,7 @@ class SuiteRunner:
         artifact: RunArtifact,
         prompts: dict[str, PromptDefinition],
         prompt_ids: list[str],
+        capability_probe_payload: dict[str, object] | None = None,
     ) -> RunArtifact:
         endpoint_profile_id = None
         trace_dir = None
@@ -157,6 +167,38 @@ class SuiteRunner:
             update={
                 "endpoint_profile_id": endpoint_profile_id,
                 "trace_dir": None if trace_dir is None else str(trace_dir),
+                "capability_probe": _normalize_capability_probe_payload(capability_probe_payload),
                 "protocol_compatibility": protocol_compatibility,
             }
         )
+
+
+def _normalize_capability_probe_payload(
+    payload: dict[str, object] | None,
+) -> CapabilityProbeResult | None:
+    if payload is None:
+        return None
+    raw_results = payload.get("results")
+    if not isinstance(raw_results, dict):
+        return None
+    capabilities: dict[str, object] = {}
+    for capability, raw_outcome in raw_results.items():
+        if not isinstance(raw_outcome, dict):
+            continue
+        capabilities[capability] = {
+            "status": raw_outcome.get("status"),
+            "detail": raw_outcome.get("detail"),
+            "http_status": raw_outcome.get("http_status"),
+            "latency_ms": raw_outcome.get("latency_ms"),
+            "evidence": raw_outcome.get("evidence", {}),
+        }
+    if not capabilities:
+        return None
+    return CapabilityProbeResult.model_validate(
+        {
+            "probe_mode": payload.get("probe_mode", "minimal"),
+            "probe_version": payload.get("probe_version", "v1"),
+            "coverage_ratio": payload.get("coverage_ratio", 0.0),
+            "capabilities": capabilities,
+        }
+    )

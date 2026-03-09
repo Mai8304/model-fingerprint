@@ -1,0 +1,51 @@
+id: p015
+name: answerable_and_unknown_policy_questions
+family: abstention
+intent: 用可答与不可答问题混合的策略文本测试 abstain 行为
+messages:
+  - role: system
+    content: |
+      只返回 JSON 对象，不要输出 markdown。没有足够信息的问题必须返回 null，并把问题编号写入 unknowns。
+  - role: user
+    content: |
+      只根据下面策略回答 q1、q2、q3。
+
+      [e1] A deployment is approved only after security review and DBA sign-off.
+      [e2] The current request already passed security review.
+      [e3] DBA sign-off is still pending.
+      [e4] Retry failed background jobs after the failover completes.
+
+      问题：
+      - q1: Is the deployment approved?
+      - q2: Which engineer approved the DBA sign-off?
+      - q3: What should happen after failover completes?
+
+      返回 JSON，对象字段必须且只能包含：
+      - answers
+      - unknowns
+      - evidence
+      - violations
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 280
+  response_format: text
+  reasoning_mode: capture_if_available
+output_contract:
+  id: strict_json_v2
+  canonicalizer: strict_json_v2
+extractors:
+  answer: abstention_v1
+  score: abstention_score_v1
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+evaluation:
+  reference:
+    expected_answers:
+      q1: "no"
+      q2: null
+      q3: retry failed background jobs
+required_capabilities: [chat_completions]
+weight_hint: 0.94
+tags: [v2, abstain, policy]
+risk_level: low

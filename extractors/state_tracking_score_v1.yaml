@@ -1,0 +1,8 @@
+name: state_tracking_score_v1
+family: state_tracking
+version: 1
+features:
+  - snapshot_accuracy
+  - derivation_accuracy
+  - default_usage_accuracy
+  - violation_free

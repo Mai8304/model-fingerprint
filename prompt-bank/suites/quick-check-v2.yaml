@@ -1,0 +1,4 @@
+id: quick-check-v2
+name: quick check v2
+description: strict subset of fingerprint-suite-v2 for low-cost screening
+prompt_ids: [p011, p013, p015, p017, p019]

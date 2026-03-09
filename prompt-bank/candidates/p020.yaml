@@ -1,0 +1,51 @@
+id: p020
+name: codename_and_service_alignment
+family: representation_alignment
+intent: 用旧名新名混合和模糊缩写测试归一与歧义保留
+messages:
+  - role: system
+    content: |
+      只返回 JSON 对象，不要输出 markdown，不要附加解释。
+  - role: user
+    content: |
+      根据下面说明做实体归一。能确定映射的别名写入 alias_map，无法唯一确定的缩写写入 ambiguous_mentions。
+
+      - Project Zephyr 和 zephyr-core 指向 zephyr_core
+      - Orion Service 和 orion-svc 指向 orion_service
+      - AC 可能表示 Access Control，也可能表示 Audit Collector，不能强行归一
+
+      返回 JSON，对象字段必须且只能包含：
+      - canonical_entities
+      - alias_map
+      - ambiguous_mentions
+      - violations
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 260
+  response_format: text
+  reasoning_mode: capture_if_available
+output_contract:
+  id: strict_json_v2
+  canonicalizer: strict_json_v2
+extractors:
+  answer: representation_alignment_v1
+  score: representation_alignment_score_v1
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+evaluation:
+  reference:
+    expected_canonical_entities:
+      - zephyr_core
+      - orion_service
+    expected_alias_map:
+      Project Zephyr: zephyr_core
+      zephyr-core: zephyr_core
+      Orion Service: orion_service
+      orion-svc: orion_service
+    expected_ambiguous_mentions:
+      - AC
+required_capabilities: [chat_completions]
+weight_hint: 0.9
+tags: [v2, alignment, codename]
+risk_level: low

@@ -15,6 +15,7 @@ from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.contracts.run import NormalizedCompletion, RunArtifact, UsageMetadata
 from modelfingerprint.dialects.openai_chat import OpenAIChatDialectAdapter
 from modelfingerprint.services.calibrator import Calibrator
+from modelfingerprint.services.capability_probe import probe_capabilities
 from modelfingerprint.services.comparator import compare_run
 from modelfingerprint.services.endpoint_profiles import (
     EndpointProfileValidationError,
@@ -28,6 +29,7 @@ from modelfingerprint.services.prompt_bank import (
     PromptBankValidationError,
     load_candidate_prompts,
     load_suites,
+    validate_release_suite_subsets,
     validate_suite_references,
     validate_suite_subset,
 )
@@ -42,6 +44,21 @@ app = typer.Typer(
     help="CLI for file-based model fingerprint workflows.",
     no_args_is_help=True,
 )
+
+
+@app.command("probe-capabilities")
+def probe_capabilities_command(
+    base_url: str = typer.Option(..., "--base-url"),
+    api_key: str = typer.Option(..., "--api-key"),
+    model: str = typer.Option(..., "--model"),
+) -> None:
+    typer.echo(
+        json.dumps(
+            probe_capabilities(base_url=base_url, api_key=api_key, model=model),
+            indent=2,
+            sort_keys=True,
+        )
+    )
 
 
 @app.callback()
@@ -67,6 +84,7 @@ def validate_prompts(
         suites = load_suites(root / "prompt-bank" / "suites")
         validate_suite_references(prompts, suites)
         validate_suite_subset(suites[FINGERPRINT_SUITE_ID], suites[QUICK_CHECK_SUITE_ID])
+        validate_release_suite_subsets(suites)
     except (KeyError, PromptBankValidationError, FileNotFoundError) as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1) from exc
@@ -122,6 +140,7 @@ def show_run(path: Path, json_output: bool = typer.Option(False, "--json")) -> N
         typer.echo(f"endpoint_profile_id: {artifact.endpoint_profile_id}")
     typer.echo(f"answer_coverage_ratio: {_format_ratio(artifact.answer_coverage_ratio)}")
     typer.echo(f"reasoning_coverage_ratio: {_format_ratio(artifact.reasoning_coverage_ratio)}")
+    typer.echo(f"capability_coverage_ratio: {_format_ratio(_run_capability_coverage(artifact))}")
     typer.echo(f"protocol_status: {_run_protocol_status(artifact)}")
 
 
@@ -138,6 +157,9 @@ def show_profile(path: Path, json_output: bool = typer.Option(False, "--json")) 
     typer.echo(f"sample_count: {artifact.sample_count}")
     typer.echo(f"answer_coverage_ratio: {_format_ratio(artifact.answer_coverage_ratio)}")
     typer.echo(f"reasoning_coverage_ratio: {_format_ratio(artifact.reasoning_coverage_ratio)}")
+    typer.echo(
+        f"capability_coverage_ratio: {_format_ratio(_profile_capability_coverage(artifact))}"
+    )
     typer.echo(
         "prompt_weights: "
         + ", ".join(f"{prompt.prompt_id}={prompt.weight:.4f}" for prompt in artifact.prompts)
@@ -164,6 +186,7 @@ def run_suite(
 
     paths = RepositoryPaths(root=root)
     transport: object
+    capability_probe_payload: dict[str, object] | None = None
     if fixture_responses is not None:
         payload = json.loads(fixture_responses.read_text(encoding="utf-8"))
 
@@ -197,6 +220,11 @@ def run_suite(
         if endpoint is None:
             raise typer.BadParameter(f"unknown endpoint profile id: {endpoint_profile}")
         api_key = _load_endpoint_api_key(endpoint)
+        capability_probe_payload = probe_capabilities(
+            base_url=str(endpoint.base_url),
+            api_key=api_key,
+            model=endpoint.model,
+        )
         trace_dir = paths.traces_dir / run_date / f"{target_label}.{suite_id}"
         transport = LiveRunner(
             endpoint=endpoint,
@@ -211,6 +239,7 @@ def run_suite(
         target_label=target_label,
         claimed_model=claimed_model,
         run_date=date.fromisoformat(run_date),
+        capability_probe_payload=capability_probe_payload,
     )
     typer.echo(path)
 
@@ -271,14 +300,18 @@ def compare_command(
         "claimed_model": comparison.claimed_model,
         "claimed_model_similarity": comparison.claimed_model_similarity,
         "consistency": comparison.consistency,
+        "content_similarity": comparison.content_similarity,
+        "capability_similarity": comparison.capability_similarity,
         "answer_similarity": comparison.answer_similarity,
         "reasoning_similarity": comparison.reasoning_similarity,
         "transport_similarity": comparison.transport_similarity,
         "surface_similarity": comparison.surface_similarity,
         "answer_coverage_ratio": comparison.answer_coverage_ratio,
         "reasoning_coverage_ratio": comparison.reasoning_coverage_ratio,
+        "capability_coverage_ratio": comparison.capability_coverage_ratio,
         "protocol_status": comparison.protocol_status,
         "protocol_issues": list(comparison.protocol_issues),
+        "hard_mismatches": list(comparison.hard_mismatches),
         "verdict": verdict,
     }
 
@@ -293,6 +326,8 @@ def compare_command(
     typer.echo(f"margin: {payload['margin']:.4f}")
     typer.echo(f"claimed_model_similarity: {payload['claimed_model_similarity']:.4f}")
     typer.echo(f"consistency: {payload['consistency']:.4f}")
+    typer.echo(f"content_similarity: {_format_ratio(comparison.content_similarity)}")
+    typer.echo(f"capability_similarity: {_format_ratio(comparison.capability_similarity)}")
     typer.echo(f"answer_similarity: {_format_ratio(comparison.answer_similarity)}")
     typer.echo(f"reasoning_similarity: {_format_ratio(comparison.reasoning_similarity)}")
     typer.echo(f"transport_similarity: {_format_ratio(comparison.transport_similarity)}")
@@ -301,6 +336,10 @@ def compare_command(
     typer.echo(
         f"reasoning_coverage_ratio: {_format_ratio(comparison.reasoning_coverage_ratio)}"
     )
+    typer.echo(
+        f"capability_coverage_ratio: {_format_ratio(comparison.capability_coverage_ratio)}"
+    )
+    typer.echo(f"hard_mismatches: {', '.join(comparison.hard_mismatches) or 'none'}")
     typer.echo(f"protocol_status: {comparison.protocol_status}")
     typer.echo(f"verdict: {payload['verdict']}")
 
@@ -325,6 +364,18 @@ def _run_protocol_status(artifact: RunArtifact) -> str:
     if artifact.protocol_compatibility.satisfied:
         return "compatible"
     return "incompatible_protocol"
+
+
+def _run_capability_coverage(artifact: RunArtifact) -> float | None:
+    if artifact.capability_probe is None:
+        return None
+    return artifact.capability_probe.coverage_ratio
+
+
+def _profile_capability_coverage(artifact: ProfileArtifact) -> float | None:
+    if artifact.capability_profile is None:
+        return None
+    return artifact.capability_profile.coverage_ratio
 
 
 def _build_dialect(endpoint: EndpointProfile) -> OpenAIChatDialectAdapter:

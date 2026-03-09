@@ -49,14 +49,18 @@ def build_result(**overrides: object) -> ComparisonResult:
         "claimed_model": "gpt-5.3",
         "claimed_model_similarity": 0.9,
         "consistency": 0.9,
+        "content_similarity": 0.9,
+        "capability_similarity": 1.0,
         "answer_similarity": 0.9,
         "reasoning_similarity": 0.9,
         "transport_similarity": 0.9,
         "surface_similarity": 0.9,
         "answer_coverage_ratio": 1.0,
         "reasoning_coverage_ratio": 1.0,
+        "capability_coverage_ratio": 1.0,
         "protocol_status": "compatible",
         "protocol_issues": (),
+        "hard_mismatches": (),
     }
     payload.update(overrides)
     return ComparisonResult(**payload)

@@ -17,26 +17,34 @@ def build_prompt() -> PromptDefinition:
     return PromptDefinition.model_validate(
         {
             "id": "p003",
-            "name": "fixed_json_triage",
-            "family": "strict_format",
-            "intent": "detect strict JSON obedience",
+            "name": "event_log_state_resolution",
+            "family": "state_tracking",
+            "intent": "measure state tracking and rule execution",
             "messages": [{"role": "user", "content": "Return JSON only."}],
             "generation": {
                 "temperature": 0.0,
                 "top_p": 1.0,
                 "max_output_tokens": 96,
-                "response_format": "json_object",
+                "response_format": "text",
                 "reasoning_mode": "capture_if_available",
             },
             "output_contract": {"id": "strict_json_v2", "canonicalizer": "strict_json_v2"},
             "extractors": {
-                "answer": "strict_format_v1",
+                "answer": "state_tracking_v1",
+                "score": "state_tracking_score_v1",
                 "reasoning": "reasoning_trace_v1",
                 "transport": "completion_metadata_v1",
             },
-            "required_capabilities": ["chat_completions", "json_object_response"],
+            "evaluation": {
+                "reference": {
+                    "expected_final_state": {
+                        "ticket_a": {"status": "closed", "owner": "ops"},
+                    }
+                }
+            },
+            "required_capabilities": ["chat_completions"],
             "weight_hint": 0.9,
-            "tags": ["format", "json"],
+            "tags": ["state", "rules", "v2"],
             "risk_level": "low",
         }
     )
@@ -45,18 +53,26 @@ def build_prompt() -> PromptDefinition:
 def build_registry() -> ExtractorRegistry:
     return ExtractorRegistry(
         descriptors={
-            "strict_format_v1": ExtractorDescriptor.model_validate(
+            "state_tracking_v1": ExtractorDescriptor.model_validate(
                 {
-                    "name": "strict_format_v1",
-                    "family": "strict_format",
+                    "name": "state_tracking_v1",
+                    "family": "state_tracking",
                     "version": 1,
-                    "features": ["semantic_answer", "semantic_confidence"],
+                    "features": ["resolved_object_count", "default_used"],
+                }
+            ),
+            "state_tracking_score_v1": ExtractorDescriptor.model_validate(
+                {
+                    "name": "state_tracking_score_v1",
+                    "family": "state_tracking",
+                    "version": 1,
+                    "features": ["state_accuracy", "owner_accuracy"],
                 }
             ),
             "reasoning_trace_v1": ExtractorDescriptor.model_validate(
                 {
                     "name": "reasoning_trace_v1",
-                    "family": "strict_format",
+                    "family": "state_tracking",
                     "version": 1,
                     "features": ["step_count"],
                 }
@@ -64,7 +80,7 @@ def build_registry() -> ExtractorRegistry:
             "completion_metadata_v1": ExtractorDescriptor.model_validate(
                 {
                     "name": "completion_metadata_v1",
-                    "family": "strict_format",
+                    "family": "state_tracking",
                     "version": 1,
                     "features": ["reasoning_tokens"],
                 }
@@ -72,16 +88,16 @@ def build_registry() -> ExtractorRegistry:
             "surface_contract_v1": ExtractorDescriptor.model_validate(
                 {
                     "name": "surface_contract_v1",
-                    "family": "strict_format",
+                    "family": "state_tracking",
                     "version": 1,
                     "features": ["had_markdown_fence"],
                 }
             ),
         },
         handlers={
-            "strict_format_v1": lambda canonical_output: {
-                "semantic_answer": canonical_output.payload["answer"],
-                "semantic_confidence": canonical_output.payload["confidence"],
+            "state_tracking_v1": lambda canonical_output: {
+                "resolved_object_count": len(canonical_output.payload["task_result"]),
+                "default_used": "defaults_used" in canonical_output.payload,
             },
             "reasoning_trace_v1": lambda reasoning_text: {
                 "step_count": reasoning_text.count("\n") + 1
@@ -92,6 +108,18 @@ def build_registry() -> ExtractorRegistry:
             "surface_contract_v1": lambda surface_input: {
                 "had_markdown_fence": surface_input.raw_output.strip().startswith("```")
             },
+        },
+        score_handlers={
+            "state_tracking_score_v1": lambda prompt, canonical_output: {
+                "state_accuracy": 1.0
+                if canonical_output.payload["task_result"]["ticket_a"]["status"]
+                == prompt.evaluation.reference["expected_final_state"]["ticket_a"]["status"]
+                else 0.0,
+                "owner_accuracy": 1.0
+                if canonical_output.payload["task_result"]["ticket_a"]["owner"]
+                == prompt.evaluation.reference["expected_final_state"]["ticket_a"]["owner"]
+                else 0.0,
+            }
         },
     )
 
@@ -105,7 +133,14 @@ def test_feature_pipeline_extracts_multi_channel_features_and_preserves_events()
                 "strict_json_v2": lambda raw_output: (
                     CanonicalizedOutput(
                         format_id="strict_json_v2",
-                        payload={"answer": "yes", "confidence": "high"},
+                        payload={
+                            "task_result": {
+                                "ticket_a": {
+                                    "status": "closed",
+                                    "owner": "ops",
+                                }
+                            }
+                        },
                     ),
                     [CanonicalizationEvent(code="removed_fence", message="removed markdown fence")],
                 )
@@ -147,10 +182,11 @@ def test_feature_pipeline_extracts_multi_channel_features_and_preserves_events()
 
     prompt_result = artifact.prompts[0]
     assert prompt_result.canonical_output is not None
-    assert prompt_result.canonical_output.payload["answer"] == "yes"
+    assert prompt_result.canonical_output.payload["task_result"]["ticket_a"]["status"] == "closed"
     assert [event.code for event in prompt_result.canonicalization_events] == ["removed_fence"]
-    assert prompt_result.features["answer.semantic_answer"] == "yes"
-    assert prompt_result.features["answer.semantic_confidence"] == "high"
+    assert prompt_result.features["score.state_accuracy"] == 1.0
+    assert prompt_result.features["score.owner_accuracy"] == 1.0
+    assert prompt_result.features["answer.resolved_object_count"] == 1
     assert prompt_result.features["reasoning.step_count"] == 2
     assert prompt_result.features["surface.had_markdown_fence"] is True
     assert prompt_result.features["transport.reasoning_tokens"] == 24

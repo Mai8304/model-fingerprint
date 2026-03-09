@@ -48,6 +48,60 @@ def test_prompt_definition_parses_valid_payload() -> None:
     assert prompt.extractors.answer == "style_brief_v1"
 
 
+def test_v2_prompt_definition_supports_evaluation_and_score_extractor() -> None:
+    payload = {
+        "id": "p011",
+        "name": "evidence_bound_identity_resolution",
+        "family": "evidence_grounding",
+        "intent": "measure grounded extraction with explicit abstention",
+        "messages": [
+            {
+                "role": "system",
+                "content": "Return JSON only and keep unknown values as null.",
+            },
+            {
+                "role": "user",
+                "content": "Resolve the current owner, role, and region from the supplied memo.",
+            },
+        ],
+        "generation": {
+            "temperature": 0.0,
+            "top_p": 1.0,
+            "max_output_tokens": 240,
+            "response_format": "text",
+            "reasoning_mode": "capture_if_available",
+        },
+        "output_contract": {"id": "strict_json_v2", "canonicalizer": "strict_json_v2"},
+        "extractors": {
+            "answer": "evidence_grounding_v1",
+            "score": "evidence_grounding_score_v1",
+            "reasoning": "reasoning_trace_v1",
+            "transport": "completion_metadata_v1",
+        },
+        "evaluation": {
+            "reference": {
+                "expected_values": {
+                    "owner": "Alice Wong",
+                    "role": "Primary DBA",
+                    "region": None,
+                }
+            }
+        },
+        "required_capabilities": ["chat_completions"],
+        "weight_hint": 0.95,
+        "tags": ["evidence", "abstain", "v2"],
+        "risk_level": "low",
+    }
+
+    prompt = PromptDefinition.model_validate(payload)
+
+    assert prompt.id == "p011"
+    assert prompt.family == "evidence_grounding"
+    assert prompt.extractors.score == "evidence_grounding_score_v1"
+    assert prompt.evaluation is not None
+    assert prompt.evaluation.reference["expected_values"]["owner"] == "Alice Wong"
+
+
 def test_artifact_models_parse_valid_payloads() -> None:
     run = RunArtifact.model_validate(
         {
@@ -185,6 +239,136 @@ def test_artifact_models_parse_valid_payloads() -> None:
     assert run.prompts[0].completion.usage.reasoning_tokens == 24
     assert profile.prompts[0].features["answer.char_len"].kind == "numeric"
     assert calibration.thresholds.match == 0.82
+
+
+def test_run_artifact_accepts_score_channel_features() -> None:
+    run = RunArtifact.model_validate(
+        {
+            "run_id": "run-20260309-011",
+            "suite_id": "fingerprint-suite-v2",
+            "target_label": "suspect-v2",
+            "prompt_count_total": 1,
+            "prompt_count_completed": 1,
+            "prompt_count_scoreable": 1,
+            "answer_coverage_ratio": 1.0,
+            "reasoning_coverage_ratio": 0.0,
+            "prompts": [
+                {
+                    "prompt_id": "p011",
+                    "status": "completed",
+                    "raw_output": "{\"task_result\": {}}",
+                    "usage": {
+                        "input_tokens": 20,
+                        "output_tokens": 30,
+                        "reasoning_tokens": 0,
+                        "total_tokens": 50,
+                    },
+                    "features": {
+                        "score.value_accuracy": 1.0,
+                        "score.abstention_compliance": 1.0,
+                        "answer.filled_field_count": 2,
+                        "transport.reasoning_visible": False,
+                    },
+                }
+            ],
+        }
+    )
+
+    assert run.suite_id == "fingerprint-suite-v2"
+    assert run.prompts[0].features["score.value_accuracy"] == 1.0
+
+
+def test_artifact_models_parse_capability_probe_sections() -> None:
+    run = RunArtifact.model_validate(
+        {
+            "run_id": "run-20260310-capability",
+            "suite_id": "fingerprint-suite-v2",
+            "target_label": "suspect-capability",
+            "prompt_count_total": 1,
+            "prompt_count_completed": 1,
+            "prompt_count_scoreable": 1,
+            "answer_coverage_ratio": 1.0,
+            "reasoning_coverage_ratio": 0.0,
+            "capability_probe": {
+                "probe_mode": "minimal",
+                "probe_version": "v1",
+                "coverage_ratio": 0.75,
+                "capabilities": {
+                    "thinking": {
+                        "status": "supported",
+                        "detail": "reasoning field is populated",
+                        "http_status": 200,
+                        "latency_ms": 1500,
+                        "evidence": {"field": "reasoning"},
+                    },
+                    "tools": {
+                        "status": "insufficient_evidence",
+                        "detail": "provider returned 429",
+                        "http_status": 429,
+                        "latency_ms": 1200,
+                        "evidence": {"retry_after_seconds": 60},
+                    },
+                },
+            },
+            "prompts": [
+                {
+                    "prompt_id": "p011",
+                    "status": "completed",
+                    "raw_output": "{\"task_result\": {}}",
+                    "usage": {
+                        "input_tokens": 20,
+                        "output_tokens": 30,
+                        "reasoning_tokens": 0,
+                        "total_tokens": 50,
+                    },
+                    "features": {
+                        "score.value_accuracy": 1.0,
+                        "answer.filled_field_count": 2,
+                    },
+                }
+            ],
+        }
+    )
+
+    profile = ProfileArtifact.model_validate(
+        {
+            "model_id": "glm-5",
+            "suite_id": "fingerprint-suite-v2",
+            "sample_count": 3,
+            "answer_coverage_ratio": 1.0,
+            "reasoning_coverage_ratio": 0.3,
+                "capability_profile": {
+                    "coverage_ratio": 0.9,
+                    "capabilities": {
+                        "thinking": {
+                            "distribution": {
+                                "supported": 1.0,
+                            },
+                        },
+                        "tools": {
+                            "distribution": {
+                                "supported": 0.67,
+                                "insufficient_evidence": 0.33,
+                            },
+                        },
+                    },
+                },
+            "prompts": [
+                {
+                    "prompt_id": "p011",
+                    "weight": 1.0,
+                    "features": {
+                        "score.value_accuracy": {"kind": "numeric", "median": 1.0, "mad": 0.1},
+                    },
+                }
+            ],
+        }
+    )
+
+    assert run.capability_probe is not None
+    assert run.capability_probe.capabilities["thinking"].status == "supported"
+    assert profile.capability_profile is not None
+    assert profile.capability_profile.capabilities["thinking"].distribution["supported"] == 1.0
 
 
 def test_invalid_prompt_family_is_rejected() -> None:

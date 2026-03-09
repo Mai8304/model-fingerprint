@@ -10,6 +10,11 @@ PromptFamily = Literal[
     "minimal_diff",
     "structured_extraction",
     "retrieval",
+    "evidence_grounding",
+    "context_retrieval",
+    "abstention",
+    "state_tracking",
+    "representation_alignment",
 ]
 
 RiskLevel = Literal["low", "medium", "high"]
@@ -20,6 +25,16 @@ CapabilityId = Literal[
     "chat_completions",
     "json_object_response",
     "visible_reasoning",
+    "json_schema_response",
+    "function_calling",
+    "tool_calling",
+]
+ProbeCapabilityId = Literal["thinking", "tools", "streaming", "image"]
+ProbeCapabilityStatus = Literal[
+    "supported",
+    "accepted_but_ignored",
+    "unsupported",
+    "insufficient_evidence",
 ]
 OutputContractId = Annotated[str, StringConstraints(pattern=r"^[a-z0-9_]+_v[1-9]\d*$")]
 CanonicalizerId = Annotated[str, StringConstraints(pattern=r"^[a-z0-9_]+_v[1-9]\d*$")]

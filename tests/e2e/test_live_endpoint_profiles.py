@@ -107,6 +107,50 @@ def test_run_suite_command_uses_endpoint_profiles_and_preserves_failures(
         "modelfingerprint.transports.http_client.StandardHttpClient.send",
         fake_send,
     )
+    monkeypatch.setattr(
+        "modelfingerprint.cli.probe_capabilities",
+        lambda **_: {
+            "base_url": "https://api.siliconflow.cn/v1",
+            "model": "Pro/zai-org/GLM-5",
+            "probe_mode": "minimal",
+            "probe_version": "v1",
+            "coverage_ratio": 0.75,
+            "results": {
+                "thinking": {
+                    "capability": "thinking",
+                    "status": "supported",
+                    "detail": "reasoning field is populated",
+                    "evidence": {"field": "reasoning"},
+                    "http_status": 200,
+                    "latency_ms": 1000,
+                },
+                "tools": {
+                    "capability": "tools",
+                    "status": "insufficient_evidence",
+                    "detail": "429",
+                    "evidence": {"http_status": 429},
+                    "http_status": 429,
+                    "latency_ms": 800,
+                },
+                "streaming": {
+                    "capability": "streaming",
+                    "status": "supported",
+                    "detail": "sse",
+                    "evidence": {"content_type": "text/event-stream"},
+                    "http_status": 200,
+                    "latency_ms": 700,
+                },
+                "image": {
+                    "capability": "image",
+                    "status": "unsupported",
+                    "detail": "404",
+                    "evidence": {"http_status": 404},
+                    "http_status": 404,
+                    "latency_ms": 600,
+                },
+            },
+        },
+    )
 
     result = runner.invoke(
         app,
@@ -132,6 +176,9 @@ def test_run_suite_command_uses_endpoint_profiles_and_preserves_failures(
     artifact = RunArtifact.model_validate(json.loads(output_path.read_text(encoding="utf-8")))
 
     assert artifact.endpoint_profile_id == "siliconflow-openai-chat"
+    assert artifact.capability_probe is not None
+    assert artifact.capability_probe.probe_mode == "minimal"
+    assert artifact.capability_probe.capabilities["thinking"].status == "supported"
     assert artifact.trace_dir is not None
     assert artifact.protocol_compatibility is not None
     assert artifact.protocol_compatibility.satisfied is False

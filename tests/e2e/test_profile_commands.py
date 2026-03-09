@@ -200,6 +200,9 @@ def test_build_profile_calibrate_and_compare_commands_emit_v2_fields(tmp_path: P
     )
     assert compare.exit_code == 0
     assert '"top1_model": "gpt-5.3"' in compare.stdout
+    assert '"content_similarity"' in compare.stdout
+    assert '"capability_similarity"' in compare.stdout
+    assert '"capability_coverage_ratio"' in compare.stdout
     assert '"answer_similarity"' in compare.stdout
     assert '"reasoning_similarity"' in compare.stdout
     assert '"answer_coverage_ratio": 1.0' in compare.stdout

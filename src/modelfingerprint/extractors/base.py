@@ -11,6 +11,7 @@ from modelfingerprint.contracts.run import CanonicalizedOutput
 
 FeatureMap = dict[str, FeaturePrimitive]
 ExtractorHandler = Callable[[object], FeatureMap]
+ScoreExtractorHandler = Callable[[object, CanonicalizedOutput], FeatureMap]
 
 
 @dataclass(frozen=True)

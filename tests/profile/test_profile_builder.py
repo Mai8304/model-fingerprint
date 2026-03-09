@@ -12,6 +12,7 @@ def build_run(
     char_len: int,
     reasoning_visible: bool,
     step_count: int | None,
+    capability_probe: dict[str, object] | None = None,
 ) -> RunArtifact:
     features: dict[str, object] = {
         "answer.char_len": char_len,
@@ -30,6 +31,7 @@ def build_run(
             "claimed_model": "gpt-5.3",
             "answer_coverage_ratio": 1.0,
             "reasoning_coverage_ratio": 1.0 if reasoning_visible else 0.0,
+            "capability_probe": capability_probe,
             "protocol_compatibility": {
                 "satisfied": True,
                 "required_capabilities": ["chat_completions"],
@@ -102,3 +104,74 @@ def test_profile_builder_rejects_mixed_suite_runs() -> None:
             ],
             prompt_weights={"p001": 0.8},
         )
+
+
+def test_profile_builder_aggregates_capability_probe_distributions() -> None:
+    profile = build_profile(
+        model_id="glm-5",
+        runs=[
+            build_run(
+                run_id="run-1",
+                char_len=40,
+                reasoning_visible=True,
+                step_count=2,
+                capability_probe={
+                    "probe_mode": "minimal",
+                    "probe_version": "v1",
+                    "coverage_ratio": 1.0,
+                    "capabilities": {
+                        "thinking": {
+                            "status": "supported",
+                            "detail": "reasoning visible",
+                            "evidence": {"field": "reasoning"},
+                        },
+                        "tools": {
+                            "status": "supported",
+                            "detail": "tool_calls",
+                            "evidence": {"finish_reason": "tool_calls"},
+                        },
+                    },
+                },
+            ),
+            build_run(
+                run_id="run-2",
+                char_len=42,
+                reasoning_visible=True,
+                step_count=3,
+                capability_probe={
+                    "probe_mode": "minimal",
+                    "probe_version": "v1",
+                    "coverage_ratio": 0.5,
+                    "capabilities": {
+                        "thinking": {
+                            "status": "supported",
+                            "detail": "reasoning visible",
+                            "evidence": {"field": "reasoning"},
+                        },
+                        "tools": {
+                            "status": "insufficient_evidence",
+                            "detail": "429",
+                            "http_status": 429,
+                            "evidence": {"http_status": 429},
+                        },
+                    },
+                },
+            ),
+        ],
+        prompt_weights={"p001": 0.8},
+    )
+
+    assert profile.capability_profile is not None
+    assert profile.capability_profile.coverage_ratio == pytest.approx(0.75)
+    assert (
+        profile.capability_profile.capabilities["thinking"].distribution["supported"]
+        == pytest.approx(1.0)
+    )
+    assert (
+        profile.capability_profile.capabilities["tools"].distribution["supported"]
+        == pytest.approx(0.5)
+    )
+    assert (
+        profile.capability_profile.capabilities["tools"].distribution["insufficient_evidence"]
+        == pytest.approx(0.5)
+    )

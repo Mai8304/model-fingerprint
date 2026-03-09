@@ -1,0 +1,9 @@
+name: context_retrieval_score_v1
+family: context_retrieval
+version: 1
+features:
+  - entity_recall
+  - entity_precision
+  - order_accuracy
+  - paragraph_accuracy
+  - confusion_free

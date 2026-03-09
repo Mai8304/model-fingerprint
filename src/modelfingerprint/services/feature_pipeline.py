@@ -105,6 +105,16 @@ class FeaturePipeline:
                     and execution.raw_output is not None
                     and canonical_output is not None
                 ):
+                    if (
+                        execution.prompt.extractors.score is not None
+                        and self._registry.has(execution.prompt.extractors.score)
+                    ):
+                        features.update(
+                            _namespace(
+                                "score",
+                                self._registry.extract_score(execution.prompt, canonical_output),
+                            )
+                        )
                     features.update(
                         _namespace(
                             "answer",

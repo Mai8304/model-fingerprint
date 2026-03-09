@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from modelfingerprint.contracts.calibration import CalibrationArtifact
+from modelfingerprint.contracts.profile import ProfileArtifact
 from modelfingerprint.contracts.run import RunArtifact
 from modelfingerprint.services.comparator import compare_run
 from modelfingerprint.services.profile_builder import build_profile
@@ -18,6 +19,7 @@ def build_run(
     p002_char_len: int,
     answer_coverage_ratio: float = 1.0,
     reasoning_coverage_ratio: float = 1.0,
+    capability_probe: dict[str, object] | None = None,
 ) -> RunArtifact:
     prompt1_features: dict[str, object] = {
         "answer.char_len": p001_char_len,
@@ -81,6 +83,7 @@ def build_run(
             "claimed_model": claimed_model,
             "answer_coverage_ratio": answer_coverage_ratio,
             "reasoning_coverage_ratio": reasoning_coverage_ratio,
+            "capability_probe": capability_probe,
             "protocol_compatibility": {
                 "satisfied": True,
                 "required_capabilities": ["chat_completions", "visible_reasoning"],
@@ -196,6 +199,9 @@ def test_comparator_uses_prompt_weights_and_emits_coverage_fields() -> None:
     assert result.reasoning_similarity is not None
     assert result.answer_coverage_ratio == 1.0
     assert result.reasoning_coverage_ratio == 1.0
+    assert result.capability_similarity is None
+    assert result.capability_coverage_ratio == 0.0
+    assert result.hard_mismatches == ()
     assert result.protocol_status == "compatible"
 
 
@@ -239,3 +245,148 @@ def test_low_answer_coverage_becomes_insufficient_evidence() -> None:
     verdict = decide_verdict(compare_run(target, [profile, profile]), build_calibration())
 
     assert verdict == "insufficient_evidence"
+
+
+def test_comparator_uses_score_channel_when_available() -> None:
+    profile_a = ProfileArtifact.model_validate(
+        {
+            "model_id": "model-a",
+            "suite_id": "fingerprint-suite-v2",
+            "sample_count": 2,
+            "answer_coverage_ratio": 1.0,
+            "reasoning_coverage_ratio": 0.0,
+            "prompts": [
+                {
+                    "prompt_id": "p011",
+                    "weight": 1.0,
+                    "features": {
+                        "score.value_accuracy": {"kind": "numeric", "median": 1.0, "mad": 0.01},
+                        "answer.filled_field_count": {"kind": "numeric", "median": 3.0, "mad": 0.1},
+                    },
+                }
+            ],
+        }
+    )
+    profile_b = ProfileArtifact.model_validate(
+        {
+            "model_id": "model-b",
+            "suite_id": "fingerprint-suite-v2",
+            "sample_count": 2,
+            "answer_coverage_ratio": 1.0,
+            "reasoning_coverage_ratio": 0.0,
+            "prompts": [
+                {
+                    "prompt_id": "p011",
+                    "weight": 1.0,
+                    "features": {
+                        "score.value_accuracy": {"kind": "numeric", "median": 0.0, "mad": 0.01},
+                        "answer.filled_field_count": {"kind": "numeric", "median": 3.0, "mad": 0.1},
+                    },
+                }
+            ],
+        }
+    )
+    target = RunArtifact.model_validate(
+        {
+            "run_id": "suspect-score",
+            "suite_id": "fingerprint-suite-v2",
+            "target_label": "suspect-score",
+            "claimed_model": "model-a",
+            "answer_coverage_ratio": 1.0,
+            "reasoning_coverage_ratio": 0.0,
+            "prompts": [
+                {
+                    "prompt_id": "p011",
+                    "status": "completed",
+                    "raw_output": "{\"task_result\": {}}",
+                    "usage": {
+                        "input_tokens": 10,
+                        "output_tokens": 10,
+                        "reasoning_tokens": 0,
+                        "total_tokens": 20,
+                    },
+                    "features": {
+                        "score.value_accuracy": 1.0,
+                        "answer.filled_field_count": 3,
+                    },
+                }
+            ],
+        }
+    )
+
+    result = compare_run(target, [profile_a, profile_b])
+
+    assert result.top1_model == "model-a"
+    assert result.top1_similarity > result.top2_similarity
+
+
+def test_comparator_scores_capability_similarity_when_probe_and_profile_exist() -> None:
+    profile = ProfileArtifact.model_validate(
+        {
+            "model_id": "glm-5",
+            "suite_id": "fingerprint-suite-v2",
+            "sample_count": 2,
+            "answer_coverage_ratio": 1.0,
+            "reasoning_coverage_ratio": 0.0,
+            "capability_profile": {
+                "coverage_ratio": 1.0,
+                "capabilities": {
+                    "thinking": {"distribution": {"supported": 1.0}},
+                    "tools": {"distribution": {"supported": 1.0}},
+                    "streaming": {"distribution": {"supported": 1.0}},
+                    "image": {"distribution": {"unsupported": 1.0}},
+                },
+            },
+            "prompts": [
+                {
+                    "prompt_id": "p011",
+                    "weight": 1.0,
+                    "features": {
+                        "score.value_accuracy": {"kind": "numeric", "median": 1.0, "mad": 0.01},
+                    },
+                }
+            ],
+        }
+    )
+    target = RunArtifact.model_validate(
+        {
+            "run_id": "suspect-capability",
+            "suite_id": "fingerprint-suite-v2",
+            "target_label": "suspect-capability",
+            "claimed_model": "glm-5",
+            "answer_coverage_ratio": 1.0,
+            "reasoning_coverage_ratio": 0.0,
+            "capability_probe": {
+                "probe_mode": "minimal",
+                "probe_version": "v1",
+                "coverage_ratio": 1.0,
+                "capabilities": {
+                    "thinking": {"status": "supported", "evidence": {}},
+                    "tools": {"status": "supported", "evidence": {}},
+                    "streaming": {"status": "supported", "evidence": {}},
+                    "image": {"status": "unsupported", "evidence": {}},
+                },
+            },
+            "prompts": [
+                {
+                    "prompt_id": "p011",
+                    "status": "completed",
+                    "raw_output": "{\"task_result\": {}}",
+                    "usage": {
+                        "input_tokens": 10,
+                        "output_tokens": 10,
+                        "reasoning_tokens": 0,
+                        "total_tokens": 20,
+                    },
+                    "features": {
+                        "score.value_accuracy": 1.0,
+                    },
+                }
+            ],
+        }
+    )
+
+    result = compare_run(target, [profile])
+
+    assert result.capability_similarity == 1.0
+    assert result.capability_coverage_ratio == 1.0

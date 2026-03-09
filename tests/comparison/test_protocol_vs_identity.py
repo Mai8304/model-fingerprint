@@ -15,6 +15,7 @@ def build_run(
     answer_char_len: int,
     surface_fence: bool,
     reasoning_visible: bool,
+    capability_probe: dict[str, object] | None = None,
 ) -> RunArtifact:
     features: dict[str, object] = {
         "answer.char_len": answer_char_len,
@@ -32,6 +33,7 @@ def build_run(
             "claimed_model": model_id,
             "answer_coverage_ratio": 1.0,
             "reasoning_coverage_ratio": 1.0 if reasoning_visible else 0.0,
+            "capability_probe": capability_probe,
             "protocol_compatibility": {
                 "satisfied": True,
                 "required_capabilities": ["chat_completions", "visible_reasoning"],
@@ -168,3 +170,120 @@ def test_hidden_reasoning_flags_protocol_issue_without_forcing_identity_mismatch
     assert result.top1_model == "gpt-5.3"
     assert result.protocol_status == "incompatible_protocol"
     assert verdict == "incompatible_protocol"
+
+
+def test_capability_hard_mismatch_can_block_match_even_when_content_is_close() -> None:
+    profile = build_profile(
+        "glm-5",
+        [
+            build_run(
+                run_id="glm-1",
+                target_label="glm-5",
+                model_id="glm-5",
+                answer_char_len=40,
+                surface_fence=False,
+                reasoning_visible=True,
+                capability_probe={
+                    "probe_mode": "minimal",
+                    "probe_version": "v1",
+                    "coverage_ratio": 1.0,
+                    "capabilities": {
+                        "thinking": {"status": "supported", "evidence": {}},
+                        "tools": {"status": "supported", "evidence": {}},
+                    },
+                },
+            ),
+            build_run(
+                run_id="glm-2",
+                target_label="glm-5",
+                model_id="glm-5",
+                answer_char_len=42,
+                surface_fence=False,
+                reasoning_visible=True,
+                capability_probe={
+                    "probe_mode": "minimal",
+                    "probe_version": "v1",
+                    "coverage_ratio": 1.0,
+                    "capabilities": {
+                        "thinking": {"status": "supported", "evidence": {}},
+                        "tools": {"status": "supported", "evidence": {}},
+                    },
+                },
+            ),
+        ],
+        prompt_weights={"p001": 1.0},
+    )
+    target = build_run(
+        run_id="suspect-capability-mismatch",
+        target_label="suspect-a",
+        model_id="glm-5",
+        answer_char_len=41,
+        surface_fence=False,
+        reasoning_visible=True,
+        capability_probe={
+            "probe_mode": "minimal",
+            "probe_version": "v1",
+            "coverage_ratio": 1.0,
+            "capabilities": {
+                "thinking": {"status": "unsupported", "evidence": {}},
+                "tools": {"status": "supported", "evidence": {}},
+            },
+        },
+    )
+
+    result = compare_run(target, [profile, profile.model_copy(update={"model_id": "other"})])
+    verdict = decide_verdict(result, build_calibration())
+
+    assert result.top1_model == "glm-5"
+    assert "thinking" in result.hard_mismatches
+    assert verdict == "suspicious"
+
+
+def test_low_capability_coverage_becomes_insufficient_evidence() -> None:
+    profile = build_profile(
+        "glm-5",
+        [
+            build_run(
+                run_id="glm-1",
+                target_label="glm-5",
+                model_id="glm-5",
+                answer_char_len=40,
+                surface_fence=False,
+                reasoning_visible=True,
+                capability_probe={
+                    "probe_mode": "minimal",
+                    "probe_version": "v1",
+                    "coverage_ratio": 1.0,
+                    "capabilities": {
+                        "thinking": {"status": "supported", "evidence": {}},
+                        "tools": {"status": "supported", "evidence": {}},
+                    },
+                },
+            ),
+        ],
+        prompt_weights={"p001": 1.0},
+    )
+    target = build_run(
+        run_id="suspect-low-capability-coverage",
+        target_label="suspect-a",
+        model_id="glm-5",
+        answer_char_len=40,
+        surface_fence=False,
+        reasoning_visible=True,
+        capability_probe={
+            "probe_mode": "minimal",
+            "probe_version": "v1",
+            "coverage_ratio": 0.25,
+            "capabilities": {
+                "thinking": {"status": "insufficient_evidence", "evidence": {}},
+                "tools": {"status": "supported", "evidence": {}},
+            },
+        },
+    )
+
+    verdict = decide_verdict(
+        compare_run(target, [profile, profile.model_copy(update={"model_id": "other"})]),
+        build_calibration(),
+    )
+
+    assert verdict == "insufficient_evidence"

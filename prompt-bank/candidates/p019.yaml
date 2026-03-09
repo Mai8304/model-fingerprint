@@ -1,0 +1,51 @@
+id: p019
+name: bilingual_alias_alignment
+family: representation_alignment
+intent: 用中英混合别名和保留歧义项测试实体归一能力
+messages:
+  - role: system
+    content: |
+      只返回 JSON 对象，不要输出 markdown，不要附加解释。
+  - role: user
+    content: |
+      根据下面说明做实体归一。能确定映射的别名写入 alias_map，无法唯一确定的缩写写入 ambiguous_mentions。
+
+      - Alice W. 和 Alice Wong 指向同一个人 alice_wong
+      - DB-east 和 华东数据库集群 指向同一个资源 db_cluster_east
+      - OW 可能表示 OpenWhale，也可能表示 Ops Watch，不能强行归一
+
+      返回 JSON，对象字段必须且只能包含：
+      - canonical_entities
+      - alias_map
+      - ambiguous_mentions
+      - violations
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 260
+  response_format: text
+  reasoning_mode: capture_if_available
+output_contract:
+  id: strict_json_v2
+  canonicalizer: strict_json_v2
+extractors:
+  answer: representation_alignment_v1
+  score: representation_alignment_score_v1
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+evaluation:
+  reference:
+    expected_canonical_entities:
+      - alice_wong
+      - db_cluster_east
+    expected_alias_map:
+      Alice W.: alice_wong
+      Alice Wong: alice_wong
+      DB-east: db_cluster_east
+      华东数据库集群: db_cluster_east
+    expected_ambiguous_mentions:
+      - OW
+required_capabilities: [chat_completions]
+weight_hint: 0.93
+tags: [v2, alignment, bilingual]
+risk_level: low

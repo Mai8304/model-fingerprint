@@ -23,6 +23,33 @@ class EndpointCapabilities(ContractModel):
 class RequestMapping(ContractModel):
     output_token_cap_field: str = Field(min_length=1)
     json_response_shape: dict[str, object] | None = None
+    static_body: dict[str, object] = Field(default_factory=dict)
+
+
+class ThinkingAttempt(ContractModel):
+    output_token_cap: int | None = Field(default=None, ge=1)
+    output_token_cap_multiplier: float | None = Field(default=None, gt=1.0)
+    request_body_overrides: dict[str, object] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def validate_attempt_shape(self) -> ThinkingAttempt:
+        if (
+            self.output_token_cap is None
+            and self.output_token_cap_multiplier is None
+            and not self.request_body_overrides
+        ):
+            raise ValueError("thinking attempt must change output budget or request body")
+        if self.output_token_cap is not None and self.output_token_cap_multiplier is not None:
+            raise ValueError(
+                "thinking attempt cannot set both output_token_cap and output_token_cap_multiplier"
+            )
+        return self
+
+
+class ThinkingPolicy(ContractModel):
+    retry_on_finish_reasons: list[str] = Field(default_factory=lambda: ["length"])
+    retry_on_empty_answer: bool = True
+    attempts: list[ThinkingAttempt] = Field(min_length=1, max_length=4)
 
 
 class UsagePaths(ContractModel):
@@ -58,6 +85,7 @@ class EndpointProfile(ContractModel):
     capabilities: EndpointCapabilities
     request_mapping: RequestMapping
     response_mapping: ResponseMapping
+    thinking_policy: ThinkingPolicy | None = None
     timeout_policy: TimeoutPolicy
     retry_policy: RetryPolicy
 
@@ -77,6 +105,18 @@ class EndpointProfile(ContractModel):
         ):
             raise ValueError(
                 "json_response_shape is not allowed when json object response is unsupported"
+            )
+        if (
+            self.thinking_policy is not None
+            and not self.capabilities.supports_output_token_cap
+            and any(
+                attempt.output_token_cap is not None
+                or attempt.output_token_cap_multiplier is not None
+                for attempt in self.thinking_policy.attempts
+            )
+        ):
+            raise ValueError(
+                "thinking policy cannot change output budget when output token caps are unsupported"
             )
 
         return self

@@ -14,6 +14,9 @@ class OpenAIChatDialectAdapter:
         prompt: PromptDefinition,
         endpoint: EndpointProfile,
         api_key: str,
+        *,
+        output_token_cap: int | None = None,
+        body_overrides: Mapping[str, object] | None = None,
     ) -> HttpRequestSpec:
         body: dict[str, object] = {
             "model": endpoint.model,
@@ -21,9 +24,17 @@ class OpenAIChatDialectAdapter:
             "temperature": prompt.generation.temperature,
             "top_p": prompt.generation.top_p,
         }
-        body[endpoint.request_mapping.output_token_cap_field] = prompt.generation.max_output_tokens
+        if endpoint.request_mapping.static_body:
+            _merge_mapping(body, endpoint.request_mapping.static_body)
+        body[endpoint.request_mapping.output_token_cap_field] = (
+            prompt.generation.max_output_tokens
+            if output_token_cap is None
+            else output_token_cap
+        )
         if prompt.generation.response_format == "json_object":
             body["response_format"] = endpoint.request_mapping.json_response_shape
+        if body_overrides:
+            _merge_mapping(body, body_overrides)
 
         return HttpRequestSpec(
             url=f"{str(endpoint.base_url).rstrip('/')}/chat/completions",
@@ -84,3 +95,19 @@ def _as_optional_str(value: object | None) -> str | None:
     if value is None:
         return None
     return str(value)
+
+
+def _merge_mapping(target: dict[str, object], updates: Mapping[str, object]) -> None:
+    for key, value in updates.items():
+        current = target.get(key)
+        if isinstance(current, Mapping) and isinstance(value, Mapping):
+            merged = dict(current)
+            _merge_mapping(merged, value)
+            target[key] = merged
+            continue
+        if isinstance(value, Mapping):
+            nested: dict[str, object] = {}
+            _merge_mapping(nested, value)
+            target[key] = nested
+            continue
+        target[key] = value

@@ -110,6 +110,7 @@ def test_run_suite_command_executes_fixture_mode_and_writes_v2_run(tmp_path: Pat
     assert artifact.prompt_count_completed == 5
     assert artifact.answer_coverage_ratio == 1.0
     assert artifact.reasoning_coverage_ratio == 1.0
+    assert artifact.capability_probe is None
     assert artifact.protocol_compatibility is not None
     assert artifact.protocol_compatibility.satisfied is True
     assert all(prompt.completion is not None for prompt in artifact.prompts)

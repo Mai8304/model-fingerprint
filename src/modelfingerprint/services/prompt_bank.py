@@ -9,6 +9,8 @@ from modelfingerprint.contracts.prompt import PromptDefinition, SuiteDefinition
 RESEARCH_SET_SUITE_ID = "research-set-v1"
 FINGERPRINT_SUITE_ID = "fingerprint-suite-v1"
 QUICK_CHECK_SUITE_ID = "quick-check-v1"
+FINGERPRINT_SUITE_V2_ID = "fingerprint-suite-v2"
+QUICK_CHECK_SUITE_V2_ID = "quick-check-v2"
 
 KNOWN_EXTRACTOR_IDS = frozenset(
     {
@@ -17,6 +19,16 @@ KNOWN_EXTRACTOR_IDS = frozenset(
         "minimal_diff_v1",
         "structured_extraction_v1",
         "retrieval_v1",
+        "evidence_grounding_v1",
+        "context_retrieval_v1",
+        "abstention_v1",
+        "state_tracking_v1",
+        "representation_alignment_v1",
+        "evidence_grounding_score_v1",
+        "context_retrieval_score_v1",
+        "abstention_score_v1",
+        "state_tracking_score_v1",
+        "representation_alignment_score_v1",
         "reasoning_trace_v1",
         "completion_metadata_v1",
     }
@@ -38,6 +50,7 @@ def load_candidate_prompts(directory: Path) -> dict[str, PromptDefinition]:
 
         for extractor_id in (
             prompt.extractors.answer,
+            prompt.extractors.score,
             prompt.extractors.reasoning,
             prompt.extractors.transport,
         ):
@@ -87,6 +100,27 @@ def validate_suite_references(
             raise PromptBankValidationError(
                 f"suite {suite.id} references unknown prompt ids: {joined}"
             )
+
+
+def validate_release_suite_subsets(suites: dict[str, SuiteDefinition]) -> None:
+    fingerprint_suites = {
+        suite.id: suite
+        for suite in suites.values()
+        if suite.id.startswith("fingerprint-suite-v")
+    }
+    quick_check_suites = {
+        suite.id: suite
+        for suite in suites.values()
+        if suite.id.startswith("quick-check-v")
+    }
+
+    for fingerprint_id, fingerprint_suite in fingerprint_suites.items():
+        version = fingerprint_id.removeprefix("fingerprint-suite-v")
+        quick_id = f"quick-check-v{version}"
+        quick_suite = quick_check_suites.get(quick_id)
+        if quick_suite is None:
+            continue
+        validate_suite_subset(fingerprint_suite, quick_suite)
 
 
 def _read_yaml(path: Path) -> dict[str, object]:

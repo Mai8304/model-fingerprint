@@ -103,6 +103,35 @@ def test_openai_chat_adapter_builds_wire_request_without_mutating_semantic_value
     assert request.body["response_format"] == {"type": "json_object"}
 
 
+def test_openai_chat_adapter_applies_static_body_and_attempt_overrides() -> None:
+    adapter = OpenAIChatDialectAdapter()
+    endpoint = EndpointProfile.model_validate(
+        {
+            **build_endpoint().model_dump(mode="json"),
+            "request_mapping": {
+                "output_token_cap_field": "max_tokens",
+                "json_response_shape": {"type": "json_object"},
+                "static_body": {
+                    "provider": {"sort": "throughput"},
+                    "reasoning": {"effort": "minimal", "exclude": False},
+                },
+            },
+        }
+    )
+
+    request = adapter.build_request(
+        build_prompt(),
+        endpoint,
+        api_key="test-key",
+        output_token_cap=240,
+        body_overrides={"reasoning": {"effort": "none", "exclude": True}},
+    )
+
+    assert request.body["max_tokens"] == 240
+    assert request.body["provider"] == {"sort": "throughput"}
+    assert request.body["reasoning"] == {"effort": "none", "exclude": True}
+
+
 def test_openai_chat_adapter_parses_reasoning_and_usage_fields() -> None:
     adapter = OpenAIChatDialectAdapter()
 

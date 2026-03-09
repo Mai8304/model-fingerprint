@@ -142,6 +142,69 @@ class FakeHttpClient:
         )
 
 
+class ThinkingFallbackHttpClient:
+    def __init__(self) -> None:
+        self.calls: list[dict[str, object]] = []
+        self._attempt = 0
+
+    def send(self, request, *, connect_timeout_seconds: int, read_timeout_seconds: int):
+        self.calls.append(
+            {
+                "url": request.url,
+                "headers": dict(request.headers),
+                "body": dict(request.body),
+                "connect_timeout_seconds": connect_timeout_seconds,
+                "read_timeout_seconds": read_timeout_seconds,
+            }
+        )
+        self._attempt += 1
+        if self._attempt == 1:
+            return (
+                {
+                    "choices": [
+                        {
+                            "finish_reason": "length",
+                            "message": {
+                                "content": None,
+                                "reasoning_content": "1. spend the entire budget thinking",
+                            },
+                        }
+                    ],
+                    "usage": {
+                        "prompt_tokens": 12,
+                        "completion_tokens": 96,
+                        "total_tokens": 160,
+                        "completion_tokens_details": {
+                            "reasoning_tokens": 120,
+                        },
+                    },
+                },
+                12000,
+            )
+        return (
+            {
+                "choices": [
+                    {
+                        "finish_reason": "stop",
+                        "message": {
+                            "content": '{"answer":"yes","confidence":"high"}',
+                            "reasoning_content": None,
+                        },
+                    }
+                ],
+                "usage": {
+                    "prompt_tokens": 12,
+                    "completion_tokens": 18,
+                    "total_tokens": 30,
+                    "completion_tokens_details": {
+                        "reasoning_tokens": 0,
+                    },
+                },
+            },
+            9000,
+        )
+
+
 def test_live_runner_retries_retryable_errors_and_persists_traces(tmp_path: Path) -> None:
     client = FakeHttpClient()
     trace_dir = tmp_path / "traces" / "run-1"
@@ -167,6 +230,55 @@ def test_live_runner_retries_retryable_errors_and_persists_traces(tmp_path: Path
 
     request_trace = json.loads((trace_dir / "p003.request.json").read_text())
     assert request_trace["headers"]["Authorization"] == "Bearer ***REDACTED***"
+
+
+def test_live_runner_retries_with_thinking_fallback_after_truncated_no_answer(
+    tmp_path: Path,
+) -> None:
+    endpoint = EndpointProfile.model_validate(
+        {
+            **build_endpoint().model_dump(mode="json"),
+            "request_mapping": {
+                "output_token_cap_field": "max_tokens",
+                "json_response_shape": {"type": "json_object"},
+                "static_body": {"reasoning": {"effort": "minimal", "exclude": False}},
+            },
+            "thinking_policy": {
+                "retry_on_finish_reasons": ["length"],
+                "retry_on_empty_answer": True,
+                "attempts": [
+                    {
+                        "output_token_cap": 240,
+                        "request_body_overrides": {
+                            "reasoning": {"effort": "none", "exclude": True}
+                        },
+                    }
+                ],
+            },
+        }
+    )
+    client = ThinkingFallbackHttpClient()
+    trace_dir = tmp_path / "traces" / "run-thinking"
+    runner = LiveRunner(
+        endpoint=endpoint,
+        api_key="secret-key",
+        dialect=OpenAIChatDialectAdapter(),
+        http_client=client,
+        trace_dir=trace_dir,
+    )
+
+    result = runner.execute(build_prompt())
+
+    assert result.status == "completed"
+    assert result.raw_output == '{"answer":"yes","confidence":"high"}'
+    assert len(client.calls) == 2
+    assert client.calls[0]["body"]["max_tokens"] == 96
+    assert client.calls[0]["body"]["reasoning"] == {"effort": "minimal", "exclude": False}
+    assert client.calls[1]["body"]["max_tokens"] == 240
+    assert client.calls[1]["body"]["reasoning"] == {"effort": "none", "exclude": True}
+    assert (trace_dir / "p003.request.json").exists()
+    assert (trace_dir / "p003.attempt-2.request.json").exists()
+    assert (trace_dir / "p003.attempt-2.response.json").exists()
 
 
 def test_feature_pipeline_preserves_live_runner_metadata(tmp_path: Path) -> None:

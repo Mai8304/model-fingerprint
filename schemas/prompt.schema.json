@@ -68,6 +68,22 @@
       "title": "OutputContract",
       "type": "object"
     },
+    "PromptEvaluation": {
+      "additionalProperties": false,
+      "properties": {
+        "reference": {
+          "additionalProperties": true,
+          "minProperties": 1,
+          "title": "Reference",
+          "type": "object"
+        }
+      },
+      "required": [
+        "reference"
+      ],
+      "title": "PromptEvaluation",
+      "type": "object"
+    },
     "PromptExtractors": {
       "additionalProperties": false,
       "properties": {
@@ -88,6 +104,19 @@
           ],
           "default": null,
           "title": "Reasoning"
+        },
+        "score": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z_]+_v[1-9]\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Score"
         },
         "transport": {
           "anyOf": [
@@ -137,6 +166,17 @@
   },
   "additionalProperties": false,
   "properties": {
+    "evaluation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PromptEvaluation"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
     "extractors": {
       "$ref": "#/$defs/PromptExtractors"
     },
@@ -146,7 +186,12 @@
         "strict_format",
         "minimal_diff",
         "structured_extraction",
-        "retrieval"
+        "retrieval",
+        "evidence_grounding",
+        "context_retrieval",
+        "abstention",
+        "state_tracking",
+        "representation_alignment"
       ],
       "title": "Family",
       "type": "string"
@@ -185,7 +230,10 @@
         "enum": [
           "chat_completions",
           "json_object_response",
-          "visible_reasoning"
+          "visible_reasoning",
+          "json_schema_response",
+          "function_calling",
+          "tool_calling"
         ],
         "type": "string"
       },

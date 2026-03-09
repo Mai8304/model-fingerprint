@@ -2,10 +2,17 @@ from __future__ import annotations
 
 from collections import defaultdict
 from statistics import mean, median
+from typing import cast
 
-from modelfingerprint.contracts._common import FeaturePrimitive
+from modelfingerprint.contracts._common import (
+    FeaturePrimitive,
+    ProbeCapabilityId,
+    ProbeCapabilityStatus,
+)
 from modelfingerprint.contracts.profile import (
     BooleanFeatureSummary,
+    CapabilityProfileSummary,
+    CapabilityStateDistribution,
     EnumFeatureSummary,
     NumericFeatureSummary,
     ProfileArtifact,
@@ -72,6 +79,7 @@ def build_profile(
     ]
 
     protocol_expectations = _merge_protocol_expectations(runs)
+    capability_profile = _build_capability_profile(runs)
 
     return ProfileArtifact(
         model_id=model_id,
@@ -93,6 +101,7 @@ def build_profile(
                 for run in runs
             ]
         ),
+        capability_profile=capability_profile,
         protocol_expectations=protocol_expectations,
         prompts=prompts,
     )
@@ -160,3 +169,30 @@ def _merge_protocol_expectations(runs: list[RunArtifact]) -> dict[str, object] |
         "required_capabilities": required_capabilities,
         "issues": issues,
     }
+
+
+def _build_capability_profile(runs: list[RunArtifact]) -> CapabilityProfileSummary | None:
+    probe_runs = [run.capability_probe for run in runs if run.capability_probe is not None]
+    if not probe_runs:
+        return None
+
+    counts: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    for probe in probe_runs:
+        for capability, outcome in probe.capabilities.items():
+            counts[capability][outcome.status] += 1
+
+    if not counts:
+        return None
+
+    return CapabilityProfileSummary(
+        coverage_ratio=mean(probe.coverage_ratio for probe in probe_runs),
+        capabilities={
+            cast(ProbeCapabilityId, capability): CapabilityStateDistribution(
+                distribution={
+                    cast(ProbeCapabilityStatus, status): count / sum(status_counts.values())
+                    for status, count in sorted(status_counts.items())
+                }
+            )
+            for capability, status_counts in sorted(counts.items())
+        },
+    )

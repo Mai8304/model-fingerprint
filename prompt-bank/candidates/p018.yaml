@@ -1,0 +1,63 @@
+id: p018
+name: worker_assignment_state_resolution
+family: state_tracking
+intent: 用覆盖规则与缺省优先级测试状态机一致性
+messages:
+  - role: system
+    content: |
+      只返回 JSON 对象，不要输出 markdown，不要附加解释。
+  - role: user
+    content: |
+      根据下面事件，计算 worker_x 和 worker_y 的最终 status、owner、priority。
+
+      规则：
+      - 默认 priority 是 p3
+      - suspend 会把 status 设为 suspended
+      - assign 会更新 owner 但不会改变 priority
+
+      事件：
+      - [r1] create worker_x owner=ml
+      - [r2] create worker_y owner=etl
+      - [r3] assign worker_y owner=ops
+      - [r4] suspend worker_x
+      - [r5] update worker_y priority=p1
+
+      返回 JSON，对象字段必须且只能包含：
+      - task_result
+      - derivation_codes
+      - defaults_used
+      - violations
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 300
+  response_format: text
+  reasoning_mode: capture_if_available
+output_contract:
+  id: strict_json_v2
+  canonicalizer: strict_json_v2
+extractors:
+  answer: state_tracking_v1
+  score: state_tracking_score_v1
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+evaluation:
+  reference:
+    expected_task_result:
+      worker_x:
+        status: suspended
+        owner: ml
+        priority: p3
+      worker_y:
+        status: open
+        owner: ops
+        priority: p1
+    expected_derivation_codes:
+      worker_x: r4
+      worker_y: r5
+    expected_defaults_used:
+      - worker_x.priority
+required_capabilities: [chat_completions]
+weight_hint: 0.9
+tags: [v2, state, workers]
+risk_level: low

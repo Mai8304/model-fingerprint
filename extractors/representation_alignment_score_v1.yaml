@@ -1,0 +1,8 @@
+name: representation_alignment_score_v1
+family: representation_alignment
+version: 1
+features:
+  - canonical_accuracy
+  - alias_accuracy
+  - ambiguity_preservation
+  - violation_free

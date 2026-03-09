@@ -1,0 +1,46 @@
+id: p014
+name: multilingual_entity_retrieval_with_distractors
+family: context_retrieval
+intent: 用中英混合别名和近似干扰项测试顺序保持与位置敏感性
+messages:
+  - role: system
+    content: |
+      只返回 JSON 对象，不要输出 markdown，不要添加解释。
+  - role: user
+    content: |
+      在下面文本里找出当前有效的 zephyr、orion、atlas，并标出它们第一次出现的段落编号。旧代号、带后缀的近似词和已停用项必须进入 excluded_entities。
+
+      [p1] 旧代号 Zephyr-old 已废弃。当前有效项目是 zephyr。
+      [p2] orion-legacy 只出现在历史记录里。当前 Orion 服务仍在运行。
+      [p3] atlas-x 是测试样本，不计入结果。真正上线的是 atlas。
+
+      返回 JSON，对象字段必须且只能包含：
+      - found_entities
+      - paragraph_map
+      - excluded_entities
+      - confusions
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 260
+  response_format: text
+  reasoning_mode: capture_if_available
+output_contract:
+  id: strict_json_v2
+  canonicalizer: strict_json_v2
+extractors:
+  answer: context_retrieval_v1
+  score: context_retrieval_score_v1
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+evaluation:
+  reference:
+    expected_found_entities: [zephyr, orion, atlas]
+    expected_paragraph_map:
+      zephyr: p1
+      orion: p2
+      atlas: p3
+required_capabilities: [chat_completions]
+weight_hint: 0.88
+tags: [v2, retrieval, multilingual]
+risk_level: low

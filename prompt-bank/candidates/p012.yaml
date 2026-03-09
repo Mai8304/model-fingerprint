@@ -1,0 +1,46 @@
+id: p012
+name: evidence_bound_change_window
+family: evidence_grounding
+intent: 用会议纪要中的取消项和缺失项测试证据绑定与幻觉控制
+messages:
+  - role: system
+    content: |
+      只返回 JSON 对象，不要输出 markdown，不要补全未知信息。未知字段保留为 null，并把字段名写入 unknown_fields。
+  - role: user
+    content: |
+      只根据下面纪要判断 current_lead、backup_lead、change_window。
+
+      [e1] Priya is leading the database password rotation.
+      [e2] The backup lead was not assigned during the meeting.
+      [e3] The approved maintenance window is 2026-03-21 02:00 UTC.
+      [e4] An earlier draft proposed 2026-03-20 02:00 UTC, but that draft was rejected.
+
+      返回 JSON，对象字段必须且只能包含：
+      - task_result: {current_lead, backup_lead, change_window}
+      - evidence: {current_lead, backup_lead, change_window}
+      - unknown_fields
+      - violations
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 280
+  response_format: text
+  reasoning_mode: capture_if_available
+output_contract:
+  id: strict_json_v2
+  canonicalizer: strict_json_v2
+extractors:
+  answer: evidence_grounding_v1
+  score: evidence_grounding_score_v1
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+evaluation:
+  reference:
+    expected_task_result:
+      current_lead: Priya
+      backup_lead: null
+      change_window: 2026-03-21 02:00 UTC
+required_capabilities: [chat_completions]
+weight_hint: 0.92
+tags: [v2, evidence, notes]
+risk_level: low

@@ -1,0 +1,46 @@
+id: p011
+name: evidence_bound_identity_resolution
+family: evidence_grounding
+intent: 用带旧信息和缺失字段的证据片段测试 grounded extraction 与克制输出
+messages:
+  - role: system
+    content: |
+      只返回 JSON 对象，不要输出 markdown，不要补全未知信息。未知字段保留为 null，并把字段名写入 unknown_fields。
+  - role: user
+    content: |
+      只根据下面证据判断当前 owner、role、region。
+
+      [e1] Alice Wong joined the payments platform in 2023.
+      [e2] Alice Wong is the current Primary DBA for the payments platform.
+      [e3] The former owner of the platform was Kevin Lin.
+      [e4] Alice covered the APAC rotation last month, but this does not define her home region.
+
+      返回 JSON，对象字段必须且只能包含：
+      - task_result: {owner, role, region}
+      - evidence: {owner, role, region}
+      - unknown_fields
+      - violations
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 280
+  response_format: text
+  reasoning_mode: capture_if_available
+output_contract:
+  id: strict_json_v2
+  canonicalizer: strict_json_v2
+extractors:
+  answer: evidence_grounding_v1
+  score: evidence_grounding_score_v1
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+evaluation:
+  reference:
+    expected_task_result:
+      owner: Alice Wong
+      role: Primary DBA
+      region: null
+required_capabilities: [chat_completions]
+weight_hint: 0.95
+tags: [v2, evidence, abstain]
+risk_level: low

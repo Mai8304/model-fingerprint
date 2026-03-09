@@ -21,6 +21,9 @@ class DialectAdapter(Protocol):
         prompt: PromptDefinition,
         endpoint: EndpointProfile,
         api_key: str,
+        *,
+        output_token_cap: int | None = None,
+        body_overrides: Mapping[str, object] | None = None,
     ) -> HttpRequestSpec: ...
 
     def parse_response(

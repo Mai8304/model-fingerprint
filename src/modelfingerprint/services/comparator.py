@@ -20,14 +20,18 @@ class ComparisonResult:
     claimed_model: str | None
     claimed_model_similarity: float | None
     consistency: float
+    content_similarity: float | None
+    capability_similarity: float | None
     answer_similarity: float | None
     reasoning_similarity: float | None
     transport_similarity: float | None
     surface_similarity: float | None
     answer_coverage_ratio: float
     reasoning_coverage_ratio: float
+    capability_coverage_ratio: float
     protocol_status: ProtocolStatus
     protocol_issues: tuple[str, ...]
+    hard_mismatches: tuple[str, ...]
 
 
 def compare_run(run: RunArtifact, profiles: list[ProfileArtifact]) -> ComparisonResult:
@@ -64,14 +68,18 @@ def compare_run(run: RunArtifact, profiles: list[ProfileArtifact]) -> Comparison
         claimed_model=run.claimed_model,
         claimed_model_similarity=claimed_similarity,
         consistency=top1.consistency,
+        content_similarity=top1.content_similarity,
+        capability_similarity=top1.capability_similarity,
         answer_similarity=top1.answer_similarity,
         reasoning_similarity=top1.reasoning_similarity,
         transport_similarity=top1.transport_similarity,
         surface_similarity=top1.surface_similarity,
         answer_coverage_ratio=top1.answer_coverage_ratio,
         reasoning_coverage_ratio=top1.reasoning_coverage_ratio,
+        capability_coverage_ratio=top1.capability_coverage_ratio,
         protocol_status=top1.protocol_status,
         protocol_issues=top1.protocol_issues,
+        hard_mismatches=top1.hard_mismatches,
     )
 
 

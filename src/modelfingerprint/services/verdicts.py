@@ -19,6 +19,13 @@ def decide_verdict(result: ComparisonResult, calibration: CalibrationArtifact) -
     if result.protocol_status == "incompatible_protocol":
         return "incompatible_protocol"
 
+    if (
+        result.capability_similarity is not None
+        or result.capability_coverage_ratio > 0.0
+        or bool(result.hard_mismatches)
+    ) and result.capability_coverage_ratio < 0.5:
+        return "insufficient_evidence"
+
     coverage = calibration.coverage_thresholds
     if coverage is not None:
         if result.answer_coverage_ratio < coverage.answer_min:
@@ -29,6 +36,10 @@ def decide_verdict(result: ComparisonResult, calibration: CalibrationArtifact) -
     thresholds = calibration.thresholds
     if result.top1_similarity < thresholds.unknown:
         return "unknown"
+
+    if result.hard_mismatches and result.content_similarity is not None:
+        if result.content_similarity >= thresholds.suspicious:
+            return "suspicious"
 
     if (
         result.claimed_model is not None
