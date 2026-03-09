@@ -16,6 +16,8 @@ from modelfingerprint.services.calibrator import Calibrator
 from modelfingerprint.services.comparator import compare_run
 from modelfingerprint.services.profile_builder import build_profile
 from modelfingerprint.services.prompt_bank import (
+    FINGERPRINT_SUITE_ID,
+    QUICK_CHECK_SUITE_ID,
     PromptBankValidationError,
     load_candidate_prompts,
     load_suites,
@@ -56,12 +58,12 @@ def validate_prompts(
         prompts = load_candidate_prompts(root / "prompt-bank" / "candidates")
         suites = load_suites(root / "prompt-bank" / "suites")
         validate_suite_references(prompts, suites)
-        validate_suite_subset(suites["default-v1"], suites["screening-v1"])
+        validate_suite_subset(suites[FINGERPRINT_SUITE_ID], suites[QUICK_CHECK_SUITE_ID])
     except (KeyError, PromptBankValidationError, FileNotFoundError) as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1) from exc
 
-    typer.echo(f"validated {len(prompts)} candidate prompts and {len(suites)} suites")
+    typer.echo(f"validated {len(prompts)} prompt definitions and {len(suites)} suites")
 
 
 @app.command("show-suite")

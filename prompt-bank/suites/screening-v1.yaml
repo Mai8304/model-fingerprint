@@ -1,9 +1,0 @@
-id: screening-v1
-name: screening v1
-description: Initial low-cost screening suite kept as a strict subset of default-v1.
-prompt_ids:
-  - p001
-  - p003
-  - p005
-  - p007
-  - p009

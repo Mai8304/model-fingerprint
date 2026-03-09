@@ -6,6 +6,10 @@ import yaml
 
 from modelfingerprint.contracts.prompt import PromptDefinition, SuiteDefinition
 
+RESEARCH_SET_SUITE_ID = "research-set-v1"
+FINGERPRINT_SUITE_ID = "fingerprint-suite-v1"
+QUICK_CHECK_SUITE_ID = "quick-check-v1"
+
 KNOWN_EXTRACTOR_IDS = frozenset(
     {
         "style_brief_v1",
@@ -47,12 +51,17 @@ def load_suites(directory: Path) -> dict[str, SuiteDefinition]:
     return suites
 
 
-def validate_suite_subset(default_suite: SuiteDefinition, screening_suite: SuiteDefinition) -> None:
-    default_ids = set(default_suite.prompt_ids)
-    screening_ids = set(screening_suite.prompt_ids)
+def validate_suite_subset(
+    fingerprint_suite: SuiteDefinition,
+    quick_check_suite: SuiteDefinition,
+) -> None:
+    fingerprint_ids = set(fingerprint_suite.prompt_ids)
+    quick_check_ids = set(quick_check_suite.prompt_ids)
 
-    if not screening_ids < default_ids:
-        raise PromptBankValidationError("screening suite must be a strict subset of default suite")
+    if not quick_check_ids < fingerprint_ids:
+        raise PromptBankValidationError(
+            "quick-check suite must be a strict subset of fingerprint suite"
+        )
 
 
 def validate_suite_references(

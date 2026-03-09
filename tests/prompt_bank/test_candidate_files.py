@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from modelfingerprint.services.prompt_bank import (
+    FINGERPRINT_SUITE_ID,
+    QUICK_CHECK_SUITE_ID,
     load_candidate_prompts,
     load_suites,
     validate_suite_references,
@@ -30,4 +32,4 @@ def test_released_suites_reference_existing_candidate_prompts() -> None:
     suites = load_suites(ROOT / "prompt-bank" / "suites")
 
     validate_suite_references(prompts, suites)
-    validate_suite_subset(suites["default-v1"], suites["screening-v1"])
+    validate_suite_subset(suites[FINGERPRINT_SUITE_ID], suites[QUICK_CHECK_SUITE_ID])

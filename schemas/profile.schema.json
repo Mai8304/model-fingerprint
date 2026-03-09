@@ -145,7 +145,7 @@
       "type": "integer"
     },
     "suite_id": {
-      "pattern": "^(candidate-pool|default|screening)-v[1-9]\\d*$",
+      "pattern": "^(research-set|fingerprint-suite|quick-check)-v[1-9]\\d*$",
       "title": "Suite Id",
       "type": "string"
     }

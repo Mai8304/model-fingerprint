@@ -61,28 +61,28 @@ risk_level: low
     assert prompts["p001"].extractor == "style_brief_v1"
 
 
-def test_screening_suite_must_be_strict_subset_of_default(tmp_path: Path) -> None:
+def test_quick_check_suite_must_be_strict_subset_of_fingerprint_suite(tmp_path: Path) -> None:
     suites_dir = tmp_path / "prompt-bank" / "suites"
     write_yaml(
-        suites_dir / "default-v1.yaml",
+        suites_dir / "fingerprint-suite-v1.yaml",
         """
-id: default-v1
-name: default v1
+id: fingerprint-suite-v1
+name: fingerprint suite v1
 prompt_ids: [p001, p002, p003]
 """.strip(),
     )
     write_yaml(
-        suites_dir / "screening-v1.yaml",
+        suites_dir / "quick-check-v1.yaml",
         """
-id: screening-v1
-name: screening v1
+id: quick-check-v1
+name: quick check v1
 prompt_ids: [p001, p002]
 """.strip(),
     )
 
     suites = load_suites(suites_dir)
 
-    validate_suite_subset(suites["default-v1"], suites["screening-v1"])
+    validate_suite_subset(suites["fingerprint-suite-v1"], suites["quick-check-v1"])
 
 
 def test_duplicate_prompt_ids_and_unknown_extractors_are_rejected(

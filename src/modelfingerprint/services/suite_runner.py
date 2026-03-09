@@ -8,6 +8,8 @@ from modelfingerprint.contracts.run import UsageMetadata
 from modelfingerprint.extractors.registry import ExtractorRegistry, build_default_registry
 from modelfingerprint.services.feature_pipeline import FeaturePipeline, PromptExecutionResult
 from modelfingerprint.services.prompt_bank import (
+    FINGERPRINT_SUITE_ID,
+    QUICK_CHECK_SUITE_ID,
     load_candidate_prompts,
     load_suites,
     validate_suite_references,
@@ -38,7 +40,7 @@ class SuiteRunner:
         prompts = load_candidate_prompts(self._paths.prompt_bank_dir / "candidates")
         suites = load_suites(self._paths.prompt_bank_dir / "suites")
         validate_suite_references(prompts, suites)
-        validate_suite_subset(suites["default-v1"], suites["screening-v1"])
+        validate_suite_subset(suites[FINGERPRINT_SUITE_ID], suites[QUICK_CHECK_SUITE_ID])
         suite = suites[suite_id]
         executions: list[PromptExecutionResult] = []
 

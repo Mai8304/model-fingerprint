@@ -1,0 +1,14 @@
+id: fingerprint-suite-v1
+name: fingerprint suite v1
+description: Initial released v1 suite used for stable profile generation.
+prompt_ids:
+  - p001
+  - p002
+  - p003
+  - p004
+  - p005
+  - p006
+  - p007
+  - p008
+  - p009
+  - p010

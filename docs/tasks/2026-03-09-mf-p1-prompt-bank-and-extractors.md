@@ -10,7 +10,7 @@
 
 **Status:** Completed on 2026-03-09
 
-**Implementation Note:** The initial checked-in v1 candidate pool seeds 10 prompts, with 2 prompts per family across the five extractor families. `default-v1` covers all 10 prompts and `screening-v1` remains a strict 5-prompt subset.
+**Implementation Note:** The initial checked-in v1 research set seeds 10 prompts, with 2 prompts per family across the five extractor families. `fingerprint-suite-v1` covers all 10 prompts and `quick-check-v1` remains a strict 5-prompt subset.
 
 **Acceptance Evidence:**
 - `uv run pytest tests/prompt_bank tests/extractors -q`
@@ -23,8 +23,8 @@
 
 **Files:**
 - Create: `prompt-bank/candidates/.gitkeep`
-- Create: `prompt-bank/suites/default-v1.yaml`
-- Create: `prompt-bank/suites/screening-v1.yaml`
+- Create: `prompt-bank/suites/fingerprint-suite-v1.yaml`
+- Create: `prompt-bank/suites/quick-check-v1.yaml`
 - Create: `src/modelfingerprint/services/prompt_bank.py`
 - Create: `tests/prompt_bank/test_suite_loader.py`
 
@@ -32,7 +32,7 @@
 
 Test intent:
 - load all candidate prompt files from disk
-- validate that `screening-v1` is a strict subset of `default-v1`
+- validate that `quick-check-v1` is a strict subset of `fingerprint-suite-v1`
 - reject duplicate prompt ids and unknown extractors
 
 Run: `pytest tests/prompt_bank/test_suite_loader.py -q`
@@ -200,12 +200,12 @@ Implementation intent:
 - compute stable retrieval metrics from fixed-format outputs
 - keep failure modes explicit rather than inferred from free text
 
-**Step 3: Seed the candidate pool and released suites**
+**Step 3: Seed the research set and released suites**
 
 Implementation intent:
 - start by checking in a v1 candidate set organized across the five families
 - record `weight_hint`, `extractor`, and `output_contract` on every file
-- keep `screening-v1` a strict subset of `default-v1`
+- keep `quick-check-v1` a strict subset of `fingerprint-suite-v1`
 
 **Step 4: Re-run the tests**
 

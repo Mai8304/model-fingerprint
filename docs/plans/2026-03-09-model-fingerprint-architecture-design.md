@@ -92,8 +92,8 @@ modelfingerprint/
       p002.yaml
       ...
     suites/
-      default-v1.yaml
-      screening-v1.yaml
+      fingerprint-suite-v1.yaml
+      quick-check-v1.yaml
   extractors/
     style_brief_v1.yaml
     strict_format_v1.yaml
@@ -101,14 +101,14 @@ modelfingerprint/
     structured_extraction_v1.yaml
     retrieval_v1.yaml
   profiles/
-    default-v1/
+    fingerprint-suite-v1/
       claude-ops-4.6.json
       gpt-5.3.json
   calibration/
-    default-v1.json
+    fingerprint-suite-v1.json
   runs/
     2026-03-09/
-      suspect-a.default-v1.json
+      suspect-a.fingerprint-suite-v1.json
   schemas/
     prompt.schema.json
     run.schema.json
@@ -127,7 +127,7 @@ Source code and generated artifacts must remain separate.
 
 The protocol is deliberately split into three tiers.
 
-### 7.1 Candidate Pool: `candidate-pool-v1`
+### 7.1 Research Set: `research-set-v1`
 
 Purpose:
 - research space for prompt design
@@ -142,7 +142,7 @@ Properties:
 - redundancy allowed
 - not used directly for production verdicts
 
-### 7.2 Standard Suite: `default-v1`
+### 7.2 Standard Suite: `fingerprint-suite-v1`
 
 Purpose:
 - canonical suite for profile generation
@@ -153,11 +153,11 @@ Size target:
 - about 20 prompts
 
 Properties:
-- selected from the candidate pool
+- selected from the research set
 - frozen once released
 - every prompt must be discriminative, stable, and automatically extractable
 
-### 7.3 Screening Subset: `screening-v1`
+### 7.3 Quick-Check Suite: `quick-check-v1`
 
 Purpose:
 - low-cost initial screening
@@ -168,14 +168,14 @@ Size target:
 - 10 to 12 prompts
 
 Properties:
-- must be a strict subset of `default-v1`
+- must be a strict subset of `fingerprint-suite-v1`
 - cannot drift into an unrelated protocol
 - optimized for cost and discriminative efficiency
 
 Relationship:
 
 ```text
-candidate-pool-v1 -> default-v1 -> screening-v1
+research-set-v1 -> fingerprint-suite-v1 -> quick-check-v1
       50                20             10-12
 ```
 
@@ -268,9 +268,9 @@ Representative features:
 - `confusion_pattern`
 - `position_sensitivity`
 
-## 9. Candidate Pool Composition
+## 9. Research Set Composition
 
-Recommended first-pass composition for a 50-prompt candidate pool:
+Recommended first-pass composition for a 50-prompt research set:
 
 - `style_brief`: 12
 - `strict_format`: 10
@@ -278,7 +278,7 @@ Recommended first-pass composition for a 50-prompt candidate pool:
 - `structured_extraction`: 10
 - `retrieval`: 10
 
-Recommended released composition for `default-v1`:
+Recommended released composition for `fingerprint-suite-v1`:
 
 - `style_brief`: 5
 - `strict_format`: 4
@@ -286,7 +286,7 @@ Recommended released composition for `default-v1`:
 - `structured_extraction`: 4
 - `retrieval`: 4
 
-Recommended released composition for `screening-v1`:
+Recommended released composition for `quick-check-v1`:
 
 - `style_brief`: 3
 - `strict_format`: 3
@@ -324,8 +324,8 @@ Selection method:
 
 1. evaluate all candidate prompts offline against multiple canonical models
 2. rank prompts within each family
-3. apply family quotas when building `default-v1`
-4. choose the lowest-cost, high-discrimination subset for `screening-v1`
+3. apply family quotas when building `fingerprint-suite-v1`
+4. choose the lowest-cost, high-discrimination subset for `quick-check-v1`
 
 ## 11. Artifact Models
 
@@ -507,7 +507,7 @@ Why it matters:
 
 Rules:
 
-1. candidate pool may grow over time
+1. research set may grow over time
 2. released suites are immutable once published
 3. `screening-vN` must remain a subset of `default-vN`
 4. material prompt changes require a new prompt id or a new suite version

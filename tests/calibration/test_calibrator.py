@@ -28,7 +28,7 @@ def test_calibrator_builds_thresholds_and_writes_artifact(tmp_path: Path) -> Non
     artifact = calibrator.calibrate(gpt_runs + claude_runs, profiles)
     path = calibrator.write(artifact)
 
-    assert artifact.suite_id == "default-v1"
+    assert artifact.suite_id == "fingerprint-suite-v1"
     assert artifact.same_model_stats.mean > artifact.cross_model_stats.mean
     assert (
         artifact.thresholds.match
@@ -37,5 +37,5 @@ def test_calibrator_builds_thresholds_and_writes_artifact(tmp_path: Path) -> Non
     )
     assert 0.0 <= artifact.thresholds.margin <= 1.0
     assert 0.0 <= artifact.thresholds.consistency <= 1.0
-    assert path == tmp_path / "calibration" / "default-v1.json"
-    assert json.loads(path.read_text(encoding="utf-8"))["suite_id"] == "default-v1"
+    assert path == tmp_path / "calibration" / "fingerprint-suite-v1.json"
+    assert json.loads(path.read_text(encoding="utf-8"))["suite_id"] == "fingerprint-suite-v1"

@@ -51,7 +51,7 @@ def test_suite_runner_executes_screening_suite_and_writes_run(tmp_path: Path) ->
     )
 
     output_path = runner.run_suite(
-        suite_id="screening-v1",
+        suite_id="quick-check-v1",
         target_label="suspect-a",
         claimed_model="gpt-5.3",
         run_date=date(2026, 3, 9),
@@ -59,8 +59,8 @@ def test_suite_runner_executes_screening_suite_and_writes_run(tmp_path: Path) ->
 
     artifact = RunArtifact.model_validate(json.loads(output_path.read_text(encoding="utf-8")))
 
-    assert output_path == tmp_path / "runs" / "2026-03-09" / "suspect-a.screening-v1.json"
-    assert artifact.suite_id == "screening-v1"
+    assert output_path == tmp_path / "runs" / "2026-03-09" / "suspect-a.quick-check-v1.json"
+    assert artifact.suite_id == "quick-check-v1"
     assert len(artifact.prompts) == 5
     assert all(prompt.raw_output for prompt in artifact.prompts)
     assert all(prompt.usage.total_tokens == 15 for prompt in artifact.prompts)

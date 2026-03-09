@@ -25,7 +25,7 @@ def test_profile_builder_aggregates_runs_with_robust_statistics() -> None:
 
     prompt = profile.prompts[0]
 
-    assert profile.suite_id == "default-v1"
+    assert profile.suite_id == "fingerprint-suite-v1"
     assert profile.sample_count == 3
     assert prompt.weight == 0.8
     assert prompt.features["char_len"].median == 42.0
@@ -37,7 +37,7 @@ def test_profile_builder_aggregates_runs_with_robust_statistics() -> None:
 
 
 def test_profile_builder_rejects_mixed_suite_runs() -> None:
-    mixed = load_run("run1.json").model_copy(update={"suite_id": "screening-v1"})
+    mixed = load_run("run1.json").model_copy(update={"suite_id": "quick-check-v1"})
 
     with pytest.raises(ProfileBuildError):
         build_profile(

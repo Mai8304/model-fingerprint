@@ -24,8 +24,8 @@ def test_comparator_ranks_profiles_and_computes_claimed_similarity() -> None:
     ]
     target = RunArtifact.model_validate(
         {
-            "run_id": "suspect-a.default-v1",
-            "suite_id": "default-v1",
+            "run_id": "suspect-a.fingerprint-suite-v1",
+            "suite_id": "fingerprint-suite-v1",
             "target_label": "suspect-a",
             "claimed_model": "gpt-5.3",
             "prompts": [

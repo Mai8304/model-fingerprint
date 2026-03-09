@@ -81,7 +81,7 @@ Acceptance anchor:
 ## Guardrails
 
 1. Keep the project independent from OpenWhale code, naming, runtime dependencies, and deployment assumptions.
-2. Freeze `default-v1` and `screening-v1` once released; future prompt updates must go through `default-v2`.
+2. Freeze `fingerprint-suite-v1` and `quick-check-v1` once released; future prompt updates must go through `default-v2`.
 3. Do not let screening suites drift away from the full suite; `screening-vN` must always be a strict subset of `default-vN`.
 4. Keep all important state on disk as JSON or YAML artifacts.
 5. Prefer fixture-driven tests over real upstream calls during development.

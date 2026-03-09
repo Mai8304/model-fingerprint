@@ -45,8 +45,8 @@ def test_feature_pipeline_builds_run_artifact_with_features() -> None:
     ]
 
     artifact = pipeline.build_run_artifact(
-        run_id="suspect-a.default-v1",
-        suite_id="default-v1",
+        run_id="suspect-a.fingerprint-suite-v1",
+        suite_id="fingerprint-suite-v1",
         target_label="suspect-a",
         claimed_model="gpt-5.3",
         executions=executions,

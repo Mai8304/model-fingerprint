@@ -54,9 +54,9 @@ def test_build_profile_calibrate_and_compare_commands(tmp_path: Path) -> None:
             "--root",
             str(tmp_path),
             "--profile",
-            str(tmp_path / "profiles/default-v1/gpt-5.3.json"),
+            str(tmp_path / "profiles/fingerprint-suite-v1/gpt-5.3.json"),
             "--profile",
-            str(tmp_path / "profiles/default-v1/claude-ops-4.6.json"),
+            str(tmp_path / "profiles/fingerprint-suite-v1/claude-ops-4.6.json"),
             "--run",
             str(ROOT / "tests/fixtures/calibration_runs/gpt_run1.json"),
             "--run",
@@ -73,8 +73,8 @@ def test_build_profile_calibrate_and_compare_commands(tmp_path: Path) -> None:
     suspect_path.write_text(
         json.dumps(
             {
-                "run_id": "suspect-a.default-v1",
-                "suite_id": "default-v1",
+                "run_id": "suspect-a.fingerprint-suite-v1",
+                "suite_id": "fingerprint-suite-v1",
                 "target_label": "suspect-a",
                 "claimed_model": "gpt-5.3",
                 "prompts": [
@@ -107,11 +107,11 @@ def test_build_profile_calibrate_and_compare_commands(tmp_path: Path) -> None:
             "--run",
             str(suspect_path),
             "--profile",
-            str(tmp_path / "profiles/default-v1/gpt-5.3.json"),
+            str(tmp_path / "profiles/fingerprint-suite-v1/gpt-5.3.json"),
             "--profile",
-            str(tmp_path / "profiles/default-v1/claude-ops-4.6.json"),
+            str(tmp_path / "profiles/fingerprint-suite-v1/claude-ops-4.6.json"),
             "--calibration",
-            str(tmp_path / "calibration/default-v1.json"),
+            str(tmp_path / "calibration/fingerprint-suite-v1.json"),
             "--json",
         ],
     )

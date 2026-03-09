@@ -56,7 +56,7 @@ def test_exported_schema_files_exist(path: Path) -> None:
             "run",
             {
                 "run_id": "run-20260309-001",
-                "suite_id": "default-v1",
+                "suite_id": "fingerprint-suite-v1",
                 "target_label": "suspect-a",
                 "prompts": [
                     {
@@ -73,7 +73,7 @@ def test_exported_schema_files_exist(path: Path) -> None:
             },
             {
                 "run_id": "run-20260309-001",
-                "suite_id": "screen-v1",
+                "suite_id": "quick-check-v0",
                 "target_label": "suspect-a",
                 "prompts": [],
             },
@@ -82,7 +82,7 @@ def test_exported_schema_files_exist(path: Path) -> None:
             "profile",
             {
                 "model_id": "gpt-5.3",
-                "suite_id": "default-v1",
+                "suite_id": "fingerprint-suite-v1",
                 "sample_count": 5,
                 "prompts": [
                     {
@@ -96,7 +96,7 @@ def test_exported_schema_files_exist(path: Path) -> None:
             },
             {
                 "model_id": "gpt-5.3",
-                "suite_id": "default-v1",
+                "suite_id": "fingerprint-suite-v1",
                 "sample_count": 5,
                 "prompts": [{"prompt_id": "p017", "weight": 0.8}],
             },
@@ -104,7 +104,7 @@ def test_exported_schema_files_exist(path: Path) -> None:
         (
             "calibration",
             {
-                "suite_id": "default-v1",
+                "suite_id": "fingerprint-suite-v1",
                 "thresholds": {
                     "match": 0.82,
                     "suspicious": 0.71,
@@ -126,7 +126,7 @@ def test_exported_schema_files_exist(path: Path) -> None:
                 },
             },
             {
-                "suite_id": "default-v1",
+                "suite_id": "fingerprint-suite-v1",
                 "thresholds": {
                     "match": 1.2,
                     "suspicious": 0.71,

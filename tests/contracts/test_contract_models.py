@@ -34,7 +34,7 @@ def test_artifact_models_parse_valid_payloads() -> None:
     run = RunArtifact.model_validate(
         {
             "run_id": "run-20260309-001",
-            "suite_id": "default-v1",
+            "suite_id": "fingerprint-suite-v1",
             "target_label": "suspect-a",
             "claimed_model": "gpt-5.3",
             "prompts": [
@@ -58,7 +58,7 @@ def test_artifact_models_parse_valid_payloads() -> None:
     profile = ProfileArtifact.model_validate(
         {
             "model_id": "gpt-5.3",
-            "suite_id": "default-v1",
+            "suite_id": "fingerprint-suite-v1",
             "sample_count": 5,
             "prompts": [
                 {
@@ -75,7 +75,7 @@ def test_artifact_models_parse_valid_payloads() -> None:
 
     calibration = CalibrationArtifact.model_validate(
         {
-            "suite_id": "default-v1",
+            "suite_id": "fingerprint-suite-v1",
             "thresholds": {
                 "match": 0.82,
                 "suspicious": 0.71,
@@ -98,7 +98,7 @@ def test_artifact_models_parse_valid_payloads() -> None:
         }
     )
 
-    assert run.suite_id == "default-v1"
+    assert run.suite_id == "fingerprint-suite-v1"
     assert profile.prompts[0].features["char_len"].kind == "numeric"
     assert calibration.thresholds.match == 0.82
 
@@ -127,7 +127,7 @@ def test_invalid_suite_id_and_missing_features_are_rejected() -> None:
         RunArtifact.model_validate(
             {
                 "run_id": "run-20260309-001",
-                "suite_id": "screen-v1",
+                "suite_id": "quick-check-v0",
                 "target_label": "suspect-a",
                 "prompts": [],
             }
@@ -137,7 +137,7 @@ def test_invalid_suite_id_and_missing_features_are_rejected() -> None:
         RunArtifact.model_validate(
             {
                 "run_id": "run-20260309-002",
-                "suite_id": "default-v1",
+                "suite_id": "fingerprint-suite-v1",
                 "target_label": "suspect-a",
                 "prompts": [
                     {
