@@ -8,7 +8,6 @@ from pydantic import Field
 
 from modelfingerprint.contracts._common import ContractModel, FeaturePrimitive, PromptFamily
 
-
 FeatureMap = dict[str, FeaturePrimitive]
 ExtractorHandler = Callable[[str], FeatureMap]
 

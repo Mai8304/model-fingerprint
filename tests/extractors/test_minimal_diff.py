@@ -4,7 +4,6 @@ from pathlib import Path
 
 from modelfingerprint.extractors.minimal_diff import extract_minimal_diff
 
-
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "extractors" / "minimal_diff"
 
 

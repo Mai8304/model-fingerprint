@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.12+, Typer, Pydantic v2, PyYAML, jsonschema, pytest, Ruff, mypy
 
-**Progress Update (2026-03-09):** Milestone A / P0 completed and verified. Remaining delivery order is P1 -> P2 -> P3.
+**Progress Update (2026-03-09):** Milestone A / P0 and Milestone B / P1 completed and verified. Remaining delivery order is P2 -> P3.
 
 ---
 
@@ -38,6 +38,9 @@ Acceptance anchor:
 - `pytest tests/test_cli_smoke.py tests/contracts -q` passes
 
 ### Milestone B: Prompt bank and extractor pipeline exist
+
+Status:
+- Completed on 2026-03-09
 
 Outcome:
 - candidate and suite files validate

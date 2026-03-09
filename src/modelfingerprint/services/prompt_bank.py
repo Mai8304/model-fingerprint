@@ -6,7 +6,6 @@ import yaml
 
 from modelfingerprint.contracts.prompt import PromptDefinition, SuiteDefinition
 
-
 KNOWN_EXTRACTOR_IDS = frozenset(
     {
         "style_brief_v1",

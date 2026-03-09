@@ -8,6 +8,15 @@
 
 **Tech Stack:** Python 3.12+, PyYAML, Pydantic v2, jsonschema, pytest
 
+**Status:** Completed on 2026-03-09
+
+**Implementation Note:** The initial checked-in v1 candidate pool seeds 10 prompts, with 2 prompts per family across the five extractor families. `default-v1` covers all 10 prompts and `screening-v1` remains a strict 5-prompt subset.
+
+**Acceptance Evidence:**
+- `uv run pytest tests/prompt_bank tests/extractors -q`
+- `uv run ruff check src tests`
+- `uv run mypy src`
+
 ---
 
 ### Task 1: Add prompt-bank loaders and suite validation

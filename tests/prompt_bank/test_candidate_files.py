@@ -9,7 +9,6 @@ from modelfingerprint.services.prompt_bank import (
     validate_suite_subset,
 )
 
-
 ROOT = Path(__file__).resolve().parents[2]
 
 

@@ -8,7 +8,10 @@ from modelfingerprint.extractors.base import FeatureMap
 def extract_minimal_diff(raw_output: str) -> FeatureMap:
     lines = raw_output.splitlines()
     changed_lines = [
-        line for line in lines if (line.startswith("+") or line.startswith("-")) and not line.startswith(("+++", "---"))
+        line
+        for line in lines
+        if (line.startswith("+") or line.startswith("-"))
+        and not line.startswith(("+++", "---"))
     ]
     added = [line[1:] for line in changed_lines if line.startswith("+")]
     removed = [line[1:] for line in changed_lines if line.startswith("-")]

@@ -4,7 +4,6 @@ from pathlib import Path
 
 from modelfingerprint.extractors.structured_extraction import extract_structured_extraction
 
-
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "extractors" / "structured_extraction"
 
 

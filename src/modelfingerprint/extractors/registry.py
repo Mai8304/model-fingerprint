@@ -29,7 +29,7 @@ class ExtractorRegistry:
         cls,
         directory: Path,
         handlers: dict[str, ExtractorHandler],
-    ) -> "ExtractorRegistry":
+    ) -> ExtractorRegistry:
         descriptors: dict[str, ExtractorDescriptor] = {}
 
         for path in sorted(directory.glob("*.yaml")):

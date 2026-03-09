@@ -4,7 +4,6 @@ from pathlib import Path
 
 from modelfingerprint.extractors.style_brief import extract_style_brief
 
-
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "extractors" / "style_brief"
 
 

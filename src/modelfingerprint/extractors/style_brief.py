@@ -4,7 +4,6 @@ import re
 
 from modelfingerprint.extractors.base import FeatureMap
 
-
 HEDGE_WORDS = ("probably", "maybe", "might", "possibly", "perhaps")
 
 

@@ -8,7 +8,6 @@ from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.extractors.base import ExtractorValidationError
 from modelfingerprint.extractors.registry import ExtractorRegistry
 
-
 ROOT = Path(__file__).resolve().parents[2]
 
 
