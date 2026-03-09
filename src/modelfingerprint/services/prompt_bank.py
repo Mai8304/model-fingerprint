@@ -56,6 +56,21 @@ def validate_suite_subset(default_suite: SuiteDefinition, screening_suite: Suite
         raise PromptBankValidationError("screening suite must be a strict subset of default suite")
 
 
+def validate_suite_references(
+    prompts: dict[str, PromptDefinition],
+    suites: dict[str, SuiteDefinition],
+) -> None:
+    known_prompt_ids = set(prompts)
+
+    for suite in suites.values():
+        missing = [prompt_id for prompt_id in suite.prompt_ids if prompt_id not in known_prompt_ids]
+        if missing:
+            joined = ", ".join(missing)
+            raise PromptBankValidationError(
+                f"suite {suite.id} references unknown prompt ids: {joined}"
+            )
+
+
 def _read_yaml(path: Path) -> dict[str, object]:
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):

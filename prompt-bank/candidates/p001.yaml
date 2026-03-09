@@ -1,0 +1,13 @@
+id: p001
+name: concise_architecture_tradeoff
+family: style_brief
+intent: distinguish compact trade-off framing
+template: |
+  Use no more than 120 characters to explain why event sourcing is not the default architecture for every system.
+variables: []
+output_contract:
+  type: plain_text
+extractor: style_brief_v1
+weight_hint: 0.8
+tags: [style, architecture, concise]
+risk_level: low

@@ -1,0 +1,13 @@
+id: p002
+name: short_incident_recommendation
+family: style_brief
+intent: distinguish concise incident-response advice
+template: |
+  In at most two sentences, recommend what to do first after a database failover alert.
+variables: []
+output_contract:
+  type: plain_text
+extractor: style_brief_v1
+weight_hint: 0.7
+tags: [style, ops, concise]
+risk_level: low
