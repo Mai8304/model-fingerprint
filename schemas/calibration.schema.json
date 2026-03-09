@@ -1,0 +1,110 @@
+{
+  "$defs": {
+    "CalibrationThresholds": {
+      "additionalProperties": false,
+      "properties": {
+        "consistency": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Consistency",
+          "type": "number"
+        },
+        "margin": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Margin",
+          "type": "number"
+        },
+        "match": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Match",
+          "type": "number"
+        },
+        "suspicious": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Suspicious",
+          "type": "number"
+        },
+        "unknown": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Unknown",
+          "type": "number"
+        }
+      },
+      "required": [
+        "match",
+        "suspicious",
+        "unknown",
+        "margin",
+        "consistency"
+      ],
+      "title": "CalibrationThresholds",
+      "type": "object"
+    },
+    "SimilarityStats": {
+      "additionalProperties": false,
+      "properties": {
+        "mean": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Mean",
+          "type": "number"
+        },
+        "p05": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "P05",
+          "type": "number"
+        },
+        "p50": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "P50",
+          "type": "number"
+        },
+        "p95": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "P95",
+          "type": "number"
+        }
+      },
+      "required": [
+        "mean",
+        "p05",
+        "p50",
+        "p95"
+      ],
+      "title": "SimilarityStats",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "cross_model_stats": {
+      "$ref": "#/$defs/SimilarityStats"
+    },
+    "same_model_stats": {
+      "$ref": "#/$defs/SimilarityStats"
+    },
+    "suite_id": {
+      "pattern": "^(candidate-pool|default|screening)-v[1-9]\\d*$",
+      "title": "Suite Id",
+      "type": "string"
+    },
+    "thresholds": {
+      "$ref": "#/$defs/CalibrationThresholds"
+    }
+  },
+  "required": [
+    "suite_id",
+    "thresholds",
+    "same_model_stats",
+    "cross_model_stats"
+  ],
+  "title": "CalibrationArtifact",
+  "type": "object"
+}
