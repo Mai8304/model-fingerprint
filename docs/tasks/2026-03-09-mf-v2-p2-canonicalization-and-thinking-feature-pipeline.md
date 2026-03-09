@@ -6,7 +6,7 @@
 
 **Tech Stack:** Python 3.12+, pytest, Pydantic v2
 
-**Status:** Planned
+**Status:** Completed on 2026-03-09
 
 **Acceptance Evidence:**
 - `uv run pytest tests/canonicalizers tests/run/test_feature_pipeline.py -q`
