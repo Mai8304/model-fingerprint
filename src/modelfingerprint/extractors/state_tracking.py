@@ -13,7 +13,7 @@ from modelfingerprint.extractors.base import FeatureMap
 
 def extract_state_tracking(canonical_output: object) -> FeatureMap:
     payload = require_payload(canonical_output, extractor_name="state_tracking_v1")
-    task_result = object_mapping(payload.get("task_result", {}), field_name="task_result")
+    task_result = _mapping_or_empty(payload.get("task_result"))
     derivation_codes = _mapping_or_empty(payload.get("derivation_codes"))
     defaults_used = _defaults_used(payload.get("defaults_used", []))
     violations = string_list(payload.get("violations", []), field_name="violations")
@@ -30,7 +30,7 @@ def score_state_tracking(prompt: object, canonical_output: object) -> FeatureMap
     if not isinstance(prompt, PromptDefinition):
         raise TypeError("state_tracking_score_v1 expects PromptDefinition input")
     payload = require_payload(canonical_output, extractor_name="state_tracking_score_v1")
-    task_result = object_mapping(payload.get("task_result", {}), field_name="task_result")
+    task_result = _mapping_or_empty(payload.get("task_result"))
     derivation_codes = _mapping_or_empty(payload.get("derivation_codes"))
     defaults_used = set(_defaults_used(payload.get("defaults_used", [])))
     violations = string_list(payload.get("violations", []), field_name="violations")

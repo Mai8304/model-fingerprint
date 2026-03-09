@@ -1,0 +1,35 @@
+{
+  "coverage_thresholds": {
+    "answer_min": 0.9,
+    "reasoning_min": 0.0
+  },
+  "cross_model_stats": {
+    "mean": 0.8568776196567854,
+    "p05": 0.8117767735527183,
+    "p50": 0.860042810310112,
+    "p95": 0.904061347938556
+  },
+  "protocol_expectations": {
+    "issues": [
+      "violations must be a list of strings"
+    ],
+    "required_capabilities": [
+      "chat_completions"
+    ],
+    "satisfied": true
+  },
+  "same_model_stats": {
+    "mean": 0.9781913473774483,
+    "p05": 0.9324589178354648,
+    "p50": 0.9740562200374123,
+    "p95": 1.0
+  },
+  "suite_id": "fingerprint-suite-v2",
+  "thresholds": {
+    "consistency": 1.0,
+    "margin": 0.01419878494845439,
+    "match": 0.9324589178354648,
+    "suspicious": 0.9182601328870104,
+    "unknown": 0.904061347938556
+  }
+}

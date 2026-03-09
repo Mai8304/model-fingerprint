@@ -240,6 +240,35 @@ def test_state_tracking_score_degrades_instead_of_crashing_on_weak_shapes() -> N
     assert scores["derivation_accuracy"] == 0.0
 
 
+def test_state_tracking_score_tolerates_non_mapping_task_result() -> None:
+    canonical_output = CanonicalizedOutput(
+        format_id="strict_json_v2",
+        payload={
+            "task_result": ["worker_x retained owner ml"],
+            "derivation_codes": ["r4 retained owner"],
+            "defaults_used": ["worker_x.priority"],
+            "violations": [],
+        },
+    )
+    prompt = build_prompt(
+        "p017",
+        "state_tracking",
+        {
+            "expected_task_result": {
+                "worker_x": {"status": "suspended", "owner": "ml", "priority": "p3"},
+            },
+            "expected_derivation_codes": {"worker_x": "r4"},
+            "expected_defaults_used": ["worker_x.priority"],
+        },
+    )
+
+    scores = score_state_tracking(prompt, canonical_output)
+
+    assert scores["snapshot_accuracy"] == 0.0
+    assert scores["derivation_accuracy"] == 0.0
+    assert scores["default_usage_accuracy"] == 1.0
+
+
 def test_state_tracking_tolerates_mapping_defaults_used_shape() -> None:
     canonical_output = CanonicalizedOutput(
         format_id="strict_json_v2",
