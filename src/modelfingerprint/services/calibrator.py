@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-from datetime import date
 from pathlib import Path
 from statistics import mean
 
@@ -34,7 +33,6 @@ class Calibrator:
         if len(suite_ids) != 1:
             raise ValueError("calibration runs and profiles must belong to the same suite")
 
-        profile_by_model = {profile.model_id: profile for profile in profiles}
         same_model_scores: list[float] = []
         cross_model_scores: list[float] = []
         consistency_scores: list[float] = []
@@ -102,8 +100,13 @@ def score_run_against_profile(run: RunArtifact, profile: ProfileArtifact) -> tup
     return overall, consistency
 
 
-def score_feature(value: object, summary: NumericFeatureSummary | BooleanFeatureSummary | EnumFeatureSummary) -> float:
+def score_feature(
+    value: object,
+    summary: NumericFeatureSummary | BooleanFeatureSummary | EnumFeatureSummary,
+) -> float:
     if isinstance(summary, NumericFeatureSummary):
+        if not isinstance(value, (int, float)) or isinstance(value, bool):
+            raise ValueError("numeric summary requires numeric values")
         observed = float(value)
         scale = summary.mad or 1.0
         return 1.0 / (1.0 + abs(observed - summary.median) / scale)

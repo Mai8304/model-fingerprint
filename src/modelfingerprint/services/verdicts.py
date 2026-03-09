@@ -5,7 +5,6 @@ from typing import Literal
 from modelfingerprint.contracts.calibration import CalibrationThresholds
 from modelfingerprint.services.comparator import ComparisonResult
 
-
 Verdict = Literal["match", "suspicious", "mismatch", "unknown"]
 
 

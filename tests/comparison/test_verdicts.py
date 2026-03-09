@@ -4,7 +4,6 @@ from modelfingerprint.contracts.calibration import CalibrationThresholds
 from modelfingerprint.services.comparator import ComparisonResult
 from modelfingerprint.services.verdicts import decide_verdict
 
-
 THRESHOLDS = CalibrationThresholds(
     match=0.8,
     suspicious=0.6,
@@ -47,4 +46,10 @@ def test_verdicts_emit_match_suspicious_mismatch_and_unknown() -> None:
         )
         == "mismatch"
     )
-    assert decide_verdict(build_result(top1_similarity=0.2, claimed_model_similarity=0.2), THRESHOLDS) == "unknown"
+    assert (
+        decide_verdict(
+            build_result(top1_similarity=0.2, claimed_model_similarity=0.2),
+            THRESHOLDS,
+        )
+        == "unknown"
+    )

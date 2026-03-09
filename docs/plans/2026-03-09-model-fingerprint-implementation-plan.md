@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.12+, Typer, Pydantic v2, PyYAML, jsonschema, pytest, Ruff, mypy
 
-**Progress Update (2026-03-09):** Milestone A / P0 and Milestone B / P1 completed and verified. Remaining delivery order is P2 -> P3.
+**Progress Update (2026-03-09):** Milestone A / P0, Milestone B / P1, and Milestone C / P2 completed and verified. Remaining delivery order is P3.
 
 ---
 
@@ -51,6 +51,9 @@ Acceptance anchor:
 - `pytest tests/prompt_bank tests/extractors -q` passes
 
 ### Milestone C: Fingerprint math exists
+
+Status:
+- Completed on 2026-03-09
 
 Outcome:
 - run artifacts can be aggregated into model profiles

@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from statistics import median
 
+from modelfingerprint.contracts._common import FeaturePrimitive
 from modelfingerprint.contracts.profile import (
     BooleanFeatureSummary,
     EnumFeatureSummary,
@@ -10,7 +11,7 @@ from modelfingerprint.contracts.profile import (
     ProfileArtifact,
     ProfilePromptSummary,
 )
-from modelfingerprint.contracts.run import FeaturePrimitive, RunArtifact
+from modelfingerprint.contracts.run import RunArtifact
 
 
 class ProfileBuildError(ValueError):
@@ -58,7 +59,9 @@ def build_profile(
     )
 
 
-def summarize_feature(values: list[FeaturePrimitive]) -> NumericFeatureSummary | BooleanFeatureSummary | EnumFeatureSummary:
+def summarize_feature(
+    values: list[FeaturePrimitive],
+) -> NumericFeatureSummary | BooleanFeatureSummary | EnumFeatureSummary:
     first = values[0]
 
     if isinstance(first, bool):

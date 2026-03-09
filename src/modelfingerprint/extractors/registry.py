@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
 
 import yaml
@@ -16,24 +17,24 @@ from modelfingerprint.extractors.base import (
 from modelfingerprint.extractors.minimal_diff import extract_minimal_diff
 from modelfingerprint.extractors.retrieval import extract_retrieval
 from modelfingerprint.extractors.strict_format import extract_strict_format
-from modelfingerprint.extractors.style_brief import extract_style_brief
 from modelfingerprint.extractors.structured_extraction import extract_structured_extraction
+from modelfingerprint.extractors.style_brief import extract_style_brief
 
 
 class ExtractorRegistry:
     def __init__(
         self,
         descriptors: dict[str, ExtractorDescriptor],
-        handlers: dict[str, ExtractorHandler],
+        handlers: Mapping[str, ExtractorHandler],
     ) -> None:
         self._descriptors = descriptors
-        self._handlers = handlers
+        self._handlers = dict(handlers)
 
     @classmethod
     def from_directory(
         cls,
         directory: Path,
-        handlers: dict[str, ExtractorHandler],
+        handlers: Mapping[str, ExtractorHandler],
     ) -> ExtractorRegistry:
         descriptors: dict[str, ExtractorDescriptor] = {}
 

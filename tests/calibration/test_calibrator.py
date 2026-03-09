@@ -8,7 +8,6 @@ from modelfingerprint.services.calibrator import Calibrator
 from modelfingerprint.services.profile_builder import build_profile
 from modelfingerprint.settings import RepositoryPaths
 
-
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "calibration_runs"
 
 
@@ -31,7 +30,11 @@ def test_calibrator_builds_thresholds_and_writes_artifact(tmp_path: Path) -> Non
 
     assert artifact.suite_id == "default-v1"
     assert artifact.same_model_stats.mean > artifact.cross_model_stats.mean
-    assert artifact.thresholds.match >= artifact.thresholds.suspicious >= artifact.thresholds.unknown
+    assert (
+        artifact.thresholds.match
+        >= artifact.thresholds.suspicious
+        >= artifact.thresholds.unknown
+    )
     assert 0.0 <= artifact.thresholds.margin <= 1.0
     assert 0.0 <= artifact.thresholds.consistency <= 1.0
     assert path == tmp_path / "calibration" / "default-v1.json"

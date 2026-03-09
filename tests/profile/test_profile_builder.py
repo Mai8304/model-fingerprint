@@ -8,7 +8,6 @@ import pytest
 from modelfingerprint.contracts.run import RunArtifact
 from modelfingerprint.services.profile_builder import ProfileBuildError, build_profile
 
-
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "profile_runs"
 
 

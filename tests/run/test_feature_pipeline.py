@@ -7,7 +7,6 @@ from modelfingerprint.contracts.run import UsageMetadata
 from modelfingerprint.extractors.registry import build_default_registry
 from modelfingerprint.services.feature_pipeline import FeaturePipeline, PromptExecutionResult
 
-
 ROOT = Path(__file__).resolve().parents[2]
 
 
