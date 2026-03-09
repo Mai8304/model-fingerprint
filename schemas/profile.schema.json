@@ -77,6 +77,34 @@
     "ProfilePromptSummary": {
       "additionalProperties": false,
       "properties": {
+        "answer_coverage_ratio": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Answer Coverage Ratio"
+        },
+        "expected_reasoning_visible": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Reasoning Visible"
+        },
         "features": {
           "additionalProperties": {
             "discriminator": {
@@ -108,6 +136,20 @@
           "title": "Prompt Id",
           "type": "string"
         },
+        "reasoning_coverage_ratio": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reasoning Coverage Ratio"
+        },
         "weight": {
           "default": 1.0,
           "maximum": 1.0,
@@ -126,6 +168,20 @@
   },
   "additionalProperties": false,
   "properties": {
+    "answer_coverage_ratio": {
+      "anyOf": [
+        {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Answer Coverage Ratio"
+    },
     "model_id": {
       "minLength": 1,
       "title": "Model Id",
@@ -138,6 +194,33 @@
       "minItems": 1,
       "title": "Prompts",
       "type": "array"
+    },
+    "protocol_expectations": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Protocol Expectations"
+    },
+    "reasoning_coverage_ratio": {
+      "anyOf": [
+        {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reasoning Coverage Ratio"
     },
     "sample_count": {
       "exclusiveMinimum": 0,

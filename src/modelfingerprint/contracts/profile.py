@@ -45,6 +45,9 @@ FeatureSummary = Annotated[
 class ProfilePromptSummary(ContractModel):
     prompt_id: PromptId
     weight: Probability = 1.0
+    answer_coverage_ratio: Probability | None = None
+    reasoning_coverage_ratio: Probability | None = None
+    expected_reasoning_visible: Probability | None = None
     features: dict[str, FeatureSummary] = Field(min_length=1)
 
 
@@ -52,4 +55,7 @@ class ProfileArtifact(ContractModel):
     model_id: str = Field(min_length=1)
     suite_id: SuiteId
     sample_count: int = Field(gt=0)
+    answer_coverage_ratio: Probability | None = None
+    reasoning_coverage_ratio: Probability | None = None
+    protocol_expectations: dict[str, object] | None = None
     prompts: list[ProfilePromptSummary] = Field(min_length=1)

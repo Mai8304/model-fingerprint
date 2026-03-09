@@ -30,10 +30,26 @@ def test_exported_schema_files_exist(path: Path) -> None:
                 "name": "concise_architecture_tradeoff",
                 "family": "style_brief",
                 "intent": "distinguish compact trade-off framing",
-                "template": "用不超过120字说明为什么事件溯源不适合作为所有系统的默认架构。",
-                "variables": [],
-                "output_contract": {"type": "plain_text"},
-                "extractor": "style_brief_v1",
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "用不超过120字说明为什么事件溯源不适合作为所有系统的默认架构。",
+                    }
+                ],
+                "generation": {
+                    "temperature": 0.0,
+                    "top_p": 1.0,
+                    "max_output_tokens": 120,
+                    "response_format": "text",
+                    "reasoning_mode": "capture_if_available",
+                },
+                "output_contract": {"id": "plain_text_v2", "canonicalizer": "plain_text_v2"},
+                "extractors": {
+                    "answer": "style_brief_v1",
+                    "reasoning": "reasoning_trace_v1",
+                    "transport": "completion_metadata_v1",
+                },
+                "required_capabilities": ["chat_completions"],
                 "weight_hint": 0.8,
                 "tags": ["style"],
                 "risk_level": "low",
@@ -43,10 +59,17 @@ def test_exported_schema_files_exist(path: Path) -> None:
                 "name": "bad_prompt",
                 "family": "creative_mode",
                 "intent": "invalid family",
-                "template": "x",
-                "variables": [],
-                "output_contract": {"type": "plain_text"},
-                "extractor": "style_brief_v1",
+                "messages": [{"role": "user", "content": "x"}],
+                "generation": {
+                    "temperature": 0.0,
+                    "top_p": 1.0,
+                    "max_output_tokens": 120,
+                    "response_format": "text",
+                    "reasoning_mode": "ignore",
+                },
+                "output_contract": {"id": "plain_text_v2", "canonicalizer": "plain_text_v2"},
+                "extractors": {"answer": "style_brief_v1"},
+                "required_capabilities": ["chat_completions"],
                 "weight_hint": 0.8,
                 "tags": [],
                 "risk_level": "low",
@@ -58,16 +81,59 @@ def test_exported_schema_files_exist(path: Path) -> None:
                 "run_id": "run-20260309-001",
                 "suite_id": "fingerprint-suite-v1",
                 "target_label": "suspect-a",
+                "prompt_count_total": 1,
+                "prompt_count_completed": 1,
+                "prompt_count_scoreable": 1,
+                "answer_coverage_ratio": 1.0,
+                "reasoning_coverage_ratio": 1.0,
+                "protocol_compatibility": {
+                    "satisfied": True,
+                    "required_capabilities": ["chat_completions"],
+                    "issues": [],
+                },
                 "prompts": [
                     {
                         "prompt_id": "p017",
+                        "status": "completed",
+                        "request_snapshot": {
+                            "messages": [{"role": "user", "content": "短答复"}],
+                            "generation": {
+                                "temperature": 0.0,
+                                "top_p": 1.0,
+                                "max_output_tokens": 120,
+                                "response_format": "text",
+                                "reasoning_mode": "capture_if_available",
+                            },
+                        },
+                        "completion": {
+                            "answer_text": "短答复",
+                            "reasoning_text": "先分析，再回答。",
+                            "reasoning_visible": True,
+                            "finish_reason": "stop",
+                            "latency_ms": 1000,
+                            "raw_response_path": (
+                                "traces/2026-03-09/run-20260309-001/p017.response.json"
+                            ),
+                            "usage": {
+                                "input_tokens": 12,
+                                "output_tokens": 18,
+                                "reasoning_tokens": 24,
+                                "total_tokens": 54,
+                            },
+                        },
+                        "canonical_output": {
+                            "format_id": "plain_text_v2",
+                            "payload": {"text": "短答复"},
+                        },
+                        "canonicalization_events": [],
                         "raw_output": "短答复",
                         "usage": {
                             "input_tokens": 12,
                             "output_tokens": 18,
-                            "total_tokens": 30,
+                            "reasoning_tokens": 24,
+                            "total_tokens": 54,
                         },
-                        "features": {"char_len": 3},
+                        "features": {"answer.char_len": 3},
                     }
                 ],
             },
@@ -84,12 +150,22 @@ def test_exported_schema_files_exist(path: Path) -> None:
                 "model_id": "gpt-5.3",
                 "suite_id": "fingerprint-suite-v1",
                 "sample_count": 5,
+                "answer_coverage_ratio": 1.0,
+                "reasoning_coverage_ratio": 0.8,
+                "protocol_expectations": {
+                    "satisfied": True,
+                    "required_capabilities": ["chat_completions"],
+                    "issues": [],
+                },
                 "prompts": [
                     {
                         "prompt_id": "p017",
                         "weight": 0.8,
+                        "answer_coverage_ratio": 1.0,
+                        "reasoning_coverage_ratio": 0.8,
+                        "expected_reasoning_visible": 0.8,
                         "features": {
-                            "char_len": {"kind": "numeric", "median": 42.0, "mad": 4.0},
+                            "answer.char_len": {"kind": "numeric", "median": 42.0, "mad": 4.0},
                         },
                     }
                 ],
@@ -112,6 +188,10 @@ def test_exported_schema_files_exist(path: Path) -> None:
                     "margin": 0.08,
                     "consistency": 0.65,
                 },
+                "coverage_thresholds": {
+                    "answer_min": 0.8,
+                    "reasoning_min": 0.3,
+                },
                 "same_model_stats": {
                     "mean": 0.88,
                     "p05": 0.79,
@@ -123,6 +203,11 @@ def test_exported_schema_files_exist(path: Path) -> None:
                     "p05": 0.22,
                     "p50": 0.39,
                     "p95": 0.61,
+                },
+                "protocol_expectations": {
+                    "satisfied": True,
+                    "required_capabilities": ["chat_completions"],
+                    "issues": [],
                 },
             },
             {
@@ -134,6 +219,10 @@ def test_exported_schema_files_exist(path: Path) -> None:
                     "margin": 0.08,
                     "consistency": 0.65,
                 },
+                "coverage_thresholds": {
+                    "answer_min": 0.8,
+                    "reasoning_min": 0.3,
+                },
                 "same_model_stats": {
                     "mean": 0.88,
                     "p05": 0.79,
@@ -145,6 +234,11 @@ def test_exported_schema_files_exist(path: Path) -> None:
                     "p05": 0.22,
                     "p50": 0.39,
                     "p95": 0.61,
+                },
+                "protocol_expectations": {
+                    "satisfied": True,
+                    "required_capabilities": ["chat_completions"],
+                    "issues": [],
                 },
             },
         ),

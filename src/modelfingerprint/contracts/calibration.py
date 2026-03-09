@@ -13,6 +13,11 @@ class CalibrationThresholds(ContractModel):
     consistency: Probability
 
 
+class CoverageThresholds(ContractModel):
+    answer_min: Probability
+    reasoning_min: Probability
+
+
 class SimilarityStats(ContractModel):
     mean: Probability
     p05: Probability
@@ -29,5 +34,7 @@ class SimilarityStats(ContractModel):
 class CalibrationArtifact(ContractModel):
     suite_id: SuiteId
     thresholds: CalibrationThresholds
+    coverage_thresholds: CoverageThresholds | None = None
     same_model_stats: SimilarityStats
     cross_model_stats: SimilarityStats
+    protocol_expectations: dict[str, object] | None = None

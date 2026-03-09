@@ -44,6 +44,29 @@
       "title": "CalibrationThresholds",
       "type": "object"
     },
+    "CoverageThresholds": {
+      "additionalProperties": false,
+      "properties": {
+        "answer_min": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Answer Min",
+          "type": "number"
+        },
+        "reasoning_min": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Reasoning Min",
+          "type": "number"
+        }
+      },
+      "required": [
+        "answer_min",
+        "reasoning_min"
+      ],
+      "title": "CoverageThresholds",
+      "type": "object"
+    },
     "SimilarityStats": {
       "additionalProperties": false,
       "properties": {
@@ -84,8 +107,32 @@
   },
   "additionalProperties": false,
   "properties": {
+    "coverage_thresholds": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CoverageThresholds"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
     "cross_model_stats": {
       "$ref": "#/$defs/SimilarityStats"
+    },
+    "protocol_expectations": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Protocol Expectations"
     },
     "same_model_stats": {
       "$ref": "#/$defs/SimilarityStats"

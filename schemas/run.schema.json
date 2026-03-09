@@ -1,8 +1,296 @@
 {
   "$defs": {
+    "CanonicalizationEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "CanonicalizationEvent",
+      "type": "object"
+    },
+    "CanonicalizedOutput": {
+      "additionalProperties": false,
+      "properties": {
+        "format_id": {
+          "minLength": 1,
+          "title": "Format Id",
+          "type": "string"
+        },
+        "payload": {
+          "additionalProperties": true,
+          "title": "Payload",
+          "type": "object"
+        }
+      },
+      "required": [
+        "format_id"
+      ],
+      "title": "CanonicalizedOutput",
+      "type": "object"
+    },
+    "GenerationSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "max_output_tokens": {
+          "minimum": 1,
+          "title": "Max Output Tokens",
+          "type": "integer"
+        },
+        "reasoning_mode": {
+          "enum": [
+            "ignore",
+            "capture_if_available",
+            "require_visible"
+          ],
+          "title": "Reasoning Mode",
+          "type": "string"
+        },
+        "response_format": {
+          "enum": [
+            "text",
+            "json_object"
+          ],
+          "title": "Response Format",
+          "type": "string"
+        },
+        "temperature": {
+          "minimum": 0.0,
+          "title": "Temperature",
+          "type": "number"
+        },
+        "top_p": {
+          "exclusiveMinimum": 0.0,
+          "maximum": 1.0,
+          "title": "Top P",
+          "type": "number"
+        }
+      },
+      "required": [
+        "temperature",
+        "top_p",
+        "max_output_tokens",
+        "response_format",
+        "reasoning_mode"
+      ],
+      "title": "GenerationSpec",
+      "type": "object"
+    },
+    "NormalizedCompletion": {
+      "additionalProperties": false,
+      "properties": {
+        "answer_text": {
+          "minLength": 1,
+          "title": "Answer Text",
+          "type": "string"
+        },
+        "finish_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Finish Reason"
+        },
+        "latency_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Latency Ms"
+        },
+        "raw_response_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Raw Response Path"
+        },
+        "reasoning_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reasoning Text"
+        },
+        "reasoning_visible": {
+          "default": false,
+          "title": "Reasoning Visible",
+          "type": "boolean"
+        },
+        "usage": {
+          "$ref": "#/$defs/UsageMetadata"
+        }
+      },
+      "required": [
+        "answer_text",
+        "usage"
+      ],
+      "title": "NormalizedCompletion",
+      "type": "object"
+    },
+    "PromptExecutionError": {
+      "additionalProperties": false,
+      "properties": {
+        "http_status": {
+          "anyOf": [
+            {
+              "maximum": 599,
+              "minimum": 100,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Http Status"
+        },
+        "kind": {
+          "minLength": 1,
+          "title": "Kind",
+          "type": "string"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "retryable": {
+          "default": false,
+          "title": "Retryable",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "kind",
+        "message"
+      ],
+      "title": "PromptExecutionError",
+      "type": "object"
+    },
+    "PromptMessage": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "minLength": 1,
+          "title": "Content",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "system",
+            "user",
+            "assistant"
+          ],
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "content"
+      ],
+      "title": "PromptMessage",
+      "type": "object"
+    },
+    "PromptRequestSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "generation": {
+          "$ref": "#/$defs/GenerationSpec"
+        },
+        "messages": {
+          "items": {
+            "$ref": "#/$defs/PromptMessage"
+          },
+          "minItems": 1,
+          "title": "Messages",
+          "type": "array"
+        }
+      },
+      "required": [
+        "messages",
+        "generation"
+      ],
+      "title": "PromptRequestSnapshot",
+      "type": "object"
+    },
     "PromptRunResult": {
       "additionalProperties": false,
       "properties": {
+        "canonical_output": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CanonicalizedOutput"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "canonicalization_events": {
+          "items": {
+            "$ref": "#/$defs/CanonicalizationEvent"
+          },
+          "title": "Canonicalization Events",
+          "type": "array"
+        },
+        "completion": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NormalizedCompletion"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PromptExecutionError"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "features": {
           "additionalProperties": {
             "anyOf": [
@@ -20,7 +308,6 @@
               }
             ]
           },
-          "minProperties": 1,
           "title": "Features",
           "type": "object"
         },
@@ -30,20 +317,86 @@
           "type": "string"
         },
         "raw_output": {
-          "title": "Raw Output",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Raw Output"
+        },
+        "request_snapshot": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PromptRequestSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "default": "completed",
+          "enum": [
+            "completed",
+            "timeout",
+            "transport_error",
+            "unsupported_capability",
+            "truncated",
+            "invalid_response",
+            "canonicalization_error"
+          ],
+          "title": "Status",
           "type": "string"
         },
         "usage": {
-          "$ref": "#/$defs/UsageMetadata"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/UsageMetadata"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
-        "prompt_id",
-        "raw_output",
-        "usage",
-        "features"
+        "prompt_id"
       ],
       "title": "PromptRunResult",
+      "type": "object"
+    },
+    "ProtocolCompatibility": {
+      "additionalProperties": false,
+      "properties": {
+        "issues": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Issues",
+          "type": "array"
+        },
+        "required_capabilities": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Required Capabilities",
+          "type": "array"
+        },
+        "satisfied": {
+          "title": "Satisfied",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "satisfied"
+      ],
+      "title": "ProtocolCompatibility",
       "type": "object"
     },
     "UsageMetadata": {
@@ -57,6 +410,12 @@
         "output_tokens": {
           "minimum": 0,
           "title": "Output Tokens",
+          "type": "integer"
+        },
+        "reasoning_tokens": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Reasoning Tokens",
           "type": "integer"
         },
         "total_tokens": {
@@ -76,6 +435,20 @@
   },
   "additionalProperties": false,
   "properties": {
+    "answer_coverage_ratio": {
+      "anyOf": [
+        {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Answer Coverage Ratio"
+    },
     "claimed_model": {
       "anyOf": [
         {
@@ -88,6 +461,57 @@
       "default": null,
       "title": "Claimed Model"
     },
+    "endpoint_profile_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Endpoint Profile Id"
+    },
+    "prompt_count_completed": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Prompt Count Completed"
+    },
+    "prompt_count_scoreable": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Prompt Count Scoreable"
+    },
+    "prompt_count_total": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Prompt Count Total"
+    },
     "prompts": {
       "items": {
         "$ref": "#/$defs/PromptRunResult"
@@ -95,6 +519,31 @@
       "minItems": 1,
       "title": "Prompts",
       "type": "array"
+    },
+    "protocol_compatibility": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ProtocolCompatibility"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "reasoning_coverage_ratio": {
+      "anyOf": [
+        {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reasoning Coverage Ratio"
     },
     "run_id": {
       "minLength": 1,
@@ -110,6 +559,18 @@
       "minLength": 1,
       "title": "Target Label",
       "type": "string"
+    },
+    "trace_dir": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Trace Dir"
     }
   },
   "required": [
