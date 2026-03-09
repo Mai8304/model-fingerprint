@@ -4,6 +4,8 @@ Execute the current task plans in order:
 
 ## Current v2 program
 
+Completed on 2026-03-09:
+
 1. `2026-03-09-mf-v2-a0-thinking-architecture-and-interfaces.md`
 2. `2026-03-09-mf-v2-p0-contracts-and-fixed-protocol.md`
 3. `2026-03-09-mf-v2-p1-dialect-normalization-and-endpoint-profiles.md`
