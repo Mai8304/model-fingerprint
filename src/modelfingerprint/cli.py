@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import json
+from datetime import date
 from pathlib import Path
 
 import typer
 
 from modelfingerprint import __version__
+from modelfingerprint.adapters.openai_chat import ChatCompletionResult
+from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.contracts.profile import ProfileArtifact
 from modelfingerprint.contracts.run import RunArtifact
 from modelfingerprint.services.prompt_bank import (
@@ -15,6 +18,8 @@ from modelfingerprint.services.prompt_bank import (
     validate_suite_references,
     validate_suite_subset,
 )
+from modelfingerprint.services.suite_runner import SuiteRunner
+from modelfingerprint.settings import RepositoryPaths
 
 app = typer.Typer(
     add_completion=False,
@@ -94,6 +99,37 @@ def show_profile(path: Path, json_output: bool = typer.Option(False, "--json")) 
     typer.echo(f"model_id: {artifact.model_id}")
     typer.echo(f"suite_id: {artifact.suite_id}")
     typer.echo(f"sample_count: {artifact.sample_count}")
+
+
+@app.command("run-suite")
+def run_suite(
+    suite_id: str,
+    target_label: str = typer.Option(..., "--target-label"),
+    claimed_model: str | None = typer.Option(None, "--claimed-model"),
+    root: Path = typer.Option(Path.cwd(), "--root", exists=True, file_okay=False),
+    fixture_responses: Path = typer.Option(..., "--fixture-responses", exists=True, dir_okay=False),
+    run_date: str = typer.Option("2026-03-09", "--run-date"),
+) -> None:
+    payload = json.loads(fixture_responses.read_text(encoding="utf-8"))
+
+    class FixtureTransport:
+        def complete(self, prompt: PromptDefinition) -> ChatCompletionResult:
+            item = payload[prompt.id]
+            return ChatCompletionResult(
+                content=item["content"],
+                input_tokens=item["input_tokens"],
+                output_tokens=item["output_tokens"],
+                total_tokens=item["total_tokens"],
+            )
+
+    runner = SuiteRunner(RepositoryPaths(root=root), transport=FixtureTransport())
+    path = runner.run_suite(
+        suite_id=suite_id,
+        target_label=target_label,
+        claimed_model=claimed_model,
+        run_date=date.fromisoformat(run_date),
+    )
+    typer.echo(path)
 
 
 if __name__ == "__main__":
