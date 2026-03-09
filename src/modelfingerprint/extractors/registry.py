@@ -1,0 +1,76 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from pathlib import Path
+
+import yaml
+
+from modelfingerprint.contracts.prompt import PromptDefinition
+from modelfingerprint.extractors.base import (
+    ExtractorDescriptor,
+    ExtractorHandler,
+    ExtractorValidationError,
+    FeatureMap,
+    RegisteredExtractor,
+    ensure_json_serializable,
+)
+from modelfingerprint.extractors.minimal_diff import extract_minimal_diff
+from modelfingerprint.extractors.retrieval import extract_retrieval
+from modelfingerprint.extractors.strict_format import extract_strict_format
+from modelfingerprint.extractors.structured_extraction import extract_structured_extraction
+from modelfingerprint.extractors.style_brief import extract_style_brief
+
+
+class ExtractorRegistry:
+    def __init__(
+        self,
+        descriptors: dict[str, ExtractorDescriptor],
+        handlers: Mapping[str, ExtractorHandler],
+    ) -> None:
+        self._descriptors = descriptors
+        self._handlers = dict(handlers)
+
+    @classmethod
+    def from_directory(
+        cls,
+        directory: Path,
+        handlers: Mapping[str, ExtractorHandler],
+    ) -> ExtractorRegistry:
+        descriptors: dict[str, ExtractorDescriptor] = {}
+
+        for path in sorted(directory.glob("*.yaml")):
+            descriptor = ExtractorDescriptor.model_validate(
+                yaml.safe_load(path.read_text(encoding="utf-8"))
+            )
+            descriptors[descriptor.name] = descriptor
+
+        return cls(descriptors=descriptors, handlers=handlers)
+
+    def get(self, name: str) -> RegisteredExtractor:
+        descriptor = self._descriptors.get(name)
+        handler = self._handlers.get(name)
+
+        if descriptor is None or handler is None:
+            raise ExtractorValidationError(f"unknown extractor: {name}")
+
+        return RegisteredExtractor(descriptor=descriptor, handler=handler)
+
+    def get_for_prompt(self, prompt: PromptDefinition) -> RegisteredExtractor:
+        return self.get(prompt.extractor)
+
+    def extract(self, prompt: PromptDefinition, raw_output: str) -> FeatureMap:
+        resolved = self.get_for_prompt(prompt)
+        feature_map = resolved.handler(raw_output)
+        ensure_json_serializable(feature_map)
+        return feature_map
+
+
+def build_default_registry(directory: Path) -> ExtractorRegistry:
+    handlers = {
+        "style_brief_v1": extract_style_brief,
+        "strict_format_v1": extract_strict_format,
+        "minimal_diff_v1": extract_minimal_diff,
+        "structured_extraction_v1": extract_structured_extraction,
+        "retrieval_v1": extract_retrieval,
+    }
+    return ExtractorRegistry.from_directory(directory, handlers=handlers)

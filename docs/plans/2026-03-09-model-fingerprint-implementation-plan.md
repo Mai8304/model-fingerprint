@@ -8,6 +8,8 @@
 
 **Tech Stack:** Python 3.12+, Typer, Pydantic v2, PyYAML, jsonschema, pytest, Ruff, mypy
 
+**Progress Update (2026-03-09):** Milestones A through D completed and verified. The standalone toolkit now supports prompt validation, suite execution, profile building, calibration, comparison, reporting, and end-to-end golden-path verification.
+
 ---
 
 ## Delivery Order
@@ -23,6 +25,9 @@ Implement in this order:
 
 ### Milestone A: Repository and protocol contracts exist
 
+Status:
+- Completed on 2026-03-09
+
 Outcome:
 - repository is initialized
 - package layout is present
@@ -34,6 +39,9 @@ Acceptance anchor:
 
 ### Milestone B: Prompt bank and extractor pipeline exist
 
+Status:
+- Completed on 2026-03-09
+
 Outcome:
 - candidate and suite files validate
 - all five extractor families work on fixtures
@@ -44,6 +52,9 @@ Acceptance anchor:
 
 ### Milestone C: Fingerprint math exists
 
+Status:
+- Completed on 2026-03-09
+
 Outcome:
 - run artifacts can be aggregated into model profiles
 - calibration files are computed from baseline runs
@@ -53,6 +64,9 @@ Acceptance anchor:
 - `pytest tests/profile tests/calibration tests/comparison -q` passes
 
 ### Milestone D: Operators can use the tool end-to-end
+
+Status:
+- Completed on 2026-03-09
 
 Outcome:
 - CLI validates protocol files

@@ -1,0 +1,123 @@
+{
+  "$defs": {
+    "PromptRunResult": {
+      "additionalProperties": false,
+      "properties": {
+        "features": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "minProperties": 1,
+          "title": "Features",
+          "type": "object"
+        },
+        "prompt_id": {
+          "pattern": "^p\\d{3}$",
+          "title": "Prompt Id",
+          "type": "string"
+        },
+        "raw_output": {
+          "title": "Raw Output",
+          "type": "string"
+        },
+        "usage": {
+          "$ref": "#/$defs/UsageMetadata"
+        }
+      },
+      "required": [
+        "prompt_id",
+        "raw_output",
+        "usage",
+        "features"
+      ],
+      "title": "PromptRunResult",
+      "type": "object"
+    },
+    "UsageMetadata": {
+      "additionalProperties": false,
+      "properties": {
+        "input_tokens": {
+          "minimum": 0,
+          "title": "Input Tokens",
+          "type": "integer"
+        },
+        "output_tokens": {
+          "minimum": 0,
+          "title": "Output Tokens",
+          "type": "integer"
+        },
+        "total_tokens": {
+          "minimum": 0,
+          "title": "Total Tokens",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "input_tokens",
+        "output_tokens",
+        "total_tokens"
+      ],
+      "title": "UsageMetadata",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "claimed_model": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Claimed Model"
+    },
+    "prompts": {
+      "items": {
+        "$ref": "#/$defs/PromptRunResult"
+      },
+      "minItems": 1,
+      "title": "Prompts",
+      "type": "array"
+    },
+    "run_id": {
+      "minLength": 1,
+      "title": "Run Id",
+      "type": "string"
+    },
+    "suite_id": {
+      "pattern": "^(candidate-pool|default|screening)-v[1-9]\\d*$",
+      "title": "Suite Id",
+      "type": "string"
+    },
+    "target_label": {
+      "minLength": 1,
+      "title": "Target Label",
+      "type": "string"
+    }
+  },
+  "required": [
+    "run_id",
+    "suite_id",
+    "target_label",
+    "prompts"
+  ],
+  "title": "RunArtifact",
+  "type": "object"
+}

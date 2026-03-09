@@ -1,0 +1,13 @@
+id: p003
+name: fixed_json_triage
+family: strict_format
+intent: detect strict JSON obedience
+template: |
+  Reply with JSON only using fields "answer" and "confidence" in that order.
+variables: []
+output_contract:
+  type: json
+extractor: strict_format_v1
+weight_hint: 0.9
+tags: [format, json]
+risk_level: low

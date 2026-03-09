@@ -1,0 +1,13 @@
+id: p010
+name: distractor_sensitive_lookup
+family: retrieval
+intent: measure confusion under similar distractors
+template: |
+  Retrieve the requested items from the long text and preserve their order in JSON output.
+variables: []
+output_contract:
+  type: json
+extractor: retrieval_v1
+weight_hint: 0.8
+tags: [retrieval, distractor]
+risk_level: low

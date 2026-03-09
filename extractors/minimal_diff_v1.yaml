@@ -1,0 +1,8 @@
+name: minimal_diff_v1
+family: minimal_diff
+version: 1
+features:
+  - changed_lines
+  - touched_hunks
+  - reorder_tendency
+  - minimality_score

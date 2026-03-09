@@ -1,0 +1,13 @@
+id: p007
+name: evidence_grounded_extraction
+family: structured_extraction
+intent: measure grounded extraction with explicit evidence
+template: |
+  Extract name and role from the supplied text only, and attach evidence ids for every field.
+variables: []
+output_contract:
+  type: json
+extractor: structured_extraction_v1
+weight_hint: 0.9
+tags: [extraction, evidence]
+risk_level: low

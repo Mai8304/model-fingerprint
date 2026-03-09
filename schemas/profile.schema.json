@@ -1,0 +1,161 @@
+{
+  "$defs": {
+    "BooleanFeatureSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "boolean",
+          "title": "Kind",
+          "type": "string"
+        },
+        "p_true": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "P True",
+          "type": "number"
+        }
+      },
+      "required": [
+        "kind",
+        "p_true"
+      ],
+      "title": "BooleanFeatureSummary",
+      "type": "object"
+    },
+    "EnumFeatureSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "distribution": {
+          "additionalProperties": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "type": "number"
+          },
+          "minProperties": 1,
+          "title": "Distribution",
+          "type": "object"
+        },
+        "kind": {
+          "const": "enum",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "distribution"
+      ],
+      "title": "EnumFeatureSummary",
+      "type": "object"
+    },
+    "NumericFeatureSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "numeric",
+          "title": "Kind",
+          "type": "string"
+        },
+        "mad": {
+          "minimum": 0.0,
+          "title": "Mad",
+          "type": "number"
+        },
+        "median": {
+          "title": "Median",
+          "type": "number"
+        }
+      },
+      "required": [
+        "kind",
+        "median",
+        "mad"
+      ],
+      "title": "NumericFeatureSummary",
+      "type": "object"
+    },
+    "ProfilePromptSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "features": {
+          "additionalProperties": {
+            "discriminator": {
+              "mapping": {
+                "boolean": "#/$defs/BooleanFeatureSummary",
+                "enum": "#/$defs/EnumFeatureSummary",
+                "numeric": "#/$defs/NumericFeatureSummary"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/NumericFeatureSummary"
+              },
+              {
+                "$ref": "#/$defs/BooleanFeatureSummary"
+              },
+              {
+                "$ref": "#/$defs/EnumFeatureSummary"
+              }
+            ]
+          },
+          "minProperties": 1,
+          "title": "Features",
+          "type": "object"
+        },
+        "prompt_id": {
+          "pattern": "^p\\d{3}$",
+          "title": "Prompt Id",
+          "type": "string"
+        },
+        "weight": {
+          "default": 1.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Weight",
+          "type": "number"
+        }
+      },
+      "required": [
+        "prompt_id",
+        "features"
+      ],
+      "title": "ProfilePromptSummary",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "model_id": {
+      "minLength": 1,
+      "title": "Model Id",
+      "type": "string"
+    },
+    "prompts": {
+      "items": {
+        "$ref": "#/$defs/ProfilePromptSummary"
+      },
+      "minItems": 1,
+      "title": "Prompts",
+      "type": "array"
+    },
+    "sample_count": {
+      "exclusiveMinimum": 0,
+      "title": "Sample Count",
+      "type": "integer"
+    },
+    "suite_id": {
+      "pattern": "^(candidate-pool|default|screening)-v[1-9]\\d*$",
+      "title": "Suite Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "model_id",
+    "suite_id",
+    "sample_count",
+    "prompts"
+  ],
+  "title": "ProfileArtifact",
+  "type": "object"
+}

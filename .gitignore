@@ -1,2 +1,5 @@
 .DS_Store
 .worktrees/
+__pycache__/
+*.py[cod]
+*.egg-info/

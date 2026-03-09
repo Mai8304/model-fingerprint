@@ -1,0 +1,13 @@
+id: p004
+name: tagged_status_summary
+family: strict_format
+intent: detect tagged output obedience
+template: |
+  Reply using only <status> and <reason> tags, with no extra text.
+variables: []
+output_contract:
+  type: tagged_text
+extractor: strict_format_v1
+weight_hint: 0.7
+tags: [format, tags]
+risk_level: low

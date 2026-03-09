@@ -8,6 +8,13 @@
 
 **Tech Stack:** Python 3.12+, Typer, Pydantic v2, PyYAML, jsonschema, pytest, Ruff, mypy
 
+**Status:** Completed on 2026-03-09
+
+**Acceptance Evidence:**
+- `uv run ruff check src tests`
+- `uv run mypy src`
+- `uv run pytest tests/test_cli_smoke.py tests/test_settings_paths.py tests/contracts -q`
+
 ---
 
 ### Task 1: Initialize the repository and package skeleton

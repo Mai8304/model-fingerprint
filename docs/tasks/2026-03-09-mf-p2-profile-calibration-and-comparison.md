@@ -8,6 +8,13 @@
 
 **Tech Stack:** Python 3.12+, Pydantic v2, pytest, jsonschema
 
+**Status:** Completed on 2026-03-09
+
+**Acceptance Evidence:**
+- `uv run pytest tests/run tests/profile tests/calibration tests/comparison -q`
+- `uv run ruff check src tests`
+- `uv run mypy src`
+
 ---
 
 ### Task 1: Implement run artifacts and feature-pipeline persistence

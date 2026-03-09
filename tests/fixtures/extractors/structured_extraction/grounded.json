@@ -1,0 +1,9 @@
+{
+  "requested_fields": ["name", "role"],
+  "extracted": {
+    "name": "Alice",
+    "role": "admin"
+  },
+  "evidence": ["name", "role"],
+  "hallucinated": []
+}

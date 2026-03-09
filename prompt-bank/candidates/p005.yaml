@@ -1,0 +1,13 @@
+id: p005
+name: one_hunk_patch
+family: minimal_diff
+intent: measure minimal patch behavior
+template: |
+  Return a unified diff only. Change one line, do not refactor, do not reorder.
+variables: []
+output_contract:
+  type: plain_text
+extractor: minimal_diff_v1
+weight_hint: 0.85
+tags: [diff, minimal]
+risk_level: low

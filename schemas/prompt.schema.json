@@ -1,0 +1,133 @@
+{
+  "$defs": {
+    "OutputContract": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": [
+            "plain_text",
+            "json",
+            "tagged_text"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "OutputContract",
+      "type": "object"
+    },
+    "PromptVariable": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "required": {
+          "default": true,
+          "title": "Required",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "description"
+      ],
+      "title": "PromptVariable",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "extractor": {
+      "pattern": "^[a-z_]+_v[1-9]\\d*$",
+      "title": "Extractor",
+      "type": "string"
+    },
+    "family": {
+      "enum": [
+        "style_brief",
+        "strict_format",
+        "minimal_diff",
+        "structured_extraction",
+        "retrieval"
+      ],
+      "title": "Family",
+      "type": "string"
+    },
+    "id": {
+      "pattern": "^p\\d{3}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "intent": {
+      "minLength": 1,
+      "title": "Intent",
+      "type": "string"
+    },
+    "name": {
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "output_contract": {
+      "$ref": "#/$defs/OutputContract"
+    },
+    "risk_level": {
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "title": "Risk Level",
+      "type": "string"
+    },
+    "tags": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Tags",
+      "type": "array"
+    },
+    "template": {
+      "minLength": 1,
+      "title": "Template",
+      "type": "string"
+    },
+    "variables": {
+      "items": {
+        "$ref": "#/$defs/PromptVariable"
+      },
+      "title": "Variables",
+      "type": "array"
+    },
+    "weight_hint": {
+      "default": 1.0,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Weight Hint",
+      "type": "number"
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "family",
+    "intent",
+    "template",
+    "output_contract",
+    "extractor",
+    "risk_level"
+  ],
+  "title": "PromptDefinition",
+  "type": "object"
+}

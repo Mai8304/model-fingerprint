@@ -1,0 +1,1 @@
+Use CRUD first. Event sourcing adds overhead.

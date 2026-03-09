@@ -8,6 +8,13 @@
 
 **Tech Stack:** Python 3.12+, Typer, pytest
 
+**Status:** Completed on 2026-03-09
+
+**Acceptance Evidence:**
+- `uv run pytest -q`
+- `uv run ruff check src tests`
+- `uv run mypy src`
+
 ---
 
 ### Task 1: Add the prompt-bank and artifact inspection commands
