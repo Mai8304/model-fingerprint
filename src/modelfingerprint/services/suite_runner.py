@@ -5,9 +5,18 @@ from pathlib import Path
 from typing import Protocol, cast
 
 from modelfingerprint.adapters.openai_chat import ChatCompletionTransport
+from modelfingerprint.contracts.endpoint import EndpointProfile
 from modelfingerprint.contracts.prompt import PromptDefinition
-from modelfingerprint.contracts.run import UsageMetadata
+from modelfingerprint.contracts.run import (
+    PromptExecutionError,
+    PromptRequestSnapshot,
+    UsageMetadata,
+)
 from modelfingerprint.extractors.registry import ExtractorRegistry, build_default_registry
+from modelfingerprint.services.endpoint_profiles import (
+    EndpointProfileValidationError,
+    ensure_endpoint_supports_prompt,
+)
 from modelfingerprint.services.feature_pipeline import FeaturePipeline, PromptExecutionResult
 from modelfingerprint.services.prompt_bank import (
     FINGERPRINT_SUITE_ID,
@@ -23,6 +32,10 @@ from modelfingerprint.settings import RepositoryPaths
 
 class PromptExecutionTransport(Protocol):
     def execute(self, prompt: PromptDefinition) -> PromptExecutionResult: ...
+
+
+class EndpointAwareTransport(Protocol):
+    endpoint: EndpointProfile
 
 
 class SuiteRunner:
@@ -65,6 +78,25 @@ class SuiteRunner:
         return RunWriter(self._paths).write(artifact, run_date or date.today())
 
     def _execute_prompt(self, prompt: PromptDefinition) -> PromptExecutionResult:
+        if hasattr(self._transport, "endpoint"):
+            try:
+                endpoint_aware = cast(EndpointAwareTransport, self._transport)
+                ensure_endpoint_supports_prompt(endpoint_aware.endpoint, prompt)
+            except EndpointProfileValidationError as exc:
+                return PromptExecutionResult(
+                    prompt=prompt,
+                    status="unsupported_capability",
+                    request_snapshot=PromptRequestSnapshot(
+                        messages=prompt.messages,
+                        generation=prompt.generation,
+                    ),
+                    error=PromptExecutionError(
+                        kind="unsupported_capability",
+                        message=str(exc),
+                        retryable=False,
+                    ),
+                )
+
         if hasattr(self._transport, "execute"):
             executor = cast(PromptExecutionTransport, self._transport)
             return executor.execute(prompt)

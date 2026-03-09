@@ -6,7 +6,7 @@
 
 **Tech Stack:** Python 3.12+, urllib/httpx-style HTTP client, pytest, PyYAML, Pydantic v2
 
-**Status:** Planned
+**Status:** Completed on 2026-03-09
 
 **Acceptance Evidence:**
 - `uv run pytest tests/transports tests/e2e/test_suite_runner.py -q`
