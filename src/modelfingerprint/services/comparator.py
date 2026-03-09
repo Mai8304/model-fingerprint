@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Literal
 
 from modelfingerprint.contracts.profile import ProfileArtifact
 from modelfingerprint.contracts.run import RunArtifact
-from modelfingerprint.services.calibrator import score_feature
+from modelfingerprint.services.calibrator import ProfileMatchScore, score_run_against_profile
+
+ProtocolStatus = Literal["compatible", "insufficient_evidence", "incompatible_protocol"]
 
 
 @dataclass(frozen=True)
@@ -17,72 +20,64 @@ class ComparisonResult:
     claimed_model: str | None
     claimed_model_similarity: float | None
     consistency: float
+    answer_similarity: float | None
+    reasoning_similarity: float | None
+    transport_similarity: float | None
+    surface_similarity: float | None
+    answer_coverage_ratio: float
+    reasoning_coverage_ratio: float
+    protocol_status: ProtocolStatus
+    protocol_issues: tuple[str, ...]
 
 
 def compare_run(run: RunArtifact, profiles: list[ProfileArtifact]) -> ComparisonResult:
-    scored_profiles = []
+    scored_profiles: list[ProfileMatchScore] = []
 
     for profile in profiles:
-        overall, prompt_scores = score_run_against_profile(run, profile)
-        scored_profiles.append((profile.model_id, overall, prompt_scores))
+        scored_profiles.append(score_run_against_profile(run, profile))
 
-    ranked = sorted(scored_profiles, key=lambda item: (-item[1], item[0]))
-    top1_model, top1_similarity, _ = ranked[0]
-    top2_model, top2_similarity, _ = ranked[1]
+    ranked = sorted(
+        scored_profiles,
+        key=lambda item: (
+            -item.overall_similarity,
+            _protocol_rank(item.protocol_status),
+            item.model_id,
+        ),
+    )
+    top1 = ranked[0]
+    top2 = ranked[1] if len(ranked) > 1 else ranked[0]
     claimed_similarity = next(
-        (similarity for model_id, similarity, _ in ranked if model_id == run.claimed_model),
+        (
+            score.overall_similarity
+            for score in ranked
+            if score.model_id == run.claimed_model
+        ),
         None,
     )
 
     return ComparisonResult(
-        top1_model=top1_model,
-        top1_similarity=top1_similarity,
-        top2_model=top2_model,
-        top2_similarity=top2_similarity,
-        margin=top1_similarity - top2_similarity,
+        top1_model=top1.model_id,
+        top1_similarity=top1.overall_similarity,
+        top2_model=top2.model_id,
+        top2_similarity=top2.overall_similarity,
+        margin=top1.overall_similarity - top2.overall_similarity,
         claimed_model=run.claimed_model,
         claimed_model_similarity=claimed_similarity,
-        consistency=compute_consistency(run, ranked, top1_model),
+        consistency=top1.consistency,
+        answer_similarity=top1.answer_similarity,
+        reasoning_similarity=top1.reasoning_similarity,
+        transport_similarity=top1.transport_similarity,
+        surface_similarity=top1.surface_similarity,
+        answer_coverage_ratio=top1.answer_coverage_ratio,
+        reasoning_coverage_ratio=top1.reasoning_coverage_ratio,
+        protocol_status=top1.protocol_status,
+        protocol_issues=top1.protocol_issues,
     )
 
 
-def score_run_against_profile(
-    run: RunArtifact,
-    profile: ProfileArtifact,
-) -> tuple[float, dict[str, float]]:
-    profile_prompts = {prompt.prompt_id: prompt for prompt in profile.prompts}
-    prompt_scores: dict[str, float] = {}
-
-    for prompt in run.prompts:
-        profile_prompt = profile_prompts.get(prompt.prompt_id)
-        if profile_prompt is None:
-            continue
-
-        feature_scores = [
-            score_feature(prompt.features[name], summary)
-            for name, summary in profile_prompt.features.items()
-            if name in prompt.features
-        ]
-        if feature_scores:
-            prompt_scores[prompt.prompt_id] = sum(feature_scores) / len(feature_scores)
-
-    overall = sum(prompt_scores.values()) / len(prompt_scores)
-    return overall, prompt_scores
-
-
-def compute_consistency(
-    run: RunArtifact,
-    ranked_profiles: list[tuple[str, float, dict[str, float]]],
-    top1_model: str,
-) -> float:
-    agreeing_prompts = 0
-
-    for prompt in run.prompts:
-        best_model = max(
-            ranked_profiles,
-            key=lambda item: (item[2].get(prompt.prompt_id, 0.0), item[0]),
-        )[0]
-        if best_model == top1_model:
-            agreeing_prompts += 1
-
-    return agreeing_prompts / max(len(run.prompts), 1)
+def _protocol_rank(status: ProtocolStatus) -> int:
+    if status == "compatible":
+        return 0
+    if status == "insufficient_evidence":
+        return 1
+    return 2

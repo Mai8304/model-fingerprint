@@ -2,13 +2,31 @@ from __future__ import annotations
 
 from typing import Literal
 
-from modelfingerprint.contracts.calibration import CalibrationThresholds
+from modelfingerprint.contracts.calibration import CalibrationArtifact
 from modelfingerprint.services.comparator import ComparisonResult
 
-Verdict = Literal["match", "suspicious", "mismatch", "unknown"]
+Verdict = Literal[
+    "match",
+    "suspicious",
+    "mismatch",
+    "unknown",
+    "insufficient_evidence",
+    "incompatible_protocol",
+]
 
 
-def decide_verdict(result: ComparisonResult, thresholds: CalibrationThresholds) -> Verdict:
+def decide_verdict(result: ComparisonResult, calibration: CalibrationArtifact) -> Verdict:
+    if result.protocol_status == "incompatible_protocol":
+        return "incompatible_protocol"
+
+    coverage = calibration.coverage_thresholds
+    if coverage is not None:
+        if result.answer_coverage_ratio < coverage.answer_min:
+            return "insufficient_evidence"
+        if result.reasoning_coverage_ratio < coverage.reasoning_min:
+            return "insufficient_evidence"
+
+    thresholds = calibration.thresholds
     if result.top1_similarity < thresholds.unknown:
         return "unknown"
 

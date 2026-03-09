@@ -189,7 +189,7 @@ def compare_command(
         json.loads(calibration.read_text(encoding="utf-8"))
     )
     comparison = compare_run(run_artifact, profiles)
-    verdict = decide_verdict(comparison, calibration_artifact.thresholds)
+    verdict = decide_verdict(comparison, calibration_artifact)
     payload = {
         "top1_model": comparison.top1_model,
         "top1_similarity": comparison.top1_similarity,
