@@ -6,7 +6,7 @@
 
 **Tech Stack:** Python 3.12+, Typer, Pydantic v2, PyYAML, jsonschema, pytest, Ruff, mypy
 
-**Status:** Planned
+**Status:** Completed on 2026-03-09
 
 **Acceptance Evidence:**
 - `uv run pytest tests/contracts tests/prompt_bank -q`
@@ -158,7 +158,6 @@ git commit -m "feat: add endpoint profile contracts and schema"
 - Modify: `src/modelfingerprint/settings.py`
 - Modify: `src/modelfingerprint/storage/filesystem.py`
 - Modify: `tests/test_settings_paths.py`
-- Modify: `tests/fixtures/**`
 
 **Step 1: Write failing fixture/path tests**
 
@@ -174,7 +173,7 @@ Expected: FAIL because the bootstrap fixtures and path helpers still assume the 
 
 Implementation intent:
 - formalize `endpoint-profiles/` and `traces/`
-- refresh fixtures to the v2 contracts
+- keep existing bootstrap fixtures schema-valid through optional v2 fields instead of rewriting them prematurely
 - avoid hidden path joins in later phases
 
 **Step 3: Re-run the tests**
@@ -185,7 +184,7 @@ Expected: PASS
 **Step 4: Commit**
 
 ```bash
-git add src/modelfingerprint/settings.py src/modelfingerprint/storage/filesystem.py tests/test_settings_paths.py tests/fixtures
+git add src/modelfingerprint/settings.py src/modelfingerprint/storage/filesystem.py tests/test_settings_paths.py
 git commit -m "chore: refresh fixtures and filesystem layout for v2"
 ```
 

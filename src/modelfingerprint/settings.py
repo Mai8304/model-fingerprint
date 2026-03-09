@@ -30,6 +30,10 @@ class RepositoryPaths:
         return self.root / "prompt-bank"
 
     @property
+    def endpoint_profiles_dir(self) -> Path:
+        return self.root / "endpoint-profiles"
+
+    @property
     def profiles_dir(self) -> Path:
         return self.root / "profiles"
 
@@ -41,3 +45,6 @@ class RepositoryPaths:
     def calibration_dir(self) -> Path:
         return self.root / "calibration"
 
+    @property
+    def traces_dir(self) -> Path:
+        return self.root / "traces"
