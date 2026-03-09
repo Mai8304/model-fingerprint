@@ -11,6 +11,10 @@ from modelfingerprint.adapters.openai_chat import ChatCompletionResult
 from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.contracts.profile import ProfileArtifact
 from modelfingerprint.contracts.run import RunArtifact
+from modelfingerprint.contracts.calibration import CalibrationArtifact
+from modelfingerprint.services.calibrator import Calibrator
+from modelfingerprint.services.comparator import compare_run
+from modelfingerprint.services.profile_builder import build_profile
 from modelfingerprint.services.prompt_bank import (
     PromptBankValidationError,
     load_candidate_prompts,
@@ -19,7 +23,9 @@ from modelfingerprint.services.prompt_bank import (
     validate_suite_subset,
 )
 from modelfingerprint.services.suite_runner import SuiteRunner
+from modelfingerprint.services.verdicts import decide_verdict
 from modelfingerprint.settings import RepositoryPaths
+from modelfingerprint.storage.filesystem import ensure_directories
 
 app = typer.Typer(
     add_completion=False,
@@ -130,6 +136,87 @@ def run_suite(
         run_date=date.fromisoformat(run_date),
     )
     typer.echo(path)
+
+
+@app.command("build-profile")
+def build_profile_command(
+    model_id: str = typer.Option(..., "--model-id"),
+    run_paths: list[Path] = typer.Option(..., "--run", exists=True, dir_okay=False),
+    root: Path = typer.Option(Path.cwd(), "--root", exists=True, file_okay=False),
+) -> None:
+    runs = [_load_run(path) for path in run_paths]
+    prompts = load_candidate_prompts(root / "prompt-bank" / "candidates")
+    weights = {prompt_id: prompt.weight_hint for prompt_id, prompt in prompts.items()}
+    artifact = build_profile(model_id=model_id, runs=runs, prompt_weights=weights)
+    output_dir = root / "profiles" / artifact.suite_id
+    ensure_directories(output_dir)
+    output_path = output_dir / f"{artifact.model_id}.json"
+    output_path.write_text(
+        json.dumps(artifact.model_dump(mode="json"), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    typer.echo(output_path)
+
+
+@app.command("calibrate")
+def calibrate_command(
+    profile_paths: list[Path] = typer.Option(..., "--profile", exists=True, dir_okay=False),
+    run_paths: list[Path] = typer.Option(..., "--run", exists=True, dir_okay=False),
+    root: Path = typer.Option(Path.cwd(), "--root", exists=True, file_okay=False),
+) -> None:
+    profiles = [_load_profile(path) for path in profile_paths]
+    runs = [_load_run(path) for path in run_paths]
+    calibrator = Calibrator(RepositoryPaths(root=root))
+    path = calibrator.write(calibrator.calibrate(runs=runs, profiles=profiles))
+    typer.echo(path)
+
+
+@app.command("compare")
+def compare_command(
+    run: Path = typer.Option(..., "--run", exists=True, dir_okay=False),
+    profile_paths: list[Path] = typer.Option(..., "--profile", exists=True, dir_okay=False),
+    calibration: Path = typer.Option(..., "--calibration", exists=True, dir_okay=False),
+    json_output: bool = typer.Option(False, "--json"),
+) -> None:
+    run_artifact = _load_run(run)
+    profiles = [_load_profile(path) for path in profile_paths]
+    calibration_artifact = CalibrationArtifact.model_validate(
+        json.loads(calibration.read_text(encoding="utf-8"))
+    )
+    comparison = compare_run(run_artifact, profiles)
+    verdict = decide_verdict(comparison, calibration_artifact.thresholds)
+    payload = {
+        "top1_model": comparison.top1_model,
+        "top1_similarity": comparison.top1_similarity,
+        "top2_model": comparison.top2_model,
+        "top2_similarity": comparison.top2_similarity,
+        "margin": comparison.margin,
+        "claimed_model": comparison.claimed_model,
+        "claimed_model_similarity": comparison.claimed_model_similarity,
+        "consistency": comparison.consistency,
+        "verdict": verdict,
+    }
+
+    if json_output:
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        return
+
+    typer.echo(f"top1_model: {payload['top1_model']}")
+    typer.echo(f"top1_similarity: {payload['top1_similarity']:.4f}")
+    typer.echo(f"top2_model: {payload['top2_model']}")
+    typer.echo(f"top2_similarity: {payload['top2_similarity']:.4f}")
+    typer.echo(f"margin: {payload['margin']:.4f}")
+    typer.echo(f"claimed_model_similarity: {payload['claimed_model_similarity']:.4f}")
+    typer.echo(f"consistency: {payload['consistency']:.4f}")
+    typer.echo(f"verdict: {payload['verdict']}")
+
+
+def _load_run(path: Path) -> RunArtifact:
+    return RunArtifact.model_validate(json.loads(path.read_text(encoding="utf-8")))
+
+
+def _load_profile(path: Path) -> ProfileArtifact:
+    return ProfileArtifact.model_validate(json.loads(path.read_text(encoding="utf-8")))
 
 
 if __name__ == "__main__":
