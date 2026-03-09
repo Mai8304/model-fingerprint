@@ -1,0 +1,261 @@
+{
+  "$defs": {
+    "EndpointAuth": {
+      "additionalProperties": false,
+      "properties": {
+        "env_var": {
+          "minLength": 1,
+          "title": "Env Var",
+          "type": "string"
+        },
+        "kind": {
+          "const": "bearer_env",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "env_var"
+      ],
+      "title": "EndpointAuth",
+      "type": "object"
+    },
+    "EndpointCapabilities": {
+      "additionalProperties": false,
+      "properties": {
+        "exposes_reasoning_text": {
+          "default": false,
+          "title": "Exposes Reasoning Text",
+          "type": "boolean"
+        },
+        "supports_json_object_response": {
+          "default": false,
+          "title": "Supports Json Object Response",
+          "type": "boolean"
+        },
+        "supports_output_token_cap": {
+          "default": true,
+          "title": "Supports Output Token Cap",
+          "type": "boolean"
+        },
+        "supports_temperature": {
+          "default": true,
+          "title": "Supports Temperature",
+          "type": "boolean"
+        },
+        "supports_top_p": {
+          "default": true,
+          "title": "Supports Top P",
+          "type": "boolean"
+        }
+      },
+      "title": "EndpointCapabilities",
+      "type": "object"
+    },
+    "RequestMapping": {
+      "additionalProperties": false,
+      "properties": {
+        "json_response_shape": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Json Response Shape"
+        },
+        "output_token_cap_field": {
+          "minLength": 1,
+          "title": "Output Token Cap Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "output_token_cap_field"
+      ],
+      "title": "RequestMapping",
+      "type": "object"
+    },
+    "ResponseMapping": {
+      "additionalProperties": false,
+      "properties": {
+        "answer_text_path": {
+          "minLength": 1,
+          "title": "Answer Text Path",
+          "type": "string"
+        },
+        "finish_reason_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Finish Reason Path"
+        },
+        "reasoning_text_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reasoning Text Path"
+        },
+        "usage_paths": {
+          "$ref": "#/$defs/UsagePaths"
+        }
+      },
+      "required": [
+        "answer_text_path",
+        "usage_paths"
+      ],
+      "title": "ResponseMapping",
+      "type": "object"
+    },
+    "RetryPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "max_attempts": {
+          "minimum": 1,
+          "title": "Max Attempts",
+          "type": "integer"
+        },
+        "retryable_statuses": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Retryable Statuses",
+          "type": "array"
+        }
+      },
+      "required": [
+        "max_attempts"
+      ],
+      "title": "RetryPolicy",
+      "type": "object"
+    },
+    "TimeoutPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "connect_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Connect Seconds",
+          "type": "integer"
+        },
+        "read_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Read Seconds",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "connect_seconds",
+        "read_seconds"
+      ],
+      "title": "TimeoutPolicy",
+      "type": "object"
+    },
+    "UsagePaths": {
+      "additionalProperties": false,
+      "properties": {
+        "output_tokens": {
+          "minLength": 1,
+          "title": "Output Tokens",
+          "type": "string"
+        },
+        "prompt_tokens": {
+          "minLength": 1,
+          "title": "Prompt Tokens",
+          "type": "string"
+        },
+        "reasoning_tokens": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reasoning Tokens"
+        },
+        "total_tokens": {
+          "minLength": 1,
+          "title": "Total Tokens",
+          "type": "string"
+        }
+      },
+      "required": [
+        "prompt_tokens",
+        "output_tokens",
+        "total_tokens"
+      ],
+      "title": "UsagePaths",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "auth": {
+      "$ref": "#/$defs/EndpointAuth"
+    },
+    "base_url": {
+      "format": "uri",
+      "maxLength": 2083,
+      "minLength": 1,
+      "title": "Base Url",
+      "type": "string"
+    },
+    "capabilities": {
+      "$ref": "#/$defs/EndpointCapabilities"
+    },
+    "dialect": {
+      "minLength": 1,
+      "title": "Dialect",
+      "type": "string"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "request_mapping": {
+      "$ref": "#/$defs/RequestMapping"
+    },
+    "response_mapping": {
+      "$ref": "#/$defs/ResponseMapping"
+    },
+    "retry_policy": {
+      "$ref": "#/$defs/RetryPolicy"
+    },
+    "timeout_policy": {
+      "$ref": "#/$defs/TimeoutPolicy"
+    }
+  },
+  "required": [
+    "id",
+    "dialect",
+    "base_url",
+    "auth",
+    "capabilities",
+    "request_mapping",
+    "response_mapping",
+    "timeout_policy",
+    "retry_policy"
+  ],
+  "title": "EndpointProfile",
+  "type": "object"
+}
