@@ -6,7 +6,7 @@
 
 **Tech Stack:** Python 3.12+, pytest
 
-**Status:** Planned
+**Status:** Completed on 2026-03-09
 
 **Acceptance Evidence:**
 - `uv run pytest tests/profile tests/calibration tests/comparison -q`
