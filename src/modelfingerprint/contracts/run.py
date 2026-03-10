@@ -11,6 +11,7 @@ from modelfingerprint.contracts._common import (
     ProbeCapabilityId,
     ProbeCapabilityStatus,
     PromptId,
+    RuntimeExecutionClass,
     SuiteId,
 )
 from modelfingerprint.contracts.prompt import GenerationSpec, PromptMessage
@@ -76,6 +77,38 @@ class CapabilityProbeResult(ContractModel):
     capabilities: dict[ProbeCapabilityId, CapabilityProbeOutcome] = Field(min_length=1)
 
 
+class RuntimePolicySnapshot(ContractModel):
+    policy_id: str = Field(min_length=1)
+    thinking_probe_status: ProbeCapabilityStatus
+    execution_class: RuntimeExecutionClass
+    round_windows_seconds: list[int] = Field(min_length=1)
+    max_rounds: int = Field(ge=1)
+    output_token_cap: int | None = Field(default=None, ge=1)
+
+
+class PromptAttemptSummary(ContractModel):
+    round_index: int = Field(ge=1)
+    window_index: int = Field(ge=1)
+    http_attempt_index: int = Field(ge=1)
+    read_timeout_seconds: int = Field(gt=0)
+    output_token_cap: int | None = Field(default=None, ge=1)
+    status: Literal[
+        "completed",
+        "timeout",
+        "transport_error",
+        "unsupported_capability",
+        "truncated",
+        "invalid_response",
+        "canonicalization_error",
+    ]
+    error_kind: str | None = None
+    http_status: int | None = Field(default=None, ge=100, le=599)
+    latency_ms: int | None = Field(default=None, ge=0)
+    finish_reason: str | None = None
+    answer_text_present: bool
+    reasoning_visible: bool | None = None
+
+
 class PromptRunResult(ContractModel):
     status: Literal[
         "completed",
@@ -93,6 +126,7 @@ class PromptRunResult(ContractModel):
     completion: NormalizedCompletion | None = None
     canonical_output: CanonicalizedOutput | None = None
     canonicalization_events: list[CanonicalizationEvent] = Field(default_factory=list)
+    attempts: list[PromptAttemptSummary] = Field(default_factory=list)
     features: dict[str, FeaturePrimitive] = Field(default_factory=dict)
     error: PromptExecutionError | None = None
 
@@ -117,6 +151,7 @@ class RunArtifact(ContractModel):
     prompt_count_scoreable: int | None = Field(default=None, ge=0)
     answer_coverage_ratio: float | None = Field(default=None, ge=0.0, le=1.0)
     reasoning_coverage_ratio: float | None = Field(default=None, ge=0.0, le=1.0)
+    runtime_policy: RuntimePolicySnapshot | None = None
     capability_probe: CapabilityProbeResult | None = None
     protocol_compatibility: ProtocolCompatibility | None = None
     trace_dir: str | None = None

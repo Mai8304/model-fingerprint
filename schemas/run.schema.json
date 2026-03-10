@@ -284,6 +284,134 @@
       "title": "NormalizedCompletion",
       "type": "object"
     },
+    "PromptAttemptSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "answer_text_present": {
+          "title": "Answer Text Present",
+          "type": "boolean"
+        },
+        "error_kind": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Kind"
+        },
+        "finish_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Finish Reason"
+        },
+        "http_attempt_index": {
+          "minimum": 1,
+          "title": "Http Attempt Index",
+          "type": "integer"
+        },
+        "http_status": {
+          "anyOf": [
+            {
+              "maximum": 599,
+              "minimum": 100,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Http Status"
+        },
+        "latency_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Latency Ms"
+        },
+        "output_token_cap": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Output Token Cap"
+        },
+        "read_timeout_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Read Timeout Seconds",
+          "type": "integer"
+        },
+        "reasoning_visible": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reasoning Visible"
+        },
+        "round_index": {
+          "minimum": 1,
+          "title": "Round Index",
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "timeout",
+            "transport_error",
+            "unsupported_capability",
+            "truncated",
+            "invalid_response",
+            "canonicalization_error"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "window_index": {
+          "minimum": 1,
+          "title": "Window Index",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "round_index",
+        "window_index",
+        "http_attempt_index",
+        "read_timeout_seconds",
+        "status",
+        "answer_text_present"
+      ],
+      "title": "PromptAttemptSummary",
+      "type": "object"
+    },
     "PromptExecutionError": {
       "additionalProperties": false,
       "properties": {
@@ -374,6 +502,13 @@
     "PromptRunResult": {
       "additionalProperties": false,
       "properties": {
+        "attempts": {
+          "items": {
+            "$ref": "#/$defs/PromptAttemptSummary"
+          },
+          "title": "Attempts",
+          "type": "array"
+        },
         "canonical_output": {
           "anyOf": [
             {
@@ -520,6 +655,69 @@
         "satisfied"
       ],
       "title": "ProtocolCompatibility",
+      "type": "object"
+    },
+    "RuntimePolicySnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "execution_class": {
+          "enum": [
+            "thinking",
+            "non_thinking"
+          ],
+          "title": "Execution Class",
+          "type": "string"
+        },
+        "max_rounds": {
+          "minimum": 1,
+          "title": "Max Rounds",
+          "type": "integer"
+        },
+        "output_token_cap": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Output Token Cap"
+        },
+        "policy_id": {
+          "minLength": 1,
+          "title": "Policy Id",
+          "type": "string"
+        },
+        "round_windows_seconds": {
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 1,
+          "title": "Round Windows Seconds",
+          "type": "array"
+        },
+        "thinking_probe_status": {
+          "enum": [
+            "supported",
+            "accepted_but_ignored",
+            "unsupported",
+            "insufficient_evidence"
+          ],
+          "title": "Thinking Probe Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "policy_id",
+        "thinking_probe_status",
+        "execution_class",
+        "round_windows_seconds",
+        "max_rounds"
+      ],
+      "title": "RuntimePolicySnapshot",
       "type": "object"
     },
     "UsageMetadata": {
@@ -683,6 +881,17 @@
       "minLength": 1,
       "title": "Run Id",
       "type": "string"
+    },
+    "runtime_policy": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RuntimePolicySnapshot"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "suite_id": {
       "pattern": "^(research-set|fingerprint-suite|quick-check)-v[1-9]\\d*$",

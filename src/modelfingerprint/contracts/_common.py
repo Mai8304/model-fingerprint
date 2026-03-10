@@ -36,6 +36,7 @@ ProbeCapabilityStatus = Literal[
     "unsupported",
     "insufficient_evidence",
 ]
+RuntimeExecutionClass = Literal["thinking", "non_thinking"]
 OutputContractId = Annotated[str, StringConstraints(pattern=r"^[a-z0-9_]+_v[1-9]\d*$")]
 CanonicalizerId = Annotated[str, StringConstraints(pattern=r"^[a-z0-9_]+_v[1-9]\d*$")]
 SuiteId = Annotated[

@@ -596,3 +596,17 @@ This feature is complete only when all of the following are true:
 7. Focused tests, lint, and mypy pass.
 8. At least one live thinking endpoint and one live non-thinking endpoint complete a smoke run under the new code path.
 
+---
+
+## Implementation Notes
+
+### P0 completion notes
+
+- Added `RuntimeExecutionClass` to the shared contract literals.
+- Added `RuntimePolicySnapshot` and `PromptAttemptSummary` to `RunArtifact`.
+- Added `src/modelfingerprint/services/runtime_policy.py` with fixed constants:
+  - `LIVE_CONTENT_OUTPUT_TOKEN_CAP = 3000`
+  - `THINKING_ROUND_WINDOWS_SECONDS = [30, 30]`
+  - `NON_THINKING_ROUND_WINDOWS_SECONDS = [30]`
+  - `MAX_PROMPT_ROUNDS = 2`
+- Runtime policy resolution is now available in code, but transport execution still uses the legacy path until P1 and P2 land.

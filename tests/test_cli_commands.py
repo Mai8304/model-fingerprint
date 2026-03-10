@@ -82,6 +82,14 @@ def test_show_run_and_show_profile_commands_print_v2_coverage_fields(tmp_path: P
                     "endpoint_profile_id": "siliconflow-openai-chat",
                     "answer_coverage_ratio": 1.0,
                     "reasoning_coverage_ratio": 0.5,
+                    "runtime_policy": {
+                        "policy_id": "thinking_aware_runtime_v1",
+                        "thinking_probe_status": "supported",
+                        "execution_class": "thinking",
+                        "round_windows_seconds": [30, 30],
+                        "max_rounds": 2,
+                        "output_token_cap": 3000,
+                    },
                     "capability_probe": {
                         "probe_mode": "minimal",
                         "probe_version": "v1",
@@ -110,6 +118,20 @@ def test_show_run_and_show_profile_commands_print_v2_coverage_fields(tmp_path: P
                                 "reasoning_tokens": 0,
                                 "total_tokens": 15,
                             },
+                            "attempts": [
+                                {
+                                    "round_index": 1,
+                                    "window_index": 1,
+                                    "http_attempt_index": 1,
+                                    "read_timeout_seconds": 30,
+                                    "output_token_cap": 3000,
+                                    "status": "completed",
+                                    "latency_ms": 1000,
+                                    "finish_reason": "stop",
+                                    "answer_text_present": True,
+                                    "reasoning_visible": False,
+                                }
+                            ],
                             "features": {"answer.char_len": 12},
                         }
                     ],
@@ -170,6 +192,13 @@ def test_show_run_and_show_profile_commands_print_v2_coverage_fields(tmp_path: P
     assert "reasoning_coverage_ratio: 0.5000" in show_run.stdout
     assert "capability_coverage_ratio: 0.7500" in show_run.stdout
     assert "protocol_status: incompatible_protocol" in show_run.stdout
+
+    show_run_json = runner.invoke(app, ["show-run", str(run_path), "--json"])
+    assert show_run_json.exit_code == 0
+    show_run_payload = RunArtifact.model_validate_json(show_run_json.stdout)
+    assert show_run_payload.runtime_policy is not None
+    assert show_run_payload.runtime_policy.output_token_cap == 3000
+    assert show_run_payload.prompts[0].attempts[0].read_timeout_seconds == 30
 
     show_profile = runner.invoke(app, ["show-profile", str(profile_path)])
     assert show_profile.exit_code == 0

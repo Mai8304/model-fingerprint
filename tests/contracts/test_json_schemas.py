@@ -86,6 +86,14 @@ def test_exported_schema_files_exist(path: Path) -> None:
                 "prompt_count_scoreable": 1,
                 "answer_coverage_ratio": 1.0,
                 "reasoning_coverage_ratio": 1.0,
+                "runtime_policy": {
+                    "policy_id": "thinking_aware_runtime_v1",
+                    "thinking_probe_status": "supported",
+                    "execution_class": "thinking",
+                    "round_windows_seconds": [30, 30],
+                    "max_rounds": 2,
+                    "output_token_cap": 3000,
+                },
                 "protocol_compatibility": {
                     "satisfied": True,
                     "required_capabilities": ["chat_completions"],
@@ -133,6 +141,20 @@ def test_exported_schema_files_exist(path: Path) -> None:
                             "reasoning_tokens": 24,
                             "total_tokens": 54,
                         },
+                        "attempts": [
+                            {
+                                "round_index": 1,
+                                "window_index": 1,
+                                "http_attempt_index": 1,
+                                "read_timeout_seconds": 30,
+                                "output_token_cap": 3000,
+                                "status": "completed",
+                                "latency_ms": 1000,
+                                "finish_reason": "stop",
+                                "answer_text_present": True,
+                                "reasoning_visible": True,
+                            }
+                        ],
                         "features": {"answer.char_len": 3},
                     }
                 ],

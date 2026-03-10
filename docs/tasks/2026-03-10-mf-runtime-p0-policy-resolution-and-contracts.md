@@ -169,3 +169,15 @@ git push origin main
 - run contract and schema support new runtime fields
 - tests, ruff, and mypy pass
 
+---
+
+## Completion Notes
+
+- Completed on 2026-03-10.
+- Landed `src/modelfingerprint/services/runtime_policy.py`.
+- Extended `RunArtifact` with `runtime_policy` and prompt-level `attempts`.
+- Regenerated `schemas/run.schema.json`.
+- Verification used:
+  - `uv run pytest tests/services/test_runtime_policy.py tests/contracts/test_json_schemas.py tests/test_cli_commands.py -q`
+  - `uv run ruff check src tests`
+  - `uv run mypy src`
