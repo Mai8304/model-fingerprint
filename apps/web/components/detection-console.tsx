@@ -3,15 +3,24 @@
 import { FlaskConical } from "lucide-react"
 
 import { CheckConfigForm } from "@/components/check-config-form"
-import { Button } from "@/components/ui/button"
+import { ResultCard } from "@/components/workbench/result-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { TopBar } from "@/components/top-bar"
 import { useLocale } from "@/lib/i18n/provider"
 import type { CheckConfigValues } from "@/lib/check-config-schema"
+import { deriveWorkbenchState } from "@/lib/run-state"
 
 export function DetectionConsole() {
   const { t } = useLocale()
   const handleSubmit = (_values: CheckConfigValues) => undefined
+  const workbenchState = deriveWorkbenchState({
+    status: "idle",
+    completedPrompts: 0,
+    totalPrompts: 5,
+    incompatibleProtocol: false,
+    stoppedByUser: false,
+    selectedFingerprint: "gpt-4.1-mini",
+  })
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
@@ -50,6 +59,8 @@ export function DetectionConsole() {
               </div>
             </CardContent>
           </Card>
+
+          <ResultCard state={workbenchState} />
         </div>
       </div>
     </div>
