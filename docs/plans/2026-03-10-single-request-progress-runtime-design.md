@@ -591,3 +591,7 @@ The feature is complete only if all of the following are true:
   - cooperative cancellation
   - shared transport logic for both `send(...)` and `start(...)`
 - 2026-03-10 P2 switched the runtime-policy execution path in `LiveRunner` to the single-request monitor state machine and updated `show-run` to report checkpoint/deadline semantics directly.
+- 2026-03-10 P3 validated the runtime against:
+  - a thinking endpoint (`openrouter-glm-5`)
+  - a non-thinking endpoint (`deepseek-openai-chat`)
+- Live validation also uncovered and fixed a transport edge case where `http.client` could raise `cannot read from timed out object` during idle waits; the response loop now treats that as continued waiting instead of a terminal network failure.

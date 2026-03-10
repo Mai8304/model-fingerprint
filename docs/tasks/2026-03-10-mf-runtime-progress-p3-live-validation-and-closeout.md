@@ -90,3 +90,25 @@ git push origin main
 - live evidence demonstrates the new runtime semantics
 - docs describe shipped behavior, not just intended behavior
 
+---
+
+## Completion Notes
+
+- Completed on 2026-03-10.
+- Regression verification used:
+  - `uv run pytest tests/services/test_runtime_policy.py tests/transports/test_http_client.py tests/transports/test_live_runner.py tests/e2e/test_suite_runner.py tests/test_cli_commands.py -q`
+  - `uv run ruff check src tests`
+  - `uv run mypy src`
+- Live smoke evidence:
+  - thinking endpoint: `openrouter-glm-5`
+    - resolved `execution_class=thinking`
+    - live trace inspection showed one request file per prompt and no `.attempt-2.request.json` re-submission traces
+    - observed one completed prompt and one prompt that hit `total_deadline_exceeded`, which matches the new `120s` hard cutoff semantics
+  - non-thinking endpoint: `deepseek-openai-chat`
+    - resolved `execution_class=non_thinking`
+    - all prompts ended with `no_data_checkpoint_exceeded` around `30000ms`
+    - live trace inspection showed only one request file per prompt and no re-submission traces
+- A live validation bug was discovered and fixed:
+  - root cause: some `http.client` reads raise `OSError(\"cannot read from timed out object\")` after idle socket timeout
+  - shipped fix: treat that read-path exception as an idle wait inside the response loop instead of misclassifying it as a network failure
+  - regression coverage added in `tests/transports/test_http_client.py`

@@ -311,6 +311,12 @@ def _read_response_body(
             if cancel_event is not None and cancel_event.is_set():
                 raise _RequestCancelled("request cancelled") from None
             continue
+        except OSError as exc:
+            if _is_idle_timeout_read_error(exc):
+                if cancel_event is not None and cancel_event.is_set():
+                    raise _RequestCancelled("request cancelled") from None
+                continue
+            raise
         if not chunk:
             break
         chunks.append(chunk)
@@ -325,6 +331,10 @@ def _read_response_body(
 def _raise_if_cancelled(cancel_event: threading.Event | None) -> None:
     if cancel_event is not None and cancel_event.is_set():
         raise _RequestCancelled("request cancelled")
+
+
+def _is_idle_timeout_read_error(exc: OSError) -> bool:
+    return "timed out object" in str(exc).lower()
 
 
 def _build_connection(

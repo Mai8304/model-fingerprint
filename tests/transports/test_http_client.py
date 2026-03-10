@@ -68,6 +68,19 @@ class ControlledStreamingResponse:
         return self._chunks.pop(0)
 
 
+class TimedOutObjectResponse(ControlledStreamingResponse):
+    def read1(self, amt: int | None = None) -> bytes:
+        if self._closed_event.is_set():
+            raise OSError("connection closed")
+        if not self._chunks:
+            return b""
+        event = self._release_events[0]
+        if not event.wait(0.01):
+            raise OSError("cannot read from timed out object")
+        self._release_events.pop(0)
+        return self._chunks.pop(0)
+
+
 class FakeConnection:
     def __init__(self, response: object) -> None:
         self.sock = FakeSocket()
@@ -276,3 +289,36 @@ def test_start_cancellation_settles_request(
     assert terminal.payload is None
     assert terminal.error is not None
     assert terminal.error.kind == "cancelled"
+
+
+def test_standard_http_client_treats_timed_out_object_reads_as_idle_waits(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    closed_event = threading.Event()
+    release_one = threading.Event()
+    release_two = threading.Event()
+    response = TimedOutObjectResponse(
+        chunks=[b'{"ok":', b"true}"],
+        release_events=[release_one, release_two],
+        closed_event=closed_event,
+    )
+    connection = ClosableFakeConnection(response, closed_event)
+    monkeypatch.setattr(
+        "modelfingerprint.transports.http_client._build_connection",
+        lambda scheme, host, port, connect_timeout_seconds: connection,
+    )
+
+    handle = StandardHttpClient().start(
+        build_request(),
+        connect_timeout_seconds=5,
+        read_timeout_seconds=30,
+    )
+
+    release_one.set()
+    wait_until(lambda: handle.snapshot().bytes_received > 0)
+    release_two.set()
+    terminal = handle.wait_until_terminal(timeout_seconds=1.0)
+
+    assert terminal is not None
+    assert terminal.error is None
+    assert terminal.payload == {"ok": True}
