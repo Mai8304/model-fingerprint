@@ -5,6 +5,7 @@ from pathlib import Path
 
 from modelfingerprint.contracts._common import ContractModel
 from modelfingerprint.contracts.calibration import CalibrationArtifact
+from modelfingerprint.contracts.comparison import ComparisonArtifact
 from modelfingerprint.contracts.endpoint import EndpointProfile
 from modelfingerprint.contracts.profile import ProfileArtifact
 from modelfingerprint.contracts.prompt import PromptDefinition
@@ -17,6 +18,7 @@ SCHEMA_EXPORTS = {
     "run": Path("schemas/run.schema.json"),
     "profile": Path("schemas/profile.schema.json"),
     "calibration": Path("schemas/calibration.schema.json"),
+    "comparison": Path("schemas/comparison.schema.json"),
 }
 
 SCHEMA_MODELS: dict[str, type[ContractModel]] = {
@@ -25,6 +27,7 @@ SCHEMA_MODELS: dict[str, type[ContractModel]] = {
     "run": RunArtifact,
     "profile": ProfileArtifact,
     "calibration": CalibrationArtifact,
+    "comparison": ComparisonArtifact,
 }
 
 

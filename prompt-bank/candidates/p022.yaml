@@ -16,9 +16,9 @@ messages:
       [p4] beta-legacy was retired last quarter. alpha remains active.
 
       返回 JSON，对象字段必须且只能包含：
-      - task_result
-      - evidence
-      - unknowns
+      - task_result: {found_entities, excluded_entities}
+      - evidence: {paragraph_map}
+      - unknowns: {}
       - violations
 generation:
   temperature: 0.0

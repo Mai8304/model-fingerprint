@@ -1,0 +1,698 @@
+{
+  "$defs": {
+    "CandidateComparison": {
+      "additionalProperties": false,
+      "properties": {
+        "answer_coverage_ratio": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Answer Coverage Ratio",
+          "type": "number"
+        },
+        "answer_similarity": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Answer Similarity"
+        },
+        "capability_coverage_ratio": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Capability Coverage Ratio",
+          "type": "number"
+        },
+        "capability_similarity": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Capability Similarity"
+        },
+        "consistency": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Consistency",
+          "type": "number"
+        },
+        "content_similarity": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Content Similarity"
+        },
+        "hard_mismatches": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Hard Mismatches",
+          "type": "array"
+        },
+        "model_id": {
+          "minLength": 1,
+          "title": "Model Id",
+          "type": "string"
+        },
+        "overall_similarity": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Overall Similarity",
+          "type": "number"
+        },
+        "prompt_scores": {
+          "patternProperties": {
+            "^p\\d{3}$": {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "title": "Prompt Scores",
+          "type": "object"
+        },
+        "protocol_issues": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Protocol Issues",
+          "type": "array"
+        },
+        "protocol_status": {
+          "enum": [
+            "compatible",
+            "insufficient_evidence",
+            "incompatible_protocol"
+          ],
+          "title": "Protocol Status",
+          "type": "string"
+        },
+        "reasoning_coverage_ratio": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Reasoning Coverage Ratio",
+          "type": "number"
+        },
+        "reasoning_similarity": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reasoning Similarity"
+        },
+        "surface_similarity": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Surface Similarity"
+        },
+        "transport_similarity": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Transport Similarity"
+        }
+      },
+      "required": [
+        "model_id",
+        "overall_similarity",
+        "consistency",
+        "answer_coverage_ratio",
+        "reasoning_coverage_ratio",
+        "capability_coverage_ratio",
+        "protocol_status"
+      ],
+      "title": "CandidateComparison",
+      "type": "object"
+    },
+    "CapabilityComparisonBreakdown": {
+      "additionalProperties": false,
+      "properties": {
+        "capability": {
+          "enum": [
+            "thinking",
+            "tools",
+            "streaming",
+            "image"
+          ],
+          "title": "Capability",
+          "type": "string"
+        },
+        "expected_distribution": {
+          "additionalProperties": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "type": "number"
+          },
+          "propertyNames": {
+            "enum": [
+              "supported",
+              "accepted_but_ignored",
+              "unsupported",
+              "insufficient_evidence"
+            ]
+          },
+          "title": "Expected Distribution",
+          "type": "object"
+        },
+        "observed_status": {
+          "anyOf": [
+            {
+              "enum": [
+                "supported",
+                "accepted_but_ignored",
+                "unsupported",
+                "insufficient_evidence"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observed Status"
+        },
+        "similarity": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Similarity"
+        },
+        "weight": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Weight",
+          "type": "number"
+        }
+      },
+      "required": [
+        "capability",
+        "weight"
+      ],
+      "title": "CapabilityComparisonBreakdown",
+      "type": "object"
+    },
+    "ComparisonCoverage": {
+      "additionalProperties": false,
+      "properties": {
+        "answer_coverage_ratio": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Answer Coverage Ratio",
+          "type": "number"
+        },
+        "capability_coverage_ratio": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Capability Coverage Ratio",
+          "type": "number"
+        },
+        "protocol_status": {
+          "enum": [
+            "compatible",
+            "insufficient_evidence",
+            "incompatible_protocol"
+          ],
+          "title": "Protocol Status",
+          "type": "string"
+        },
+        "reasoning_coverage_ratio": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Reasoning Coverage Ratio",
+          "type": "number"
+        }
+      },
+      "required": [
+        "answer_coverage_ratio",
+        "reasoning_coverage_ratio",
+        "capability_coverage_ratio",
+        "protocol_status"
+      ],
+      "title": "ComparisonCoverage",
+      "type": "object"
+    },
+    "ComparisonDiagnostics": {
+      "additionalProperties": false,
+      "properties": {
+        "hard_mismatches": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Hard Mismatches",
+          "type": "array"
+        },
+        "protocol_issues": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Protocol Issues",
+          "type": "array"
+        }
+      },
+      "title": "ComparisonDiagnostics",
+      "type": "object"
+    },
+    "ComparisonDimensions": {
+      "additionalProperties": false,
+      "properties": {
+        "answer_similarity": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Answer Similarity"
+        },
+        "capability_similarity": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Capability Similarity"
+        },
+        "content_similarity": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Content Similarity"
+        },
+        "reasoning_similarity": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reasoning Similarity"
+        },
+        "surface_similarity": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Surface Similarity"
+        },
+        "transport_similarity": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Transport Similarity"
+        }
+      },
+      "title": "ComparisonDimensions",
+      "type": "object"
+    },
+    "ComparisonSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "claimed_model_similarity": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Claimed Model Similarity"
+        },
+        "consistency": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Consistency",
+          "type": "number"
+        },
+        "margin": {
+          "minimum": 0.0,
+          "title": "Margin",
+          "type": "number"
+        },
+        "top1_model": {
+          "minLength": 1,
+          "title": "Top1 Model",
+          "type": "string"
+        },
+        "top1_similarity": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Top1 Similarity",
+          "type": "number"
+        },
+        "top2_model": {
+          "minLength": 1,
+          "title": "Top2 Model",
+          "type": "string"
+        },
+        "top2_similarity": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Top2 Similarity",
+          "type": "number"
+        },
+        "verdict": {
+          "enum": [
+            "match",
+            "suspicious",
+            "mismatch",
+            "unknown",
+            "insufficient_evidence",
+            "incompatible_protocol"
+          ],
+          "title": "Verdict",
+          "type": "string"
+        }
+      },
+      "required": [
+        "top1_model",
+        "top1_similarity",
+        "top2_model",
+        "top2_similarity",
+        "margin",
+        "consistency",
+        "verdict"
+      ],
+      "title": "ComparisonSummary",
+      "type": "object"
+    },
+    "ComparisonThresholdsUsed": {
+      "additionalProperties": false,
+      "properties": {
+        "answer_min": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Answer Min",
+          "type": "number"
+        },
+        "consistency": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Consistency",
+          "type": "number"
+        },
+        "margin": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Margin",
+          "type": "number"
+        },
+        "match": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Match",
+          "type": "number"
+        },
+        "reasoning_min": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Reasoning Min",
+          "type": "number"
+        },
+        "suspicious": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Suspicious",
+          "type": "number"
+        },
+        "unknown": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Unknown",
+          "type": "number"
+        }
+      },
+      "required": [
+        "match",
+        "suspicious",
+        "unknown",
+        "margin",
+        "consistency",
+        "answer_min",
+        "reasoning_min"
+      ],
+      "title": "ComparisonThresholdsUsed",
+      "type": "object"
+    },
+    "PromptComparisonBreakdown": {
+      "additionalProperties": false,
+      "properties": {
+        "error_kind": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Kind"
+        },
+        "error_message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Message"
+        },
+        "prompt_id": {
+          "pattern": "^p\\d{3}$",
+          "title": "Prompt Id",
+          "type": "string"
+        },
+        "scoreable": {
+          "title": "Scoreable",
+          "type": "boolean"
+        },
+        "similarity": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Similarity"
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "timeout",
+            "transport_error",
+            "unsupported_capability",
+            "truncated",
+            "invalid_response",
+            "canonicalization_error"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "prompt_id",
+        "status",
+        "scoreable"
+      ],
+      "title": "PromptComparisonBreakdown",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "calibration_id": {
+      "minLength": 1,
+      "title": "Calibration Id",
+      "type": "string"
+    },
+    "candidates": {
+      "items": {
+        "$ref": "#/$defs/CandidateComparison"
+      },
+      "minItems": 1,
+      "title": "Candidates",
+      "type": "array"
+    },
+    "capability_breakdown": {
+      "items": {
+        "$ref": "#/$defs/CapabilityComparisonBreakdown"
+      },
+      "title": "Capability Breakdown",
+      "type": "array"
+    },
+    "claimed_model": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Claimed Model"
+    },
+    "coverage": {
+      "$ref": "#/$defs/ComparisonCoverage"
+    },
+    "diagnostics": {
+      "$ref": "#/$defs/ComparisonDiagnostics"
+    },
+    "dimensions": {
+      "$ref": "#/$defs/ComparisonDimensions"
+    },
+    "prompt_breakdown": {
+      "items": {
+        "$ref": "#/$defs/PromptComparisonBreakdown"
+      },
+      "title": "Prompt Breakdown",
+      "type": "array"
+    },
+    "run_id": {
+      "minLength": 1,
+      "title": "Run Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "comparison.v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "suite_id": {
+      "pattern": "^(research-set|fingerprint-suite|quick-check)-v[1-9]\\d*$",
+      "title": "Suite Id",
+      "type": "string"
+    },
+    "summary": {
+      "$ref": "#/$defs/ComparisonSummary"
+    },
+    "target_label": {
+      "minLength": 1,
+      "title": "Target Label",
+      "type": "string"
+    },
+    "thresholds_used": {
+      "$ref": "#/$defs/ComparisonThresholdsUsed"
+    }
+  },
+  "required": [
+    "schema_version",
+    "suite_id",
+    "run_id",
+    "target_label",
+    "calibration_id",
+    "summary",
+    "dimensions",
+    "coverage",
+    "diagnostics",
+    "candidates",
+    "thresholds_used"
+  ],
+  "title": "ComparisonArtifact",
+  "type": "object"
+}

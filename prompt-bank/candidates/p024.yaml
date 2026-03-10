@@ -30,9 +30,10 @@ messages:
       - [r10] update worker_x priority=p3
 
       返回 JSON，对象字段必须且只能包含：
-      - task_result
-      - evidence
-      - unknowns
+      - task_result: {ticket_a, ticket_b, worker_x}
+      - every object must be {status, owner, priority}
+      - evidence: {derivation_codes, defaults_used}
+      - unknowns: {}
       - violations
 generation:
   temperature: 0.0

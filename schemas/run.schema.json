@@ -41,6 +41,130 @@
       "title": "CanonicalizedOutput",
       "type": "object"
     },
+    "CapabilityProbeOutcome": {
+      "additionalProperties": false,
+      "properties": {
+        "detail": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Detail"
+        },
+        "evidence": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "title": "Evidence",
+          "type": "object"
+        },
+        "http_status": {
+          "anyOf": [
+            {
+              "maximum": 599,
+              "minimum": 100,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Http Status"
+        },
+        "latency_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Latency Ms"
+        },
+        "status": {
+          "enum": [
+            "supported",
+            "accepted_but_ignored",
+            "unsupported",
+            "insufficient_evidence"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "CapabilityProbeOutcome",
+      "type": "object"
+    },
+    "CapabilityProbeResult": {
+      "additionalProperties": false,
+      "properties": {
+        "capabilities": {
+          "additionalProperties": {
+            "$ref": "#/$defs/CapabilityProbeOutcome"
+          },
+          "minProperties": 1,
+          "propertyNames": {
+            "enum": [
+              "thinking",
+              "tools",
+              "streaming",
+              "image"
+            ]
+          },
+          "title": "Capabilities",
+          "type": "object"
+        },
+        "coverage_ratio": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Coverage Ratio",
+          "type": "number"
+        },
+        "probe_mode": {
+          "minLength": 1,
+          "title": "Probe Mode",
+          "type": "string"
+        },
+        "probe_version": {
+          "minLength": 1,
+          "title": "Probe Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "probe_mode",
+        "probe_version",
+        "coverage_ratio",
+        "capabilities"
+      ],
+      "title": "CapabilityProbeResult",
+      "type": "object"
+    },
     "GenerationSpec": {
       "additionalProperties": false,
       "properties": {
@@ -92,7 +216,7 @@
       "additionalProperties": false,
       "properties": {
         "answer_text": {
-          "minLength": 1,
+          "default": "",
           "title": "Answer Text",
           "type": "string"
         },
@@ -155,7 +279,6 @@
         }
       },
       "required": [
-        "answer_text",
         "usage"
       ],
       "title": "NormalizedCompletion",
@@ -448,6 +571,17 @@
       ],
       "default": null,
       "title": "Answer Coverage Ratio"
+    },
+    "capability_probe": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CapabilityProbeResult"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "claimed_model": {
       "anyOf": [

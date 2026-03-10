@@ -272,3 +272,90 @@ def test_v3_representation_alignment_scores_aliases_ambiguity_and_rejections() -
     assert behavior["rejected_count"] == 1
     assert scores["canonical_accuracy"] == 1.0
     assert scores["rejection_accuracy"] == 1.0
+
+
+def test_v3_representation_alignment_treats_empty_object_violations_as_empty_list() -> None:
+    canonical_output = CanonicalizedOutput(
+        format_id="tolerant_json_v3",
+        payload={
+            "task_result": {
+                "canonical_entities": ["alice_wong"],
+                "alias_map": {"Alice W.": "alice_wong"},
+                "ambiguous_mentions": [],
+                "rejected_items": [],
+            },
+            "evidence": {},
+            "unknowns": {},
+            "violations": {},
+        },
+    )
+    prompt = build_prompt(
+        "p025",
+        "representation_alignment",
+        {
+            "expected_task_result": {
+                "canonical_entities": ["alice_wong"],
+                "alias_map": {"Alice W.": "alice_wong"},
+                "ambiguous_mentions": [],
+                "rejected_items": [],
+            }
+        },
+    )
+
+    behavior = extract_representation_alignment_v3(canonical_output)
+    scores = score_representation_alignment_v3(prompt, canonical_output)
+
+    assert behavior["violation_count"] == 0
+    assert scores["violation_free"] is True
+
+
+def test_v3_representation_alignment_accepts_mapping_shaped_entity_collections() -> None:
+    canonical_output = CanonicalizedOutput(
+        format_id="tolerant_json_v3",
+        payload={
+            "task_result": {
+                "canonical_entities": {
+                    "alice_wong": {"type": "person"},
+                    "db_cluster_east": {"type": "resource"},
+                },
+                "alias_map": {
+                    "Alice W.": "alice_wong",
+                    "DB-east": "db_cluster_east",
+                },
+                "ambiguous_mentions": {
+                    "OW": ["OpenWhale", "Ops Watch"],
+                },
+                "rejected_items": {
+                    "temp-note": "not an entity",
+                },
+            },
+            "evidence": {},
+            "unknowns": {},
+            "violations": [],
+        },
+    )
+    prompt = build_prompt(
+        "p025",
+        "representation_alignment",
+        {
+            "expected_task_result": {
+                "canonical_entities": ["alice_wong", "db_cluster_east"],
+                "alias_map": {
+                    "Alice W.": "alice_wong",
+                    "DB-east": "db_cluster_east",
+                },
+                "ambiguous_mentions": ["OW"],
+                "rejected_items": ["temp-note"],
+            }
+        },
+    )
+
+    behavior = extract_representation_alignment_v3(canonical_output)
+    scores = score_representation_alignment_v3(prompt, canonical_output)
+
+    assert behavior["canonical_count"] == 2
+    assert behavior["ambiguous_count"] == 1
+    assert behavior["rejected_count"] == 1
+    assert scores["canonical_accuracy"] == 1.0
+    assert scores["ambiguity_preservation"] == 1.0
+    assert scores["rejection_accuracy"] == 1.0

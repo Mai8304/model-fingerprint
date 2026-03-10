@@ -73,6 +73,11 @@
           "minLength": 1,
           "title": "Output Token Cap Field",
           "type": "string"
+        },
+        "static_body": {
+          "additionalProperties": true,
+          "title": "Static Body",
+          "type": "object"
         }
       },
       "required": [
@@ -144,6 +149,75 @@
         "max_attempts"
       ],
       "title": "RetryPolicy",
+      "type": "object"
+    },
+    "ThinkingAttempt": {
+      "additionalProperties": false,
+      "properties": {
+        "output_token_cap": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Output Token Cap"
+        },
+        "output_token_cap_multiplier": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 1.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Output Token Cap Multiplier"
+        },
+        "request_body_overrides": {
+          "additionalProperties": true,
+          "title": "Request Body Overrides",
+          "type": "object"
+        }
+      },
+      "title": "ThinkingAttempt",
+      "type": "object"
+    },
+    "ThinkingPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "attempts": {
+          "items": {
+            "$ref": "#/$defs/ThinkingAttempt"
+          },
+          "maxItems": 4,
+          "minItems": 1,
+          "title": "Attempts",
+          "type": "array"
+        },
+        "retry_on_empty_answer": {
+          "default": true,
+          "title": "Retry On Empty Answer",
+          "type": "boolean"
+        },
+        "retry_on_finish_reasons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Retry On Finish Reasons",
+          "type": "array"
+        }
+      },
+      "required": [
+        "attempts"
+      ],
+      "title": "ThinkingPolicy",
       "type": "object"
     },
     "TimeoutPolicy": {
@@ -245,6 +319,17 @@
     },
     "retry_policy": {
       "$ref": "#/$defs/RetryPolicy"
+    },
+    "thinking_policy": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ThinkingPolicy"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "timeout_policy": {
       "$ref": "#/$defs/TimeoutPolicy"

@@ -3,6 +3,7 @@ from __future__ import annotations
 from modelfingerprint.contracts.endpoint import EndpointProfile
 from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.dialects.openai_chat import OpenAIChatDialectAdapter
+from modelfingerprint.http_defaults import DEFAULT_BROWSER_USER_AGENT
 
 
 def build_prompt() -> PromptDefinition:
@@ -97,6 +98,7 @@ def test_openai_chat_adapter_builds_wire_request_without_mutating_semantic_value
 
     assert request.url == "https://api.siliconflow.cn/v1/chat/completions"
     assert request.headers["Authorization"] == "Bearer test-key"
+    assert request.headers["User-Agent"] == DEFAULT_BROWSER_USER_AGENT
     assert request.body["model"] == "Pro/zai-org/GLM-5"
     assert request.body["messages"][0]["role"] == "system"
     assert request.body["max_tokens"] == 96
@@ -166,3 +168,19 @@ def test_openai_chat_adapter_parses_reasoning_and_usage_fields() -> None:
     assert completion.finish_reason == "stop"
     assert completion.latency_ms == 18342
     assert completion.usage.reasoning_tokens == 24
+
+
+def test_openai_chat_adapter_adds_openrouter_headers_for_openrouter_base_url() -> None:
+    adapter = OpenAIChatDialectAdapter()
+    endpoint = EndpointProfile.model_validate(
+        {
+            **build_endpoint().model_dump(mode="json"),
+            "base_url": "https://openrouter.ai/api/v1",
+            "model": "moonshotai/kimi-k2.5",
+        }
+    )
+
+    request = adapter.build_request(build_prompt(), endpoint, api_key="test-key")
+
+    assert request.headers["HTTP-Referer"] == "https://codex.local"
+    assert request.headers["X-Title"] == "Codex Model Fingerprint"

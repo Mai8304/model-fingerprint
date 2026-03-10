@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.extractors._v2_helpers import (
     object_mapping,
@@ -80,16 +82,16 @@ def extract_representation_alignment_v3(canonical_output: object) -> FeatureMap:
     payload = require_payload(canonical_output, extractor_name="representation_alignment_v3")
     task_result = shared_task_result(payload)
     violations = shared_violations(payload)
-    canonical_entities = string_list(
+    canonical_entities = _string_list_or_mapping_keys(
         task_result.get("canonical_entities", []),
         field_name="task_result.canonical_entities",
     )
     alias_map = object_mapping(task_result.get("alias_map", {}), field_name="task_result.alias_map")
-    ambiguous_mentions = string_list(
+    ambiguous_mentions = _string_list_or_mapping_keys(
         task_result.get("ambiguous_mentions", []),
         field_name="task_result.ambiguous_mentions",
     )
-    rejected_items = string_list(
+    rejected_items = _string_list_or_mapping_keys(
         task_result.get("rejected_items", []),
         field_name="task_result.rejected_items",
     )
@@ -113,16 +115,16 @@ def score_representation_alignment_v3(prompt: object, canonical_output: object) 
     task_result = shared_task_result(payload)
     violations = shared_violations(payload)
 
-    canonical_entities = string_list(
+    canonical_entities = _string_list_or_mapping_keys(
         task_result.get("canonical_entities", []),
         field_name="task_result.canonical_entities",
     )
     alias_map = object_mapping(task_result.get("alias_map", {}), field_name="task_result.alias_map")
-    ambiguous_mentions = string_list(
+    ambiguous_mentions = _string_list_or_mapping_keys(
         task_result.get("ambiguous_mentions", []),
         field_name="task_result.ambiguous_mentions",
     )
-    rejected_items = string_list(
+    rejected_items = _string_list_or_mapping_keys(
         task_result.get("rejected_items", []),
         field_name="task_result.rejected_items",
     )
@@ -160,3 +162,9 @@ def score_representation_alignment_v3(prompt: object, canonical_output: object) 
         "rejection_accuracy": ratio(rejected_hits, len(expected_rejected)),
         "violation_free": len(violations) == 0,
     }
+
+
+def _string_list_or_mapping_keys(value: object, *, field_name: str) -> list[str]:
+    if isinstance(value, Mapping):
+        return [str(key) for key in value.keys()]
+    return string_list(value, field_name=field_name)

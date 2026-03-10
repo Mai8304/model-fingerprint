@@ -23,9 +23,11 @@ messages:
       - q4: On which date was the change approved?
 
       返回 JSON，对象字段必须且只能包含：
-      - task_result
-      - evidence
-      - unknowns
+      - task_result: {q1, q2, q3, q4}
+      - every qN must be {status, value}
+      - status 只能是 answer、unknown、conflict_unresolved
+      - evidence: {q1, q2, q3, q4}
+      - unknowns: {qN: reason_code}
       - violations
 generation:
   temperature: 0.0

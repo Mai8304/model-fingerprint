@@ -6,6 +6,7 @@ from modelfingerprint.contracts.endpoint import EndpointProfile
 from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.contracts.run import NormalizedCompletion, UsageMetadata
 from modelfingerprint.dialects.base import HttpRequestSpec, resolve_path
+from modelfingerprint.http_defaults import DEFAULT_BROWSER_USER_AGENT
 
 
 class OpenAIChatDialectAdapter:
@@ -42,6 +43,8 @@ class OpenAIChatDialectAdapter:
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
                 "Accept": "application/json",
+                "User-Agent": DEFAULT_BROWSER_USER_AGENT,
+                **_openrouter_headers(str(endpoint.base_url)),
             },
             body=body,
         )
@@ -111,3 +114,12 @@ def _merge_mapping(target: dict[str, object], updates: Mapping[str, object]) -> 
             target[key] = nested
             continue
         target[key] = value
+
+
+def _openrouter_headers(base_url: str) -> dict[str, str]:
+    if "openrouter.ai" not in base_url:
+        return {}
+    return {
+        "HTTP-Referer": "https://codex.local",
+        "X-Title": "Codex Model Fingerprint",
+    }

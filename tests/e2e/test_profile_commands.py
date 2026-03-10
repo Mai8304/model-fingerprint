@@ -208,3 +208,25 @@ def test_build_profile_calibrate_and_compare_commands_emit_v2_fields(tmp_path: P
     assert '"answer_coverage_ratio": 1.0' in compare.stdout
     assert '"reasoning_coverage_ratio": 1.0' in compare.stdout
     assert '"protocol_status": "compatible"' in compare.stdout
+
+    compare_artifact = runner.invoke(
+        app,
+        [
+            "compare",
+            "--run",
+            str(tmp_path / "suspect-run.json"),
+            "--profile",
+            str(tmp_path / "profiles/fingerprint-suite-v1/gpt-5.3.json"),
+            "--profile",
+            str(tmp_path / "profiles/fingerprint-suite-v1/claude-ops-4.6.json"),
+            "--calibration",
+            str(tmp_path / "calibration/fingerprint-suite-v1.json"),
+            "--artifact-json",
+        ],
+    )
+    assert compare_artifact.exit_code == 0
+    assert '"schema_version": "comparison.v1"' in compare_artifact.stdout
+    assert '"summary"' in compare_artifact.stdout
+    assert '"candidates"' in compare_artifact.stdout
+    assert '"prompt_breakdown"' in compare_artifact.stdout
+    assert '"capability_breakdown"' in compare_artifact.stdout

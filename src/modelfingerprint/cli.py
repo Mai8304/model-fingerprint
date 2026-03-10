@@ -17,6 +17,7 @@ from modelfingerprint.dialects.openai_chat import OpenAIChatDialectAdapter
 from modelfingerprint.services.calibrator import Calibrator
 from modelfingerprint.services.capability_probe import probe_capabilities
 from modelfingerprint.services.comparator import compare_run
+from modelfingerprint.services.comparison_artifact import build_comparison_artifact
 from modelfingerprint.services.endpoint_profiles import (
     EndpointProfileValidationError,
     load_endpoint_profiles,
@@ -283,12 +284,25 @@ def compare_command(
     profile_paths: list[Path] = typer.Option(..., "--profile", exists=True, dir_okay=False),
     calibration: Path = typer.Option(..., "--calibration", exists=True, dir_okay=False),
     json_output: bool = typer.Option(False, "--json"),
+    artifact_json: bool = typer.Option(False, "--artifact-json"),
 ) -> None:
+    if json_output and artifact_json:
+        raise typer.BadParameter("choose only one of --json or --artifact-json")
+
     run_artifact = _load_run(run)
     profiles = [_load_profile(path) for path in profile_paths]
     calibration_artifact = CalibrationArtifact.model_validate(
         json.loads(calibration.read_text(encoding="utf-8"))
     )
+    if artifact_json:
+        artifact = build_comparison_artifact(
+            run=run_artifact,
+            profiles=profiles,
+            calibration=calibration_artifact,
+        )
+        typer.echo(json.dumps(artifact.model_dump(mode="json"), indent=2, sort_keys=True))
+        return
+
     comparison = compare_run(run_artifact, profiles)
     verdict = decide_verdict(comparison, calibration_artifact)
     payload = {

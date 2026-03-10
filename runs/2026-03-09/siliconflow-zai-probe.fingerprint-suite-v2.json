@@ -1,0 +1,705 @@
+{
+  "answer_coverage_ratio": 0.6,
+  "claimed_model": null,
+  "endpoint_profile_id": "siliconflow-zai-probe",
+  "prompt_count_completed": 6,
+  "prompt_count_scoreable": 6,
+  "prompt_count_total": 10,
+  "prompts": [
+    {
+      "canonical_output": {
+        "format_id": "strict_json_v2",
+        "payload": {
+          "evidence": {
+            "owner": null,
+            "region": null,
+            "role": "[e2]"
+          },
+          "task_result": {
+            "owner": null,
+            "region": null,
+            "role": "Primary DBA"
+          },
+          "unknown_fields": [
+            "owner",
+            "region"
+          ],
+          "violations": null
+        }
+      },
+      "canonicalization_events": [],
+      "completion": {
+        "answer_text": "{\n  \"task_result\": {\n    \"owner\": null,\n    \"role\": \"Primary DBA\",\n    \"region\": null\n  },\n  \"evidence\": {\n    \"owner\": null,\n    \"role\": \"[e2]\",\n    \"region\": null\n  },\n  \"unknown_fields\": [\n    \"owner\",\n    \"region\"\n  ],\n  \"violations\": null\n}",
+        "finish_reason": "stop",
+        "latency_ms": 47636,
+        "raw_response_path": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-09/siliconflow-zai-probe.fingerprint-suite-v2/p011.response.json",
+        "reasoning_text": "\u7528\u6237\u5e0c\u671b\u6211\u6839\u636e\u63d0\u4f9b\u7684\u8bc1\u636e\u63d0\u53d6\u7279\u5b9a\u4fe1\u606f\uff08owner\u3001role\u3001region\uff09\uff0c\u5e76\u8fd4\u56de\u4e00\u4e2a\u4e25\u683c\u7684 JSON \u5bf9\u8c61\u3002\n\n**\u7ea6\u675f\u6761\u4ef6\uff1a**\n1.  **\u8f93\u51fa\u683c\u5f0f\uff1a** \u4ec5 JSON \u5bf9\u8c61\u3002\u65e0 markdown\uff0c\u65e0\u989d\u5916\u6587\u672c\u3002\n2.  **\u5b57\u6bb5\uff1a** \u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b `task_result`\u3001`evidence`\u3001`unknown_fields`\u3001`violations`\u3002\n3.  **\u7f3a\u5931\u4fe1\u606f\uff1a** \u5982\u679c\u4fe1\u606f\u672a\u77e5\uff0c\u5c06\u5176\u8bbe\u4e3a `null` \u5e76\u5c06\u5b57\u6bb5\u540d\u6dfb\u52a0\u5230 `unknown_fields`\u3002\n4.  **\u8bc1\u636e\u6620\u5c04\uff1a** `evidence` \u5b57\u6bb5\u5e94\u5c06\u63d0\u53d6\u7684\u5b57\u6bb5\u6620\u5c04\u5230\u5176\u6765\u6e90\u8bc1\u636e\u3002\n\n**\u8bc1\u636e\u5206\u6790\uff1a**\n*   [e1] Alice Wong \u4e8e 2023 \u5e74\u52a0\u5165\u652f\u4ed8\u5e73\u53f0\u3002\uff08\u4e0e\u5f53\u524d\u89d2\u8272/\u6240\u6709\u6743\u65e0\u5173\uff09\u3002\n*   [e2] Alice Wong \u662f\u652f\u4ed8\u5e73\u53f0\u7684*\u5f53\u524d*\u4e3b\u8981 DBA\u3002\n    *   *Owner \u5019\u9009\uff1a* Alice Wong\uff1f\u8bc1\u636e\u79f0\u5979\u662f\u201c\u5f53\u524d\u4e3b\u8981 DBA\u201d\u3002\u901a\u5e38\uff0cDBA \u4e0d\u662f\u201cowner\u201d\uff0c\u4f46\u6709\u65f6\u672f\u8bed\u4f1a\u91cd\u53e0\u3002\u7136\u800c\uff0c[e3] \u63d0\u5230\u4e86\u201cformer owner\u201d\uff08\u524d\u4efb owner\uff09\u3002\u8ba9\u6211\u4eec\u770b\u770b [e3]\u3002\n    *   *Role \u5019\u9009\uff1a* \u201cPrimary DBA\u201d\uff08\u4e3b\u8981 DBA\uff09\u3002\n*   [e3] \u8be5\u5e73\u53f0\u7684*\u524d\u4efb* owner \u662f Kevin Lin\u3002\n    *   *Owner \u5019\u9009\uff1a* Kevin Lin \u662f*\u524d\u4efb*\u3002\u8fd9\u6697\u793a\u6709\u4e00\u4e2a\u5f53\u524d owner\u3002Alice \u662f owner \u5417\uff1f[e2] \u8bf4\u5979\u662f\u201cPrimary DBA\u201d\u3002\u5b83\u6ca1\u6709\u660e\u786e\u8bf4\u5979\u662f\u201cowner\u201d\u3002\u7136\u800c\uff0c\u5728\u8bb8\u591a IT \u8bed\u5883\u4e2d\uff0c\u5982\u679c\u524d\u4efb owner \u5df2\u88ab\u6307\u660e\uff0c\u4e14 Alice \u662f\u5f53\u524d\u4e3b\u8981 DBA\uff0c\u90a3\u4e48\u5728\u6ca1\u6709\u660e\u786e\u8bf4\u660e\u201cAlice \u662f owner\u201d\u7684\u60c5\u51b5\u4e0b\uff0c\u5047\u8bbe\u5979\u662f owner \u662f\u4e00\u79cd\u8df3\u8dc3\u3002\u4f46\u901a\u5e38\uff0c\u5982\u679c\u524d\u4efb owner \u88ab\u63d0\u53ca\uff0c\u5f53\u524d owner \u53ef\u80fd\u662f\u4e3b\u8981 DBA\uff0c\u6216\u8005\u53ef\u80fd\u672a\u8bf4\u660e\u3002\n    *   \u8ba9\u6211\u4eec\u4ed4\u7ec6\u91cd\u8bfb\u3002\u201cAlice Wong is the current Primary DBA\u201d\uff08Alice Wong \u662f\u5f53\u524d\u4e3b\u8981 DBA\uff09\u3002\u5b83*\u6ca1\u6709*\u8bf4\u5979\u662f owner\u3002\u201cThe former owner... was Kevin Lin\u201d\uff08\u524d\u4efb owner\u2026\u2026\u662f Kevin Lin\uff09\u3002\n    *   \u4e25\u683c\u57fa\u4e8e\u8bc1\u636e\uff1a\u6211\u4eec\u77e5\u9053 Kevin \u662f*\u524d\u4efb* owner\u3002\u6211\u4eec\u4e0d\u77e5\u9053*\u5f53\u524d* owner \u662f\u8c01\uff0c\u9664\u975e\u201cPrimary DBA\u201d\u6697\u793a\u6240\u6709\u6743\uff08\u8fd9\u5e76\u975e\u6807\u51c6\u5b9a\u4e49\uff09\u6216\u8005\u5982\u679c\u7528\u6237\u6697\u793a Alice \u63a5\u66ff\u4e86 Kevin\u3002\n    *   \u7136\u800c\uff0c\u901a\u5e38\u5728\u8fd9\u4e9b\u903b\u8f91\u8c1c\u9898\u4e2d\uff0c\u5982\u679c [e2] \u8bf4\u201cAlice \u662f\u5f53\u524d [\u89d2\u8272]\u201d\u4e14 [e3] \u8bf4\u201cKevin \u662f\u524d\u4efb owner\u201d\uff0c\u5f53\u524d owner \u662f Alice \u5417\uff1f\u4e0d\uff0c\u8fd9\u5047\u8bbe\u4e86\u7ee7\u627f\u3002\n    *   \u5f53\u524d owner \u662f Kevin Lin \u5417\uff1f\u4e0d\uff0c\u4ed6\u662f\u201cformer\u201d\uff08\u524d\u4efb\uff09\u3002\n    *   \u5f53\u524d owner \u662f Alice Wong \u5417\uff1f\u8bc1\u636e [e2] \u5b9a\u4e49\u4e86\u5979\u7684\u89d2\u8272\u4e3a\u201cPrimary DBA\u201d\u3002\u5b83\u6ca1\u6709\u660e\u786e\u8bf4\u660e\u201cowner\u201d\u3002\n    *   \u56e0\u6b64\uff0c`owner` \u53ef\u80fd\u662f `null`\uff08\u672a\u77e5\uff09\uff0c\u56e0\u4e3a Alice \u88ab\u5b9a\u4e49\u4e3a DBA\uff0c\u800c\u975e owner\uff0c\u800c Kevin \u662f\u524d\u4efb owner\u3002\n    *   *\u7b49\u7b49*\uff0c\u8ba9\u6211\u4eec\u770b\u770b\u6807\u51c6\u7684\u63d0\u53d6\u4efb\u52a1\u3002\u5982\u679c\u6587\u672c\u8bf4\u201cAlice \u662f\u5f53\u524d\u4e3b\u8981 DBA\u201d\uff0c`role` \u5c31\u662f\u201cPrimary DBA\u201d\u3002\u5982\u679c\u6587\u672c\u8bf4\u201cKevin \u662f\u524d\u4efb owner\u201d\uff0c\u5b83\u786e\u8ba4 Kevin *\u4e0d\u662f*\u5f53\u524d owner\u3002\u5b83\u6ca1\u6709\u8bf4\u660e\u5f53\u524d owner \u662f\u8c01\u3002\n    *   *\u53e6\u4e00\u79cd\u89e3\u91ca\uff1a* \u201cPrimary DBA\u201d\u88ab\u8ba4\u4e3a\u662f\u201cowner\u201d\u5417\uff1f\u4e0d\uff0c\u901a\u5e38\u662f\u4e0d\u540c\u7684\u89d2\u8272\u3002\n    *   *\u7ed3\u8bba\uff1a* `owner` \u662f `null`\u3002`role` \u662f\u201cPrimary DBA\u201d\u3002\n*   [e4] Alice \u4e0a\u4e2a\u6708\u8d1f\u8d23 APAC \u8f6e\u503c\uff0c\u4f46\u8fd9\u5e76\u4e0d\u5b9a\u4e49\u5979\u7684\u5e38\u9a7b\u533a\u57df\u3002\n    *   *Region \u5019\u9009\uff1a* \u201cAPAC\u201d\u88ab\u63d0\u53ca\uff0c\u4f46\u660e\u786e\u6307\u51fa\u201cdoes not define her home region\u201d\uff08\u5e76\u4e0d\u5b9a\u4e49\u5979\u7684\u5e38\u9a7b\u533a\u57df\uff09\u3002\n    *   *\u7ed3\u8bba\uff1a* `region` \u662f `null`\u3002\n\n**\u6784\u5efa JSON\uff1a**\n\n*   **task_result:**\n    *   `owner`: `null`\uff08Alice \u662f DBA\uff0cKevin \u662f\u524d\u4efb owner\u3002\u672a\u8bf4\u660e\u5f53\u524d owner\uff09\u3002\n    *   `role`: \"Primary DBA\"\uff08\u6765\u81ea [e2]\uff09\u3002\n    *   `region`: `null`\uff08\u6765\u81ea [e4]\uff0c\u660e\u786e\u5426\u8ba4\uff09\u3002\n\n*   **evidence:**\n    *   `owner`: `null`\uff08\u65e0\u8bc1\u636e\uff09\u3002\n    *   `role`: \"[e2]\"\uff08Alice Wong \u662f\u5f53\u524d\u4e3b\u8981 DBA\uff09\u3002\n    *   `region`: `null`\uff08\u65e0\u8bc1\u636e\uff09\u3002\n\n*   **unknown_fields:**\n    *   [\"owner\", \"region\"]\n\n*   **violations:**\n    *   `null`\uff08\u63d0\u793a\u672a\u8981\u6c42\u68c0\u67e5\u8fdd\u89c4\uff0c\u4f46\u67b6\u6784\u8981\u6c42\u5982\u6b64\u3002\u901a\u5e38\uff0c\u5982\u679c\u8bc1\u636e\u77db\u76fe\u6216\u8fdd\u53cd\u89c4\u5219\uff0c\u8fd9\u91cc\u4f1a\u586b\u5145\u3002\u6b64\u5904\u65e0\u77db\u76fe\uff0c\u53ea\u662f\u4fe1\u606f\u7f3a\u5931\u3002\u6240\u4ee5\u4e3a `null` \u6216\u7a7a\u5217\u8868\u3002\u63d0\u793a\u8bf4\u201c\u672a\u77e5\u5b57\u6bb5\u4fdd\u7559\u4e3a null\u2026\u2026\u201d\u3002\u5b83\u6ca1\u6709\u660e\u786e\u8bf4\u660e\u8fdd\u89c4\u7684\u683c\u5f0f\uff0c\u4f46\u901a\u5e38\u5982\u679c\u65e0\u8fdd\u89c4\uff0c\u4e3a `null` \u6216 `[]`\u3002\u6211\u5c06\u4f7f\u7528 `null`\uff0c\u56e0\u4e3a\u8fd9\u662f\u201c\u65e0\u503c\u201d\u7684\u6807\u51c6\uff09\u3002\n\n**\u7ec6\u5316 Owner \u903b\u8f91\uff1a**\n\u201cPrimary DBA\u201d\u662f\u5426\u6697\u793a\u6240\u6709\u6743\uff1f\n\u5728\u6570\u636e\u5e93\u7ba1\u7406\u8bed\u5883\u4e2d\uff0cDBA \u7ba1\u7406\u6570\u636e\u5e93\uff0cOwner \u62e5\u6709\u6570\u636e/\u67b6\u6784\u3002\n[e2] \u8bf4\u201cAlice \u662f\u5f53\u524d\u4e3b\u8981 DBA\u201d\u3002\n[e3] \u8bf4\u201cKevin \u662f\u524d\u4efb owner\u201d\u3002\n\u5982\u679c Alice \u662f\u5f53\u524d owner\uff0c\u6587\u672c\u5f88\u53ef\u80fd\u4f1a\u8bf4\u201cAlice \u662f\u5f53\u524d owner\u201d\u6216\u201cAlice \u63a5\u66ff Kevin \u6210\u4e3a owner\u201d\u3002\n\u65e2\u7136\u5b83\u533a\u5206\u4e86\u201cPrimary DBA\u201d\u548c\u201cformer owner\u201d\uff0c\u4e14\u6ca1\u6709\u5c06 Alice \u4e0e\u201cowner\u201d\u8054\u7cfb\u8d77\u6765\uff0c\u6211\u5fc5\u987b\u5c06 owner \u89c6\u4e3a\u672a\u77e5\u3002\n\n**\u7ec6\u5316 Region \u903b\u8f91\uff1a**\n[e4] \u660e\u786e\u6307\u51fa APAC \u8f6e\u503c\u5e76\u4e0d\u5b9a\u4e49\u5979\u7684\u533a\u57df\u3002\u6240\u4ee5 region \u662f\u672a\u77e5\u7684\u3002\n\n**\u6700\u7ec8\u68c0\u67e5\uff1a**\n*   `owner`: null\u3002\n*   `role`: \"Primary DBA\"\u3002\n*   `region`: null\u3002\n*   `unknown_fields`: [\"owner\", \"region\"]\u3002\n*   `violations`: null\u3002\n\n\u8ba9\u6211\u4eec\u518d\u6b21\u68c0\u67e5 `evidence` \u5b57\u6bb5\u7ed3\u6784\u3002\u5b83\u8981\u6c42 `{owner, role, region}`\u3002\n\u5982\u679c\u503c\u4e3a null\uff0c\u8bc1\u636e\u53ef\u80fd\u5e94\u4e3a null \u6216\u7a7a\u5b57\u7b26\u4e32\u3002\u63d0\u793a\u8bf4\u201c\u672a\u77e5\u5b57\u6bb5\u4fdd\u7559\u4e3a null\u201d\u3002\u8fd9\u9002\u7528\u4e8e `task_result`\u3002\u5bf9\u4e8e `evidence`\uff0c\u901a\u5e38\u5982\u679c\u672a\u627e\u5230\uff0c\u5219\u4e3a null\u3002\n\nJSON \u7ed3\u6784\uff1a\n```json\n{\n  \"task_result\": {\n    \"owner\": null,\n    \"role\": \"Primary DBA\",\n    \"region\": null\n  },\n  \"evidence\": {\n    \"owner\": null,\n    \"role\": \"[e2]\",\n    \"region\": null\n  },\n  \"unknown_fields\": [\"owner\", \"region\"],\n  \"violations\": null\n}\n```\n\n\u7b49\u7b49\uff0c`owner` \u771f\u7684\u672a\u77e5\u5417\uff1f\n[e3] \u201cThe former owner of the platform was Kevin Lin.\u201d\n\u8fd9\u6697\u793a\u5f53\u524d owner \u5b58\u5728\uff08\u6216\u4e3a\u7a7a\uff09\u3002\n[e2] \u201cAlice Wong is the current Primary DBA\u201d\u3002\n\u5982\u679c\u63d0\u793a\u6697\u793a\u201cowner\u201d\u610f\u5473\u7740\u201c\u5f53\u524d\u8d1f\u8d23\u4eba\u201d\uff0cAlice \u662f\u4e3b\u8981 DBA\u3002\u5979\u662f owner \u5417\uff1f\n\u5982\u679c\u6211\u770b\u6807\u51c6\u7684\u5b9e\u4f53\u63d0\u53d6\u4efb\u52a1\uff1a\n\u5b9e\u4f53\uff1aAlice Wong\u3002\u5c5e\u6027\uff1aRole = Primary DBA\u3002\n\u5b9e\u4f53\uff1aKevin Lin\u3002\u5c5e\u6027\uff1aRole = Owner\uff08\u72b6\u6001\uff1aFormer\uff09\u3002\n\u5f53\u524d Owner = ?\n\u4e25\u683c\u6765\u8bf4\uff0c\u672a\u77e5\u3002\n\n\u7136\u800c\uff0c\u6709\u65f6\u201cPrimary DBA\u201d\u5728\u5c0f\u578b\u56e2\u961f\u8bed\u5883\u4e2d\u88ab\u89c6\u4e3a\u201cowner\u201d\u3002\u4f46\u4e25\u683c\u57fa\u4e8e\u6587\u672c\uff0c\u8fd9\u662f\u4e0d\u6b63\u786e\u7684\u3002\n\u6211\u5c06\u575a\u6301\u4e25\u683c\u89e3\u91ca\u3002Owner \u662f null\u3002\n\n\u4e00\u4e2a\u7ec6\u8282\uff1a`violations`\u3002\u63d0\u793a\u8bf4\u201c\u672a\u77e5\u5b57\u6bb5\u4fdd\u7559\u4e3a null\u2026\u2026\u201d\u3002\u5b83\u6ca1\u6709\u660e\u786e\u8bf4\u660e\u8fdd\u89c4\u7684\u683c\u5f0f\uff0c\u4f46\u901a\u5e38\u5982\u679c\u65e0\u8fdd\u89c4\uff0c\u4e3a `null` \u6216 `[]`\u3002\u6211\u5c06\u4f7f\u7528 `null`\uff0c\u56e0\u4e3a\u8fd9\u662f\u201c\u65e0\u503c\u201d\u7684\u6807\u51c6\u3002\n\n\u8ba9\u6211\u4eec\u9a8c\u8bc1 `role` \u7684\u8bc1\u636e\u3002\n[e2] \u201cAlice Wong is the current Primary DBA\u201d\u3002\n\u6240\u4ee5 `role` \u662f\u201cPrimary DBA\u201d\u3002\u8bc1\u636e\u662f\u201c[e2]\u201d\u3002\n\n\u8ba9\u6211\u4eec\u9a8c\u8bc1 `region` \u7684\u8bc1\u636e\u3002\n[e4] \u63d0\u5230 APAC \u4f46\u5426\u8ba4\u4e86\u5b83\u3002\u6240\u4ee5 region \u662f null\u3002\u8bc1\u636e\u662f null\u3002\n\n\u8ba9\u6211\u4eec\u9a8c\u8bc1 `owner` \u7684\u8bc1\u636e\u3002\n[e3] \u63d0\u5230\u524d\u4efb owner\u3002\u672a\u63d0\u53ca\u5f53\u524d owner\u3002\u6240\u4ee5 owner \u662f null\u3002\u8bc1\u636e\u662f null\u3002\n\n\u7ed3\u679c\u770b\u8d77\u6765\u5f88\u7a33\u5065\u3002\n\n\u4e00\u4e2a\u8fb9\u7f18\u60c5\u51b5\uff1a\u7528\u6237\u662f\u5426\u53ef\u80fd\u8ba4\u4e3a\u201cAlice Wong\u201d\u662f owner\uff0c\u56e0\u4e3a\u5979\u63a5\u66ff\u4e86 Kevin\uff1f\n[e3] \u8bf4\u201cKevin \u662f\u524d\u4efb owner\u201d\u3002\n[e2] \u8bf4\u201cAlice \u662f\u5f53\u524d\u4e3b\u8981 DBA\u201d\u3002\n\u5982\u679c Alice \u662f owner\uff0c\u6587\u672c\u5f88\u53ef\u80fd\u4f1a\u8bf4\u201cAlice \u662f\u5f53\u524d owner\u201d\u6216\u201cAlice \u63a5\u66ff Kevin \u6210\u4e3a owner\u201d\u3002\n\u65e2\u7136\u5b83\u533a\u5206\u4e86\u201cPrimary DBA\u201d\u548c\u201cformer owner\u201d\uff0c\u4e14\u6ca1\u6709\u5c06 Alice \u4e0e\u201cowner\u201d\u8054\u7cfb\u8d77\u6765\uff0c\u6211\u5fc5\u987b\u5c06 owner \u89c6\u4e3a\u672a\u77e5\u3002\n\n\u6700\u7ec8 JSON \u6784\u5efa\u3002",
+        "reasoning_visible": true,
+        "usage": {
+          "input_tokens": 149,
+          "output_tokens": 1932,
+          "reasoning_tokens": 1850,
+          "total_tokens": 2081
+        }
+      },
+      "error": null,
+      "features": {
+        "answer.evidence_field_count": 1,
+        "answer.filled_field_count": 1,
+        "answer.unknown_field_count": 2,
+        "answer.violation_count": 0,
+        "reasoning.backtrack_markers": 0,
+        "reasoning.hedge_density": 0.0,
+        "reasoning.step_count": 99,
+        "reasoning.uses_numbered_outline": true,
+        "score.abstention_compliance": 1.0,
+        "score.evidence_alignment": 0.5,
+        "score.value_accuracy": 0.6666666666666666,
+        "score.violation_free": true,
+        "surface.constraint_retention": false,
+        "surface.field_order_match": false,
+        "surface.had_markdown_fence": false,
+        "surface.has_extra_text": false,
+        "transport.finish_reason": "stop",
+        "transport.latency_bucket_ms": 47000,
+        "transport.reasoning_tokens": 1850,
+        "transport.reasoning_visible": true
+      },
+      "prompt_id": "p011",
+      "raw_output": "{\n  \"task_result\": {\n    \"owner\": null,\n    \"role\": \"Primary DBA\",\n    \"region\": null\n  },\n  \"evidence\": {\n    \"owner\": null,\n    \"role\": \"[e2]\",\n    \"region\": null\n  },\n  \"unknown_fields\": [\n    \"owner\",\n    \"region\"\n  ],\n  \"violations\": null\n}",
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 280,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u8865\u5168\u672a\u77e5\u4fe1\u606f\u3002\u672a\u77e5\u5b57\u6bb5\u4fdd\u7559\u4e3a null\uff0c\u5e76\u628a\u5b57\u6bb5\u540d\u5199\u5165 unknown_fields\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u53ea\u6839\u636e\u4e0b\u9762\u8bc1\u636e\u5224\u65ad\u5f53\u524d owner\u3001role\u3001region\u3002\n\n[e1] Alice Wong joined the payments platform in 2023.\n[e2] Alice Wong is the current Primary DBA for the payments platform.\n[e3] The former owner of the platform was Kevin Lin.\n[e4] Alice covered the APAC rotation last month, but this does not define her home region.\n\n\u8fd4\u56de JSON\uff0c\u5bf9\u8c61\u5b57\u6bb5\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b\uff1a\n- task_result: {owner, role, region}\n- evidence: {owner, role, region}\n- unknown_fields\n- violations\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "completed",
+      "usage": {
+        "input_tokens": 149,
+        "output_tokens": 1932,
+        "reasoning_tokens": 1850,
+        "total_tokens": 2081
+      }
+    },
+    {
+      "canonical_output": {
+        "format_id": "strict_json_v2",
+        "payload": {
+          "evidence": {
+            "backup_lead": "[e2]",
+            "change_window": "[e3]",
+            "current_lead": "[e1]"
+          },
+          "task_result": {
+            "backup_lead": null,
+            "change_window": "2026-03-21 02:00 UTC",
+            "current_lead": "Priya"
+          },
+          "unknown_fields": [
+            "backup_lead"
+          ],
+          "violations": []
+        }
+      },
+      "canonicalization_events": [],
+      "completion": {
+        "answer_text": "{\n  \"task_result\": {\n    \"current_lead\": \"Priya\",\n    \"backup_lead\": null,\n    \"change_window\": \"2026-03-21 02:00 UTC\"\n  },\n  \"evidence\": {\n    \"current_lead\": \"[e1]\",\n    \"backup_lead\": \"[e2]\",\n    \"change_window\": \"[e3]\"\n  },\n  \"unknown_fields\": [\n    \"backup_lead\"\n  ],\n  \"violations\": []\n}",
+        "finish_reason": "stop",
+        "latency_ms": 27073,
+        "raw_response_path": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-09/siliconflow-zai-probe.fingerprint-suite-v2/p012.response.json",
+        "reasoning_text": "\u7528\u6237\u5e0c\u671b\u6211\u6839\u636e\u63d0\u4f9b\u7684\u4f1a\u8bae\u7eaa\u8981\u63d0\u53d6\u7279\u5b9a\u4fe1\u606f\uff0c\u5e76\u8fd4\u56de\u4e00\u4e2a\u4e25\u683c\u7684 JSON \u5bf9\u8c61\u3002\n\n**\u8f93\u5165\u6587\u672c\uff1a**\n[e1] Priya is leading the database password rotation.\n[e2] The backup lead was not assigned during the meeting.\n[e3] The approved maintenance window is 2026-03-21 02:00 UTC.\n[e4] An earlier draft proposed 2026-03-20 02:00 UTC, but that draft was rejected.\n\n**\u76ee\u6807\u5b57\u6bb5\uff1a**\n1.  `current_lead`\n2.  `backup_lead`\n3.  `change_window`\n\n**\u7ea6\u675f\u6761\u4ef6\uff1a**\n*   \u53ea\u8fd4\u56de JSON \u5bf9\u8c61\u3002\n*   \u4e0d\u8981\u8f93\u51fa markdown\u3002\n*   \u4e0d\u8981\u8865\u5168\u672a\u77e5\u4fe1\u606f\u3002\n*   \u672a\u77e5\u5b57\u6bb5\u4fdd\u7559\u4e3a `null`\uff0c\u5e76\u628a\u5b57\u6bb5\u540d\u5199\u5165 `unknown_fields`\u3002\n*   \u8f93\u51fa\u7ed3\u6784\uff1a\n    *   `task_result`: {current_lead, backup_lead, change_window}\n    *   `evidence`: {current_lead, backup_lead, change_window}\n    *   `unknown_fields`\n    *   `violations`\n\n**\u5206\u6790\u4e0e\u63d0\u53d6\uff1a**\n\n1.  **current_lead**:\n    *   \u6587\u672c [e1]\uff1a\"Priya is leading the database password rotation.\"\n    *   \u503c\uff1a\"Priya\"\n    *   \u8bc1\u636e\uff1a\"[e1]\"\n\n2.  **backup_lead**:\n    *   \u6587\u672c [e2]\uff1a\"The backup lead was not assigned during the meeting.\"\n    *   \u503c\uff1a\u672a\u5206\u914d\u3002\u63d0\u793a\u8981\u6c42\u201c\u4e0d\u8981\u8865\u5168\u672a\u77e5\u4fe1\u606f\u201d\u3002\u65e2\u7136\u660e\u786e\u8bf4\u660e\u672a\u5206\u914d\uff0c\u8fd9\u7b97\u672a\u77e5\u5417\uff1f\u901a\u5e38\uff0c\u5982\u679c\u660e\u786e\u8bf4\u660e\u201c\u672a\u5206\u914d\u201d\uff0c\u503c\u53ef\u80fd\u662f null \u6216\u5b57\u7b26\u4e32 \"Not assigned\"\u3002\u7136\u800c\uff0c\u63d0\u793a\u8bf4\u201c\u672a\u77e5\u5b57\u6bb5\u4fdd\u7559\u4e3a null\u201d\u3002\u5982\u679c\u4fe1\u606f\u7f3a\u5931\uff0c\u5b83\u5c31\u662f null\u3002\u8fd9\u91cc\u4fe1\u606f\u660e\u786e\u7f3a\u5931\uff08\u672a\u5206\u914d\uff09\u3002\u6240\u4ee5\u503c\u662f `null`\u3002\n    *   \u8bc1\u636e\uff1a\"[e2]\"\n\n3.  **change_window**:\n    *   \u6587\u672c [e3]\uff1a\"The approved maintenance window is 2026-03-21 02:00 UTC.\"\n    *   \u6587\u672c [e4]\uff1a\"An earlier draft proposed 2026-03-20 02:00 UTC, but that draft was rejected.\"\n    *   \u503c\uff1a\"2026-03-21 02:00 UTC\"\uff08\u5df2\u6279\u51c6\u7684\u90a3\u4e2a\uff09\u3002\n    *   \u8bc1\u636e\uff1a\"[e3]\"\n\n**\u6784\u5efa JSON\uff1a**\n\n*   `task_result`:\n    *   `current_lead`: \"Priya\"\n    *   `backup_lead`: null\n    *   `change_window`: \"2026-03-21 02:00 UTC\"\n*   `evidence`:\n    *   `current_lead`: \"[e1]\"\n    *   `backup_lead`: \"[e2]\"\n    *   `change_window`: \"[e3]\"\n*   `unknown_fields`:\n    *   `backup_lead` \u662f null\u3002\u6211\u5e94\u8be5\u628a\u5b83\u5217\u5728\u8fd9\u91cc\u5417\uff1f\u63d0\u793a\u8bf4\u201c\u672a\u77e5\u5b57\u6bb5\u4fdd\u7559\u4e3a null\uff0c\u5e76\u628a\u5b57\u6bb5\u540d\u5199\u5165 unknown_fields\u201d\u3002\u65e2\u7136 `backup_lead` \u662f null\uff0c\u5b83\u5c5e\u4e8e\u8fd9\u91cc\u3002\n*   `violations`:\n    *   \u6709\u8fdd\u89c4\u5417\uff1f\u6587\u672c\u4f3c\u4e4e\u662f\u4e00\u81f4\u7684\u3002[e4] \u63d0\u5230\u4e86\u4e00\u4e2a\u88ab\u62d2\u7edd\u7684\u8349\u6848\uff0c\u4f46 [e3] \u786e\u8ba4\u4e86\u5df2\u6279\u51c6\u7684\u7a97\u53e3\u3002\u6ca1\u6709\u51b2\u7a81\u6216\u8fdd\u89c4\u3002\u6240\u4ee5 `violations` \u662f\u4e00\u4e2a\u7a7a\u5217\u8868 `[]`\u3002\n\n**\u5b8c\u5584 `unknown_fields` \u903b\u8f91\uff1a**\n\u63d0\u793a\u8bf4\uff1a\u201c\u672a\u77e5\u5b57\u6bb5\u4fdd\u7559\u4e3a null\uff0c\u5e76\u628a\u5b57\u6bb5\u540d\u5199\u5165 unknown_fields\u201d\u3002\n`backup_lead` \u662f\u201c\u672a\u77e5\u201d\u5417\uff1f\u6587\u672c\u8bf4\u5b83\u201c\u672a\u5206\u914d\u201d\u3002\u5728\u63d0\u53d6\u4efb\u52a1\u7684\u8bed\u5883\u4e0b\uff0c\u8fd9\u610f\u5473\u7740\u6211\u4eec\u65e0\u6cd5\u63d0\u53d6\u5230\u4e00\u4e2a\u5177\u4f53\u7684\u540d\u5b57\u3002\u56e0\u6b64\uff0c\u7ed3\u679c\u662f null\u3002\u5b83\u7b26\u5408\u201c\u672a\u77e5/\u7f3a\u5931\u201d\u7684\u5b9a\u4e49\u3002\u6211\u4f1a\u628a\u5b83\u52a0\u5230 `unknown_fields` \u4e2d\u3002\n\n**\u6700\u7ec8 JSON \u7ed3\u6784\u68c0\u67e5\uff1a**\n```json\n{\n  \"task_result\": {\n    \"current_lead\": \"Priya\",\n    \"backup_lead\": null,\n    \"change_window\": \"2026-03-21 02:00 UTC\"\n  },\n  \"evidence\": {\n    \"current_lead\": \"[e1]\",\n    \"backup_lead\": \"[e2]\",\n    \"change_window\": \"[e3]\"\n  },\n  \"unknown_fields\": [\n    \"backup_lead\"\n  ],\n  \"violations\": []\n}\n```\n\n\u7b49\u7b49\uff0c\u5173\u4e8e `evidence`\u3002\u5982\u679c `backup_lead` \u662f null\uff0c\u8bc1\u636e\u5e94\u8be5\u5b58\u5728\u5417\uff1f\u6587\u672c [e2] *\u5c31\u662f* \u5b83\u672a\u5206\u914d\u7684\u8bc1\u636e\u3002\u6240\u4ee5\u63d0\u4f9b\u8bc1\u636e \"[e2]\" \u662f\u6b63\u786e\u7684\uff0c\u56e0\u4e3a\u5b83\u89e3\u91ca\u4e86*\u4e3a\u4ec0\u4e48*\u5b83\u662f null\u3002\n\n\u8ba9\u6211\u4eec\u518d\u6b21\u68c0\u67e5\u7ea6\u675f\u6761\u4ef6\u3002\n\u201c\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\u201d -> \u597d\u7684\u3002\n\u201c\u4e0d\u8981\u8865\u5168\u672a\u77e5\u4fe1\u606f\u201d -> \u597d\u7684\u3002\n\u201c\u672a\u77e5\u5b57\u6bb5\u4fdd\u7559\u4e3a null\u201d -> \u597d\u7684\u3002\n\u201c\u628a\u5b57\u6bb5\u540d\u5199\u5165 unknown_fields\u201d -> \u597d\u7684\u3002\n\n\u4e00\u4e2a\u7ec6\u8282\uff1a`change_window` \u683c\u5f0f\u3002\u6587\u672c\u8bf4\u662f \"2026-03-21 02:00 UTC\"\u3002\u6211\u4f1a\u5b8c\u5168\u7167\u6284\u3002\n\n\u6700\u540e\u68c0\u67e5 `violations`\u3002\u6709\u77db\u76fe\u5417\uff1f\u6ca1\u6709\u3002\u6709\u8fdd\u53cd\u89c4\u5219\u5417\uff1f\u6ca1\u6709\u63d0\u4f9b\u89c4\u5219\uff08\u6bd4\u5982\u201c\u5fc5\u987b\u6709\u540e\u5907\u8d1f\u8d23\u4eba\u201d\uff09\u3002\u6240\u4ee5\u6ca1\u6709\u8fdd\u89c4\u3002\n\n\u7ed3\u679c\u770b\u8d77\u6765\u5f88\u7a33\u5065\u3002",
+        "reasoning_visible": true,
+        "usage": {
+          "input_tokens": 166,
+          "output_tokens": 1186,
+          "reasoning_tokens": 1088,
+          "total_tokens": 1352
+        }
+      },
+      "error": null,
+      "features": {
+        "answer.evidence_field_count": 3,
+        "answer.filled_field_count": 2,
+        "answer.unknown_field_count": 1,
+        "answer.violation_count": 0,
+        "reasoning.backtrack_markers": 1,
+        "reasoning.hedge_density": 0.0,
+        "reasoning.step_count": 78,
+        "reasoning.uses_numbered_outline": true,
+        "score.abstention_compliance": 1.0,
+        "score.evidence_alignment": 1.0,
+        "score.value_accuracy": 1.0,
+        "score.violation_free": true,
+        "surface.constraint_retention": false,
+        "surface.field_order_match": false,
+        "surface.had_markdown_fence": false,
+        "surface.has_extra_text": false,
+        "transport.finish_reason": "stop",
+        "transport.latency_bucket_ms": 27000,
+        "transport.reasoning_tokens": 1088,
+        "transport.reasoning_visible": true
+      },
+      "prompt_id": "p012",
+      "raw_output": "{\n  \"task_result\": {\n    \"current_lead\": \"Priya\",\n    \"backup_lead\": null,\n    \"change_window\": \"2026-03-21 02:00 UTC\"\n  },\n  \"evidence\": {\n    \"current_lead\": \"[e1]\",\n    \"backup_lead\": \"[e2]\",\n    \"change_window\": \"[e3]\"\n  },\n  \"unknown_fields\": [\n    \"backup_lead\"\n  ],\n  \"violations\": []\n}",
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 280,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u8865\u5168\u672a\u77e5\u4fe1\u606f\u3002\u672a\u77e5\u5b57\u6bb5\u4fdd\u7559\u4e3a null\uff0c\u5e76\u628a\u5b57\u6bb5\u540d\u5199\u5165 unknown_fields\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u53ea\u6839\u636e\u4e0b\u9762\u7eaa\u8981\u5224\u65ad current_lead\u3001backup_lead\u3001change_window\u3002\n\n[e1] Priya is leading the database password rotation.\n[e2] The backup lead was not assigned during the meeting.\n[e3] The approved maintenance window is 2026-03-21 02:00 UTC.\n[e4] An earlier draft proposed 2026-03-20 02:00 UTC, but that draft was rejected.\n\n\u8fd4\u56de JSON\uff0c\u5bf9\u8c61\u5b57\u6bb5\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b\uff1a\n- task_result: {current_lead, backup_lead, change_window}\n- evidence: {current_lead, backup_lead, change_window}\n- unknown_fields\n- violations\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "completed",
+      "usage": {
+        "input_tokens": 166,
+        "output_tokens": 1186,
+        "reasoning_tokens": 1088,
+        "total_tokens": 1352
+      }
+    },
+    {
+      "canonical_output": {
+        "format_id": "strict_json_v2",
+        "payload": {
+          "confusions": [],
+          "excluded_entities": [
+            "alpha-2",
+            "delta",
+            "gamma-9"
+          ],
+          "found_entities": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "paragraph_map": {
+            "alpha": "p1",
+            "beta": "p2",
+            "gamma": "p2"
+          }
+        }
+      },
+      "canonicalization_events": [],
+      "completion": {
+        "answer_text": "{\n  \"found_entities\": [\n    \"alpha\",\n    \"beta\",\n    \"gamma\"\n  ],\n  \"paragraph_map\": {\n    \"alpha\": \"p1\",\n    \"beta\": \"p2\",\n    \"gamma\": \"p2\"\n  },\n  \"excluded_entities\": [\n    \"alpha-2\",\n    \"delta\",\n    \"gamma-9\"\n  ],\n  \"confusions\": []\n}",
+        "finish_reason": "stop",
+        "latency_ms": 33026,
+        "raw_response_path": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-09/siliconflow-zai-probe.fingerprint-suite-v2/p013.response.json",
+        "reasoning_text": "\u7528\u6237\u5e0c\u671b\u6211\u4ece\u4e09\u4e2a\u77ed\u6bb5\u843d\u4e2d\u63d0\u53d6\u7279\u5b9a\u5b9e\u4f53\uff0c\u5e76\u8fd4\u56de\u4e00\u4e2a\u5177\u6709\u4e25\u683c\u7ed3\u6784\u7684 JSON \u5bf9\u8c61\u3002\n\n**\u4efb\u52a1\u5206\u6790\uff1a**\n1.  **\u8f93\u5165\uff1a** \u4e09\u4e2a\u6807\u8bb0\u4e3a [p1]\u3001[p2]\u3001[p3] \u7684\u6587\u672c\u6bb5\u843d\u3002\n2.  **\u76ee\u6807\uff1a** \u627e\u51fa\u5f53\u524d\u6709\u6548\u7684 \"alpha\"\u3001\"beta\"\u3001\"gamma\"\u3002\n3.  **\u7ea6\u675f\u6761\u4ef6\uff1a**\n    *   \u627e\u51fa\u5f53\u524d\u6709\u6548\u7684 alpha\u3001beta\u3001gamma\u3002\n    *   \u6807\u6ce8\u5b83\u4eec\u7b2c\u4e00\u6b21\u51fa\u73b0\u7684\u6bb5\u843d\u7f16\u53f7\u3002\n    *   \u88ab\u64a4\u9500\u3001\u88ab\u5426\u5b9a\u6216\u4ec5\u4f5c\u4e3a\u5e72\u6270\u9879\u51fa\u73b0\u7684\u5b9e\u4f53\u5fc5\u987b\u8fdb\u5165 `excluded_entities`\u3002\n    *   \u8f93\u51fa\u683c\u5f0f\uff1a\u4ec5 JSON \u5bf9\u8c61\uff08\u65e0 markdown\uff09\u3002\n    *   \u5b57\u6bb5\uff1a`found_entities`\u3001`paragraph_map`\u3001`excluded_entities`\u3001`confusions`\u3002\n\n**\u6587\u672c\u5206\u6790\uff1a**\n\n*   **[p1]**\uff1a\n    *   \"alpha-2 is a draft alias and should not be treated as active.\" -> `alpha-2` \u662f\u4e0d\u6d3b\u8dc3/\u8349\u7a3f\u3002\n    *   \"alpha became active after the final review.\" -> `alpha` \u662f\u6d3b\u8dc3/\u6709\u6548\u7684\u3002\u7b2c\u4e00\u6b21\u51fa\u73b0\u5728 p1\u3002\n\n*   **[p2]**\uff1a\n    *   \"beta remained active.\" -> `beta` \u662f\u6d3b\u8dc3/\u6709\u6548\u7684\u3002\u7b2c\u4e00\u6b21\u51fa\u73b0\u5728 p2\u3002\n    *   \"gamma was mentioned in a rejected proposal, but gamma itself was later approved.\" -> `gamma` \u662f\u88ab\u6279\u51c6/\u6709\u6548\u7684\u3002\u7b2c\u4e00\u6b21\u51fa\u73b0\u5728 p2\u3002\n\n*   **[p3]**\uff1a\n    *   \"delta was cancelled.\" -> `delta` \u88ab\u53d6\u6d88/\u6392\u9664\u3002\n    *   \"gamma-9 is a distractor only.\" -> `gamma-9` \u662f\u5e72\u6270\u9879/\u6392\u9664\u3002\n\n**\u5b9e\u4f53\u5206\u7c7b\uff1a**\n\n*   **\u6709\u6548\u5b9e\u4f53\uff1a**\n    *   `alpha`\uff1a\u6709\u6548\u3002\u9996\u6b21\u51fa\u73b0\u4e8e [p1]\u3002\n    *   `beta`\uff1a\u6709\u6548\u3002\u9996\u6b21\u51fa\u73b0\u4e8e [p2]\u3002\n    *   `gamma`\uff1a\u6709\u6548\u3002\u9996\u6b21\u51fa\u73b0\u4e8e [p2]\u3002\n\n*   **\u6392\u9664\u5b9e\u4f53\uff1a**\n    *   `alpha-2`\uff1a\u8349\u7a3f\u522b\u540d\uff0c\u4e0d\u6d3b\u8dc3\u3002\n    *   `delta`\uff1a\u5df2\u53d6\u6d88\u3002\n    *   `gamma-9`\uff1a\u5e72\u6270\u9879\u3002\n\n**\u6784\u5efa JSON\uff1a**\n\n*   `found_entities`\uff1a[\"alpha\", \"beta\", \"gamma\"]\n*   `paragraph_map`\uff1a\n    *   \"alpha\": \"p1\"\n    *   \"beta\": \"p2\"\n    *   \"gamma\": \"p2\"\n*   `excluded_entities`\uff1a[\"alpha-2\", \"delta\", \"gamma-9\"]\n*   `confusions`\uff1a\u63d0\u793a\u8bcd\u8981\u6c42\u5305\u542b\u6b64\u5b57\u6bb5\uff0c\u4f46\u672a\u5b9a\u4e49\u5177\u4f53\u5185\u5bb9\u3002\u901a\u5e38\uff0c\u5982\u679c\u63d0\u53d6\u8fc7\u7a0b\u6e05\u6670\uff0c\u6b64\u5b57\u6bb5\u4e3a\u7a7a\u5217\u8868\u6216\u5bf9\u8c61\u3002\u7531\u4e8e\u63d0\u793a\u8bcd\u8981\u6c42\u201c\u627e\u51fa\u5f53\u524d\u6709\u6548\u7684\u2026\u2026\u5e76\u6807\u6ce8\u2026\u2026\u201d\uff0c\u4e14\u201c\u88ab\u64a4\u9500\u2026\u2026\u5fc5\u987b\u8fdb\u5165 excluded_entities\u201d\uff0c\u56e0\u6b64\u6ca1\u6709\u56fa\u6709\u7684\u6b67\u4e49\u9700\u8981\u8bb0\u5f55\u5728\u5355\u72ec\u7684\u201cconfusions\u201d\u5b57\u6bb5\u4e2d\uff0c\u4f46\u6211\u5fc5\u987b\u5305\u542b\u8be5\u5b57\u6bb5\u3002\u6211\u5c06\u5176\u8bbe\u4e3a\u7a7a\u5217\u8868 `[]` \u6216\u7a7a\u5bf9\u8c61 `{}`\u3002\u67e5\u770b\u6b64\u7c7b\u63d0\u53d6\u4efb\u52a1\u7684\u6807\u51c6 JSON \u6a21\u5f0f\uff0c\u7a7a\u5217\u8868\u662f\u201c\u672a\u53d1\u73b0\u6df7\u6dc6/\u95ee\u9898\u201d\u7684\u5b89\u5168\u9009\u62e9\u3002\n\n**\u5b8c\u5584 JSON \u7ed3\u6784\uff1a**\n\n```json\n{\n  \"found_entities\": [\n    \"alpha\",\n    \"beta\",\n    \"gamma\"\n  ],\n  \"paragraph_map\": {\n    \"alpha\": \"p1\",\n    \"beta\": \"p2\",\n    \"gamma\": \"p2\"\n  },\n  \"excluded_entities\": [\n    \"alpha-2\",\n    \"delta\",\n    \"gamma-9\"\n  ],\n  \"confusions\": []\n}\n```\n\n**\u590d\u6838\uff1a**\n*   \"alpha-2\" \u88ab\u6392\u9664\u5417\uff1f\u662f\u7684\uff08\u201cdraft alias\u201d\uff0c\u201cshould not be treated as active\u201d\uff09\u3002\n*   \"alpha\" \u6709\u6548\u5417\uff1f\u662f\u7684\uff08\u201cbecame active\u201d\uff09\u3002\n*   \"beta\" \u6709\u6548\u5417\uff1f\u662f\u7684\u3002\n*   \"gamma\" \u6709\u6548\u5417\uff1f\u662f\u7684\uff08\u201clater approved\u201d\uff09\u3002\n*   \"delta\" \u88ab\u6392\u9664\u5417\uff1f\u662f\u7684\u3002\n*   \"gamma-9\" \u88ab\u6392\u9664\u5417\uff1f\u662f\u7684\u3002\n*   \u6bb5\u843d\u6620\u5c04\u6b63\u786e\u5417\uff1f\n    *   alpha \u5728 p1\u3002\n    *   beta \u5728 p2\u3002\n    *   gamma \u5728 p2\u3002\n*   \u5b57\u6bb5\u662f\u5426\u53d7\u9650\uff1f\u662f\u7684\uff0c\u4ec5\u5141\u8bb8\u8fd9\u56db\u4e2a\u5b57\u6bb5\u3002\n*   \u8f93\u51fa\u683c\u5f0f\uff1f\u4ec5 JSON\uff0c\u65e0 markdown\u3002\n\n\u4e00\u4e2a\u5c0f\u7ec6\u8282\uff1a\u63d0\u793a\u8bcd\u8981\u6c42\u201c\u627e\u51fa\u5f53\u524d\u6709\u6548\u7684 alpha\u3001beta\u3001gamma\u201d\u3002\u8fd9\u6697\u793a\u4e86\u7279\u5b9a\u7684\u76ee\u6807\u540d\u79f0\u3002\u7136\u800c\uff0c`alpha-2` \u548c `gamma-9` \u662f\u53d8\u4f53\u3002\u63d0\u793a\u8bcd\u8981\u6c42\u201c\u88ab\u64a4\u9500\u3001\u88ab\u5426\u5b9a\u6216\u4ec5\u4f5c\u4e3a\u5e72\u6270\u9879\u51fa\u73b0\u7684\u5b9e\u4f53\u5fc5\u987b\u8fdb\u5165 excluded_entities\u201d\u3002\u56e0\u6b64\uff0c\u5c06 `alpha-2`\u3001`delta`\u3001`gamma-9` \u5217\u5165\u6392\u9664\u5217\u8868\u662f\u6b63\u786e\u7684\u3002\n\n`paragraph_map` \u5e94\u8be5\u5305\u542b\u6392\u9664\u7684\u5b9e\u4f53\u5417\uff1f\u63d0\u793a\u8bcd\u8bf4\u201c\u627e\u51fa\u5f53\u524d\u6709\u6548\u7684\u2026\u2026\u5e76\u6807\u6ce8\u5b83\u4eec\u7b2c\u4e00\u6b21\u51fa\u73b0\u7684\u6bb5\u843d\u7f16\u53f7\u201d\u3002\u8fd9\u6697\u793a `paragraph_map` \u9002\u7528\u4e8e `found_entities`\u3002\u6211\u5c06\u4ec5\u6620\u5c04\u627e\u5230\u7684\u6709\u6548\u5b9e\u4f53\u3002\n\n\u6700\u7ec8 JSON \u5185\u5bb9\uff1a\nfound_entities: [\"alpha\", \"beta\", \"gamma\"]\nparagraph_map: {\"alpha\": \"p1\", \"beta\": \"p2\", \"gamma\": \"p2\"}\nexcluded_entities: [\"alpha-2\", \"delta\", \"gamma-9\"]\nconfusions: []\n\n\u7b49\u7b49\uff0c`delta` \u662f\u201calpha\u3001beta\u3001gamma\u201d\u4e4b\u4e00\u5417\uff1f\u63d0\u793a\u8bcd\u8bf4\u201c\u627e\u51fa\u5f53\u524d\u6709\u6548\u7684 alpha\u3001beta\u3001gamma\u201d\u3002\u5b83\u6ca1\u6709\u660e\u786e\u8bf4\u201c\u627e\u51fa*\u4efb\u4f55*\u6709\u6548\u5b9e\u4f53\u201d\u3002\u7136\u800c\uff0c\u5b83\u4e5f\u8bf4\u201c\u88ab\u64a4\u9500\u2026\u2026\u5b9e\u4f53\u5fc5\u987b\u8fdb\u5165 excluded_entities\u201d\u3002`delta` \u88ab\u64a4\u9500/\u53d6\u6d88\uff08\u201ccancelled\u201d\uff09\u3002\u56e0\u6b64\u5b83\u5c5e\u4e8e `excluded_entities`\u3002\n\n\u8ba9\u6211\u4eec\u518d\u6b21\u68c0\u67e5 `gamma` \u7684\u903b\u8f91\u3002\n[p2] \"gamma was mentioned in a rejected proposal, but gamma itself was later approved.\"\n\u72b6\u6001\uff1a\u6709\u6548\u3002\n\u9996\u6b21\u51fa\u73b0\uff1ap2\u3002\n\n\u8ba9\u6211\u4eec\u518d\u6b21\u68c0\u67e5 `alpha` \u7684\u903b\u8f91\u3002\n[p1] \"alpha-2 is a draft alias... alpha became active...\"\n\u72b6\u6001\uff1a\u6709\u6548\u3002\n\u9996\u6b21\u51fa\u73b0\uff1ap1\u3002\n\n\u8ba9\u6211\u4eec\u518d\u6b21\u68c0\u67e5 `beta` \u7684\u903b\u8f91\u3002\n[p2] \"beta remained active.\"\n\u72b6\u6001\uff1a\u6709\u6548\u3002\n\u9996\u6b21\u51fa\u73b0\uff1ap2\u3002\n\n\u7ed3\u679c\u770b\u8d77\u6765\u5f88\u53ef\u9760\u3002",
+        "reasoning_visible": true,
+        "usage": {
+          "input_tokens": 152,
+          "output_tokens": 1393,
+          "reasoning_tokens": 1308,
+          "total_tokens": 1545
+        }
+      },
+      "error": null,
+      "features": {
+        "answer.confusion_count": 0,
+        "answer.excluded_count": 3,
+        "answer.found_count": 3,
+        "answer.paragraph_annotation_rate": 1.0,
+        "reasoning.backtrack_markers": 1,
+        "reasoning.hedge_density": 0.0,
+        "reasoning.step_count": 92,
+        "reasoning.uses_numbered_outline": true,
+        "score.confusion_free": true,
+        "score.entity_precision": 1.0,
+        "score.entity_recall": 1.0,
+        "score.order_accuracy": true,
+        "score.paragraph_accuracy": 1.0,
+        "surface.constraint_retention": false,
+        "surface.field_order_match": false,
+        "surface.had_markdown_fence": false,
+        "surface.has_extra_text": false,
+        "transport.finish_reason": "stop",
+        "transport.latency_bucket_ms": 33000,
+        "transport.reasoning_tokens": 1308,
+        "transport.reasoning_visible": true
+      },
+      "prompt_id": "p013",
+      "raw_output": "{\n  \"found_entities\": [\n    \"alpha\",\n    \"beta\",\n    \"gamma\"\n  ],\n  \"paragraph_map\": {\n    \"alpha\": \"p1\",\n    \"beta\": \"p2\",\n    \"gamma\": \"p2\"\n  },\n  \"excluded_entities\": [\n    \"alpha-2\",\n    \"delta\",\n    \"gamma-9\"\n  ],\n  \"confusions\": []\n}",
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 260,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u8865\u5168\u4e0d\u5b58\u5728\u7684\u4fe1\u606f\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u9605\u8bfb\u4e0b\u9762\u4e09\u6bb5\u6587\u672c\uff0c\u627e\u51fa\u5f53\u524d\u6709\u6548\u7684 alpha\u3001beta\u3001gamma\uff0c\u5e76\u6807\u6ce8\u5b83\u4eec\u7b2c\u4e00\u6b21\u51fa\u73b0\u7684\u6bb5\u843d\u7f16\u53f7\u3002\u88ab\u64a4\u9500\u3001\u88ab\u5426\u5b9a\u6216\u4ec5\u4f5c\u4e3a\u5e72\u6270\u9879\u51fa\u73b0\u7684\u5b9e\u4f53\u5fc5\u987b\u8fdb\u5165 excluded_entities\u3002\n\n[p1] alpha-2 is a draft alias and should not be treated as active. alpha became active after the final review.\n[p2] beta remained active. gamma was mentioned in a rejected proposal, but gamma itself was later approved.\n[p3] delta was cancelled. gamma-9 is a distractor only.\n\n\u8fd4\u56de JSON\uff0c\u5bf9\u8c61\u5b57\u6bb5\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b\uff1a\n- found_entities\n- paragraph_map\n- excluded_entities\n- confusions\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "completed",
+      "usage": {
+        "input_tokens": 152,
+        "output_tokens": 1393,
+        "reasoning_tokens": 1308,
+        "total_tokens": 1545
+      }
+    },
+    {
+      "canonical_output": {
+        "format_id": "strict_json_v2",
+        "payload": {
+          "confusions": [],
+          "excluded_entities": [
+            "Zephyr-old",
+            "orion-legacy",
+            "atlas-x"
+          ],
+          "found_entities": [
+            "zephyr",
+            "orion",
+            "atlas"
+          ],
+          "paragraph_map": {
+            "atlas": "p3",
+            "orion": "p2",
+            "zephyr": "p1"
+          }
+        }
+      },
+      "canonicalization_events": [],
+      "completion": {
+        "answer_text": "{\n  \"found_entities\": [\n    \"zephyr\",\n    \"orion\",\n    \"atlas\"\n  ],\n  \"paragraph_map\": {\n    \"zephyr\": \"p1\",\n    \"orion\": \"p2\",\n    \"atlas\": \"p3\"\n  },\n  \"excluded_entities\": [\n    \"Zephyr-old\",\n    \"orion-legacy\",\n    \"atlas-x\"\n  ],\n  \"confusions\": []\n}",
+        "finish_reason": "stop",
+        "latency_ms": 62276,
+        "raw_response_path": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-09/siliconflow-zai-probe.fingerprint-suite-v2/p014.response.json",
+        "reasoning_text": "\u7528\u6237\u60f3\u8981\u4ece\u63d0\u4f9b\u7684\u6587\u672c\u4e2d\u63d0\u53d6\u7279\u5b9a\u5b9e\u4f53\uff0c\u5e76\u6839\u636e\u4e25\u683c\u89c4\u5219\u5c06\u5176\u5206\u7c7b\u3002\n\u8f93\u51fa\u5fc5\u987b\u662f\u4e00\u4e2a\u539f\u59cb JSON \u5bf9\u8c61\uff0c\u4e0d\u5305\u542b markdown \u6216\u89e3\u91ca\u3002\n\n**\u89c4\u5219\uff1a**\n1.  **\u76ee\u6807\u5b9e\u4f53\uff1a** \"zephyr\"\u3001\"orion\"\u3001\"atlas\"\u3002\n2.  **\u6709\u6548\u6027\uff1a** \u4ec5\u9650\u201c\u5f53\u524d\u6709\u6548\u201d\u7684\u3002\n3.  **\u6392\u9664\uff1a** \u201c\u65e7\u4ee3\u53f7\u201d\u3001\u201c\u5e26\u540e\u7f00\u7684\u8fd1\u4f3c\u8bcd\u201d\u548c\u201c\u5df2\u505c\u7528\u9879\u201d\u5fc5\u987b\u8fdb\u5165 `excluded_entities`\u3002\n4.  **\u6bb5\u843d\u6620\u5c04\uff1a** \u8bb0\u5f55\u6709\u6548\u5b9e\u4f53\u7b2c\u4e00\u6b21\u51fa\u73b0\u7684\u6bb5\u843d\u7f16\u53f7\u3002\n5.  **\u8f93\u51fa\u683c\u5f0f\uff1a** \u4ec5 JSON\u3002\u5b57\u6bb5\uff1a`found_entities`\u3001`paragraph_map`\u3001`excluded_entities`\u3001`confusions`\u3002\n\n**\u6587\u672c\u5206\u6790\uff1a**\n\n*   **[p1] \u65e7\u4ee3\u53f7 Zephyr-old \u5df2\u5e9f\u5f03\u3002\u5f53\u524d\u6709\u6548\u9879\u76ee\u662f zephyr\u3002**\n    *   \"Zephyr-old\"\uff1a\u65e7\u4ee3\u53f7\uff0c\u5df2\u5e9f\u5f03\u3002 -> `excluded_entities`\u3002\n    *   \"zephyr\"\uff1a\u5f53\u524d\u6709\u6548\u3002 -> `found_entities`\u3002\u7b2c\u4e00\u6b21\u51fa\u73b0\u4e8e p1\u3002\n\n*   **[p2] orion-legacy \u53ea\u51fa\u73b0\u5728\u5386\u53f2\u8bb0\u5f55\u91cc\u3002\u5f53\u524d Orion \u670d\u52a1\u4ecd\u5728\u8fd0\u884c\u3002**\n    *   \"orion-legacy\"\uff1a\u5e26\u540e\u7f00\uff0c\u5386\u53f2\u8bb0\u5f55\uff08\u5df2\u505c\u7528\uff09\u3002 -> `excluded_entities`\u3002\n    *   \"Orion\"\uff1a\u5f53\u524d\u6709\u6548\u3002 -> `found_entities`\u3002\u7b2c\u4e00\u6b21\u51fa\u73b0\u4e8e p2\u3002\n\n*   **[p3] atlas-x \u662f\u6d4b\u8bd5\u6837\u672c\uff0c\u4e0d\u8ba1\u5165\u7ed3\u679c\u3002\u771f\u6b63\u4e0a\u7ebf\u7684\u662f atlas\u3002**\n    *   \"atlas-x\"\uff1a\u5e26\u540e\u7f00\uff0c\u6d4b\u8bd5\u6837\u672c\u3002 -> `excluded_entities`\u3002\n    *   \"atlas\"\uff1a\u5f53\u524d\u6709\u6548\u3002 -> `found_entities`\u3002\u7b2c\u4e00\u6b21\u51fa\u73b0\u4e8e p3\u3002\n\n**\u6784\u5efa JSON\uff1a**\n\n*   `found_entities`: [\"zephyr\", \"orion\", \"atlas\"]\uff08\u6ce8\uff1a\u6587\u672c\u4e2d \"Orion\" \u9996\u5b57\u6bcd\u5927\u5199\uff0c\u4f46\u901a\u5e38\u5b9e\u4f53\u63d0\u53d6\u4f1a\u6807\u51c6\u5316\u4e3a\u5c0f\u5199\u6216\u4fdd\u7559\u539f\u6837\u3002\u63d0\u793a\u8981\u6c42\u627e\u51fa \"zephyr, orion, atlas\"\u3002\u6587\u672c\u4e2d\u6709 \"zephyr\"\uff08\u5c0f\u5199\uff09\u3001\"Orion\"\uff08\u9996\u5b57\u6bcd\u5927\u5199\uff09\u3001\"atlas\"\uff08\u5c0f\u5199\uff09\u3002\u6211\u5c06\u4fdd\u7559\u6587\u672c\u4e2d\u53d1\u73b0\u7684\u6709\u6548\u5f62\u5f0f\u6216\u6807\u51c6\u5316\u5f62\u5f0f\u3002\u63d0\u793a\u8981\u6c42\u627e\u51fa \"zephyr, orion, atlas\"\uff08\u5c0f\u5199\uff09\u3002\u8ba9\u6211\u4eec\u770b\u770b\u6587\u672c\u4e2d\u7684\u5177\u4f53\u5339\u914d\u3002\n    *   \u6587\u672c\uff1a\"zephyr\" -> \u5339\u914d \"zephyr\"\u3002\n    *   \u6587\u672c\uff1a\"Orion\" -> \u5339\u914d \"orion\"\uff08\u4e0d\u533a\u5206\u5927\u5c0f\u5199\u5339\u914d\u901a\u5e38\u610f\u5473\u7740\u6807\u51c6\u5316\uff0c\u4f46\u8ba9\u6211\u4eec\u68c0\u67e5\u4e00\u4e0b\u63d0\u793a\u662f\u5426\u6697\u793a\u4e86\u7279\u5b9a\u7684\u5927\u5c0f\u5199\u3002\u63d0\u793a\u8bf4\u201c\u627e\u51fa\u5f53\u524d\u6709\u6548\u7684 zephyr\u3001orion\u3001atlas\u201d\u3002\u5b83\u5217\u51fa\u4e86\u5c0f\u5199\u3002\u6211\u5c06\u5217\u51fa\u627e\u5230\u7684\u6709\u6548\u5b9e\u4f53\u3002\u901a\u5e38\uff0c\u6807\u51c6\u5316\u4e3a\u5c0f\u5199\u5bf9\u4e8e\u8fd9\u4e9b\u7279\u5b9a\u5173\u952e\u8bcd\u66f4\u5b89\u5168\uff0c\u9664\u975e\u53e6\u6709\u8bf4\u660e\uff0c\u6216\u8005\u4fdd\u7559\u627e\u5230\u7684\u786e\u5207\u5b57\u7b26\u4e32\u3002\u8ba9\u6211\u4eec\u770b\u770b\u6392\u9664\u9879\uff1a\"Zephyr-old\"\u3001\"orion-legacy\"\u3001\"atlas-x\"\u3002\u6709\u6548\u9879\u662f \"zephyr\"\u3001\"Orion\"\u3001\"atlas\"\u3002\u6211\u5c06\u4f7f\u7528\u6587\u672c\u4e2d\u627e\u5230\u7684\u5b57\u7b26\u4e32\u6216\u6807\u51c6\u5316\u540d\u79f0\u3002\u9274\u4e8e\u63d0\u793a\u8981\u6c42\u627e\u51fa \"zephyr, orion, atlas\"\uff0c\u6211\u5c06\u4f7f\u7528\u6807\u51c6\u5316\u7684\u5c0f\u5199\u540d\u79f0\u4f5c\u4e3a\u952e/\u503c\uff0c\u6216\u8005\u4ec5\u5217\u51fa\u627e\u5230\u7684\u5b57\u7b26\u4e32\u3002\u8ba9\u6211\u4eec\u575a\u6301\u4f7f\u7528\u6587\u672c\u4e2d\u627e\u5230\u7684\u5b57\u7b26\u4e32\uff0c\u4f46\u6620\u5c04\u5230\u8bf7\u6c42\u7684\u6982\u5ff5\u3002\u5b9e\u9645\u4e0a\uff0c\u67e5\u770b\u6807\u51c6\u63d0\u53d6\u4efb\u52a1\uff0c\u901a\u5e38\u9996\u9009\u6807\u51c6\u5316\u3002\u8ba9\u6211\u4eec\u4f7f\u7528\u6587\u672c\u4e2d\u627e\u5230\u7684\u5b57\u7b26\u4e32\uff1a\"zephyr\"\u3001\"Orion\"\u3001\"atlas\"\u3002\u7b49\u7b49\uff0c\u63d0\u793a\u8981\u6c42\u627e\u51fa \"zephyr, orion, atlas\"\u3002\u6211\u5c06\u8f93\u51fa\u627e\u5230\u7684\u5b9e\u4f53\u3002\u8ba9\u6211\u4eec\u5047\u8bbe\u6807\u51c6\u5316\u4e3a\u5c0f\u5199\uff0c\u56e0\u4e3a\u63d0\u793a\u7684\u76ee\u6807\u5217\u8868\u662f\u5c0f\u5199\u7684\u3002\uff09\n    *   \u8ba9\u6211\u4eec\u518d\u6b21\u68c0\u67e5\u6587\u672c\u3002\n    *   p1: \"zephyr\"\uff08\u5c0f\u5199\uff09\n    *   p2: \"Orion\"\uff08\u9996\u5b57\u6bcd\u5927\u5199\uff09\n    *   p3: \"atlas\"\uff08\u5c0f\u5199\uff09\n    *   \u6211\u5c06\u5217\u51fa\u627e\u5230\u7684\u5b9e\u4f53\u3002\u4e3a\u4e86\u5b89\u5168\u8d77\u89c1\uff0c\u6211\u5c06\u4f7f\u7528\u6587\u672c\u4e2d\u51fa\u73b0\u7684\u5b57\u7b26\u4e32\uff0c\u6216\u8005\u6807\u51c6\u5316\u3002\u8ba9\u6211\u4eec\u770b\u770b `paragraph_map`\u3002\u5b83\u5c06\u5b9e\u4f53\u6620\u5c04\u5230\u6bb5\u843d\u3002\n    *   \u51b3\u5b9a\uff1a\u6211\u5c06\u4f7f\u7528\u6587\u672c\u4e2d\u51fa\u73b0\u7684\u5b57\u7b26\u4e32\u4f5c\u4e3a `found_entities` \u5217\u8868\uff0c\u4ee5\u4fdd\u6301\u7cbe\u786e\uff0c\u6216\u8005\u5982\u679c\u63d0\u793a\u6697\u793a\u4e86\u6807\u51c6\u5316\uff0c\u5219\u8fdb\u884c\u6807\u51c6\u5316\u3002\u63d0\u793a\u8bf4\u201c\u627e\u51fa\u5f53\u524d\u6709\u6548\u7684 zephyr\u3001orion\u3001atlas\u201d\u3002\u8fd9\u770b\u8d77\u6765\u50cf\u662f\u4e00\u4e2a\u76ee\u6807\u5217\u8868\u3002\u6211\u5c06\u8f93\u51fa\u627e\u5230\u7684\u5b9e\u4f53\u3002\u8ba9\u6211\u4eec\u6807\u51c6\u5316\u4e3a\u5c0f\u5199\u4ee5\u5339\u914d\u63d0\u793a\u7684\u76ee\u6807\u540d\u79f0\uff0c\u56e0\u4e3a\u8fd9\u662f\u6b64\u7c7b\u903b\u8f91\u6d4b\u8bd5\u4e2d\u7684\u5e38\u89c1\u6a21\u5f0f\uff0c\u9664\u975e\u8981\u6c42\u4e86\u201c\u7cbe\u786e\u5339\u914d\u201d\u3002\u7136\u800c\uff0c\"Orion\" \u663e\u7136\u5c31\u662f \"orion\"\u3002\u8ba9\u6211\u4eec\u4f7f\u7528\u6587\u672c\u4e2d\u627e\u5230\u7684\u5b57\u7b26\u4e32\uff1a\"zephyr\"\u3001\"Orion\"\u3001\"atlas\"\u3002\n    *   \u5b9e\u9645\u4e0a\uff0c\u67e5\u770b `excluded_entities`\uff0c\"Zephyr-old\" \u662f\u9996\u5b57\u6bcd\u5927\u5199\u7684\u3002\"orion-legacy\" \u662f\u5c0f\u5199\u7684\u3002\"atlas-x\" \u662f\u5c0f\u5199\u7684\u3002\n    *   \u8ba9\u6211\u4eec\u5c1d\u8bd5\u6807\u51c6\u5316\u4e3a\u5c0f\u5199\u4ee5\u4fdd\u6301\u4e00\u81f4\u6027\uff0c\u56e0\u4e3a\u63d0\u793a\u8981\u6c42\u627e\u51fa \"zephyr, orion, atlas\"\u3002\n    *   `found_entities`: [\"zephyr\", \"orion\", \"atlas\"]\n    *   `paragraph_map`: {\"zephyr\": \"p1\", \"orion\": \"p2\", \"atlas\": \"p3\"}\n    *   `excluded_entities`: [\"Zephyr-old\", \"orion-legacy\", \"atlas-x\"]\n    *   `confusions`: []\uff08\u672a\u53d1\u73b0\u6df7\u6dc6\uff0c\u89c4\u5219\u5f88\u6e05\u695a\uff09\u3002\n\n    *   *\u81ea\u6211\u4fee\u6b63*\uff1a\u5982\u679c\u6211\u4e0d\u6807\u51c6\u5316\uff0c`paragraph_map` \u952e\u5c06\u662f \"Orion\"\u3002\u5982\u679c\u6211\u6807\u51c6\u5316\uff0c\u5b83\u5c31\u662f \"orion\"\u3002\u63d0\u793a\u8981\u6c42\u627e\u51fa \"zephyr, orion, atlas\"\u3002\u6211\u5c06\u8f93\u51fa\u6807\u51c6\u5316\u540d\u79f0\u3002\n\n    *   \u8ba9\u6211\u4eec\u4f18\u5316 `excluded_entities`\u3002\n        *   \"Zephyr-old\"\uff08\u65e7\u4ee3\u53f7\uff09\n        *   \"orion-legacy\"\uff08\u540e\u7f00\uff0c\u5386\u53f2\u8bb0\u5f55\uff09\n        *   \"atlas-x\"\uff08\u540e\u7f00\uff0c\u6d4b\u8bd5\uff09\n\n    *   \u8ba9\u6211\u4eec\u4f18\u5316 `found_entities`\u3002\n        *   \"zephyr\"\uff08\u6709\u6548\uff09\n        *   \"Orion\" -> \"orion\"\uff08\u6709\u6548\uff09\n        *   \"atlas\"\uff08\u6709\u6548\uff09\n\n    *   \u8ba9\u6211\u4eec\u4f18\u5316 `paragraph_map`\u3002\n        *   \"zephyr\": \"p1\"\n        *   \"orion\": \"p2\"\n        *   \"atlas\": \"p3\"\n\n    *   \u8ba9\u6211\u4eec\u4f18\u5316 `confusions`\u3002\n        *   \u7a7a\u3002\n\n**\u6700\u7ec8 JSON \u7ed3\u6784\uff1a**\n```json\n{\n  \"found_entities\": [\n    \"zephyr\",\n    \"orion\",\n    \"atlas\"\n  ],\n  \"paragraph_map\": {\n    \"zephyr\": \"p1\",\n    \"orion\": \"p2\",\n    \"atlas\": \"p3\"\n  },\n  \"excluded_entities\": [\n    \"Zephyr-old\",\n    \"orion-legacy\",\n    \"atlas-x\"\n  ],\n  \"confusions\": []\n}\n```\n\u7b49\u7b49\uff0c\u6211\u5e94\u8be5\u68c0\u67e5 \"Orion\" \u662f\u5426\u5e94\u8be5\u4f5c\u4e3a \"Orion\" \u8fd4\u56de\u8fd8\u662f \"orion\"\u3002\u63d0\u793a\u8bf4\u201c\u627e\u51fa\u5f53\u524d\u6709\u6548\u7684 zephyr\u3001orion\u3001atlas\u201d\u3002\u8fd9\u6697\u793a\u4e86\u76ee\u6807\u6807\u8bc6\u7b26\u3002\u6211\u5c06\u4f7f\u7528\u5c0f\u5199\u6807\u51c6\u5316\u6765\u5339\u914d\u63d0\u793a\u7684\u8bf7\u6c42\u683c\u5f0f\u3002\n\n\u8ba9\u6211\u4eec\u518d\u6b21\u68c0\u67e5\u6392\u9664\u9879\u3002\n\"Zephyr-old\" -> \u65e7\u4ee3\u53f7\u3002\n\"orion-legacy\" -> \u540e\u7f00\u3002\n\"atlas-x\" -> \u540e\u7f00\u3002\n\n\u6709\u6548\u9879\uff1a\n\"zephyr\" -> p1\u3002\n\"Orion\" -> p2\u3002\n\"atlas\" -> p3\u3002\n\n\u4e00\u4e2a\u7ec6\u8282\uff1a\u63d0\u793a\u8bf4\u201c\u6807\u51fa\u5b83\u4eec\u7b2c\u4e00\u6b21\u51fa\u73b0\u7684\u6bb5\u843d\u7f16\u53f7\u201d\u3002\n\u5982\u679c\u6211\u5728 `found_entities` \u4e2d\u6807\u51c6\u5316 \"Orion\" -> \"orion\"\uff0c\u6211\u5e94\u8be5\u5c06 \"orion\" \u6620\u5c04\u5230 \"p2\"\u3002\n\u5982\u679c\u6211\u5728 `found_entities` \u4e2d\u4fdd\u7559 \"Orion\"\uff0c\u6211\u5e94\u8be5\u5c06 \"Orion\" \u6620\u5c04\u5230 \"p2\"\u3002\n\u9274\u4e8e\u63d0\u793a\u660e\u786e\u5217\u51fa\u4e86\u5c0f\u5199\u76ee\u6807 \"zephyr\u3001orion\u3001atlas\"\uff0c\u6211\u5c06\u8f93\u51fa\u5c0f\u5199\u3002\n\n\u4e00\u4e2a\u8fb9\u7f18\u60c5\u51b5\uff1a\"Zephyr-old\" \u5305\u542b \"Zephyr\"\u3002\u63d0\u793a\u8bf4\u201c\u65e7\u4ee3\u53f7...\u5fc5\u987b\u8fdb\u5165 excluded_entities\u201d\u3002\u6240\u4ee5 \"Zephyr-old\" \u88ab\u6392\u9664\u3002\"zephyr\" \u88ab\u5305\u542b\u3002\u8fd9\u7b26\u5408\u903b\u8f91\u3002\n\n\u6700\u7ec8\u68c0\u67e5\u5b57\u6bb5\uff1a\n- found_entities: \u6570\u7ec4\u3002\n- paragraph_map: \u5bf9\u8c61\u3002\n- excluded_entities: \u6570\u7ec4\u3002\n- confusions: \u6570\u7ec4\u3002\n\nJSON \u8f93\u51fa\uff1a\n```json\n{\n  \"found_entities\": [\n    \"zephyr\",\n    \"orion\",\n    \"atlas\"\n  ],\n  \"paragraph_map\": {\n    \"zephyr\": \"p1\",\n    \"orion\": \"p2\",\n    \"atlas\": \"p3\"\n  },\n  \"excluded_entities\": [\n    \"Zephyr-old\",\n    \"orion-legacy\",\n    \"atlas-x\"\n  ],\n  \"confusions\": []\n}\n```",
+        "reasoning_visible": true,
+        "usage": {
+          "input_tokens": 149,
+          "output_tokens": 1987,
+          "reasoning_tokens": 1890,
+          "total_tokens": 2136
+        }
+      },
+      "error": null,
+      "features": {
+        "answer.confusion_count": 0,
+        "answer.excluded_count": 3,
+        "answer.found_count": 3,
+        "answer.paragraph_annotation_rate": 1.0,
+        "reasoning.backtrack_markers": 0,
+        "reasoning.hedge_density": 0.0,
+        "reasoning.step_count": 110,
+        "reasoning.uses_numbered_outline": true,
+        "score.confusion_free": true,
+        "score.entity_precision": 1.0,
+        "score.entity_recall": 1.0,
+        "score.order_accuracy": true,
+        "score.paragraph_accuracy": 1.0,
+        "surface.constraint_retention": false,
+        "surface.field_order_match": false,
+        "surface.had_markdown_fence": false,
+        "surface.has_extra_text": false,
+        "transport.finish_reason": "stop",
+        "transport.latency_bucket_ms": 62000,
+        "transport.reasoning_tokens": 1890,
+        "transport.reasoning_visible": true
+      },
+      "prompt_id": "p014",
+      "raw_output": "{\n  \"found_entities\": [\n    \"zephyr\",\n    \"orion\",\n    \"atlas\"\n  ],\n  \"paragraph_map\": {\n    \"zephyr\": \"p1\",\n    \"orion\": \"p2\",\n    \"atlas\": \"p3\"\n  },\n  \"excluded_entities\": [\n    \"Zephyr-old\",\n    \"orion-legacy\",\n    \"atlas-x\"\n  ],\n  \"confusions\": []\n}",
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 260,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u6dfb\u52a0\u89e3\u91ca\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u5728\u4e0b\u9762\u6587\u672c\u91cc\u627e\u51fa\u5f53\u524d\u6709\u6548\u7684 zephyr\u3001orion\u3001atlas\uff0c\u5e76\u6807\u51fa\u5b83\u4eec\u7b2c\u4e00\u6b21\u51fa\u73b0\u7684\u6bb5\u843d\u7f16\u53f7\u3002\u65e7\u4ee3\u53f7\u3001\u5e26\u540e\u7f00\u7684\u8fd1\u4f3c\u8bcd\u548c\u5df2\u505c\u7528\u9879\u5fc5\u987b\u8fdb\u5165 excluded_entities\u3002\n\n[p1] \u65e7\u4ee3\u53f7 Zephyr-old \u5df2\u5e9f\u5f03\u3002\u5f53\u524d\u6709\u6548\u9879\u76ee\u662f zephyr\u3002\n[p2] orion-legacy \u53ea\u51fa\u73b0\u5728\u5386\u53f2\u8bb0\u5f55\u91cc\u3002\u5f53\u524d Orion \u670d\u52a1\u4ecd\u5728\u8fd0\u884c\u3002\n[p3] atlas-x \u662f\u6d4b\u8bd5\u6837\u672c\uff0c\u4e0d\u8ba1\u5165\u7ed3\u679c\u3002\u771f\u6b63\u4e0a\u7ebf\u7684\u662f atlas\u3002\n\n\u8fd4\u56de JSON\uff0c\u5bf9\u8c61\u5b57\u6bb5\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b\uff1a\n- found_entities\n- paragraph_map\n- excluded_entities\n- confusions\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "completed",
+      "usage": {
+        "input_tokens": 149,
+        "output_tokens": 1987,
+        "reasoning_tokens": 1890,
+        "total_tokens": 2136
+      }
+    },
+    {
+      "canonical_output": {
+        "format_id": "strict_json_v2",
+        "payload": {
+          "answers": {
+            "q1": "No",
+            "q3": "Retry failed background jobs"
+          },
+          "evidence": {
+            "q1": [
+              "e1",
+              "e2",
+              "e3"
+            ],
+            "q3": [
+              "e4"
+            ]
+          },
+          "unknowns": [
+            "q2"
+          ],
+          "violations": []
+        }
+      },
+      "canonicalization_events": [],
+      "completion": {
+        "answer_text": "{\n  \"answers\": {\n    \"q1\": \"No\",\n    \"q3\": \"Retry failed background jobs\"\n  },\n  \"unknowns\": [\n    \"q2\"\n  ],\n  \"evidence\": {\n    \"q1\": [\n      \"e1\",\n      \"e2\",\n      \"e3\"\n    ],\n    \"q3\": [\n      \"e4\"\n    ]\n  },\n  \"violations\": []\n}",
+        "finish_reason": "stop",
+        "latency_ms": 40289,
+        "raw_response_path": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-09/siliconflow-zai-probe.fingerprint-suite-v2/p015.response.json",
+        "reasoning_text": "\u7528\u6237\u5e0c\u671b\u6211\u6839\u636e\u4e00\u7ec4\u7b56\u7565\uff08[e1] \u5230 [e4]\uff09\u56de\u7b54\u4e09\u4e2a\u95ee\u9898\uff08q1\u3001q2\u3001q3\uff09\u3002\n\u8f93\u51fa\u5fc5\u987b\u662f\u4e00\u4e2a JSON \u5bf9\u8c61\uff0c\u5305\u542b\u7279\u5b9a\u5b57\u6bb5\uff1a`answers`\u3001`unknowns`\u3001`evidence`\u3001`violations`\u3002\n\u4e0d\u5141\u8bb8\u4f7f\u7528 Markdown \u683c\u5f0f\u3002\n\n**\u7b56\u7565\u5206\u6790\uff1a**\n- [e1]\uff1a\u90e8\u7f72\u6279\u51c6\u6761\u4ef6\uff1a\u5b89\u5168\u5ba1\u67e5 + DBA \u7b7e\u7f72\u3002\n- [e2]\uff1a\u5f53\u524d\u72b6\u6001\uff1a\u5df2\u901a\u8fc7\u5b89\u5168\u5ba1\u67e5\u3002\n- [e3]\uff1a\u5f53\u524d\u72b6\u6001\uff1aDBA \u7b7e\u7f72\u5f85\u5b9a\u3002\n- [e4]\uff1a\u6545\u969c\u8f6c\u79fb\u540e\u7684\u64cd\u4f5c\uff1a\u91cd\u8bd5\u5931\u8d25\u7684\u540e\u53f0\u4f5c\u4e1a\u3002\n\n**\u95ee\u9898\u5206\u6790\uff1a**\n\n**q1: Is the deployment approved?**\n- \u6839\u636e [e1]\uff0c\u6279\u51c6\u9700\u8981\u5b89\u5168\u5ba1\u67e5\u548c DBA \u7b7e\u7f72\u3002\n- \u6839\u636e [e2]\uff0c\u5b89\u5168\u5ba1\u67e5\u5df2\u901a\u8fc7\u3002\n- \u6839\u636e [e3]\uff0cDBA \u7b7e\u7f72\u5f85\u5b9a\u3002\n- \u7531\u4e8e DBA \u7b7e\u7f72\u5f85\u5b9a\uff0c[e1] \u4e2d\u7684\u6761\u4ef6\u672a\u5b8c\u5168\u6ee1\u8db3\u3002\n- \u7b54\u6848\uff1aNo\uff08\u5426\uff09\u3002\n- \u8bc1\u636e\uff1a[e1], [e2], [e3]\u3002\n\n**q2: Which engineer approved the DBA sign-off?**\n- \u6839\u636e [e3]\uff0cDBA \u7b7e\u7f72\u201cstill pending\u201d\uff08\u4ecd\u5728\u5f85\u5b9a\uff09\u3002\n- \u56e0\u6b64\uff0c\u5c1a\u672a\u6709\u4eba\u6279\u51c6\u3002\n- \u6587\u672c\u672a\u63d0\u53ca\u4efb\u4f55\u5de5\u7a0b\u5e08\u3002\n- \u7b54\u6848\uff1anull\uff08\u4fe1\u606f\u4e0d\u8db3\uff09\u3002\n- \u8fd9\u5c5e\u4e8e\u201cunknowns\u201d\uff08\u672a\u77e5\uff09\u60c5\u51b5\u3002\n\n**q3: What should happen after failover completes?**\n- \u6839\u636e [e4]\uff1a\u201cRetry failed background jobs after the failover completes.\u201d\n- \u7b54\u6848\uff1aRetry failed background jobs\uff08\u91cd\u8bd5\u5931\u8d25\u7684\u540e\u53f0\u4f5c\u4e1a\uff09\u3002\n- \u8bc1\u636e\uff1a[e4]\u3002\n\n**\u6784\u5efa JSON\uff1a**\n\n- `answers`\uff1a\u5305\u542b q1 \u548c q3 \u7b54\u6848\u7684\u5bf9\u8c61\u3002q2 \u4e3a null\u3002\n- `unknowns`\uff1a\u5305\u542b q2 \u7684\u6570\u7ec4\u3002\n- `evidence`\uff1a\u5c06\u95ee\u9898\u6620\u5c04\u5230\u8bc1\u636e ID \u7684\u5bf9\u8c61\u3002\n- `violations`\uff1a\u68c0\u67e5\u662f\u5426\u5b58\u5728\u8fdd\u89c4\u3002\n    - [e1] \u89c4\u5b9a\u4e86\u89c4\u5219\u3002[e2] \u548c [e3] \u63cf\u8ff0\u4e86\u72b6\u6001\u3002\u76ee\u524d\u6ca1\u6709\u8fdd\u53cd\u89c4\u5219\uff08\u90e8\u7f72\u5c1a\u672a\u88ab\u6279\u51c6\uff0c\u8fd9\u662f\u6b63\u786e\u7684\uff0c\u56e0\u4e3a DBA \u7b7e\u7f72\u5f85\u5b9a\uff09\u3002\u6ca1\u6709\u8fdd\u53cd\u7b56\u7565\u3002\n    - \u6570\u7ec4\uff1a[]\u3002\n\n**\u8d77\u8349 JSON \u7ed3\u6784\uff1a**\n\n```json\n{\n  \"answers\": {\n    \"q1\": \"No\",\n    \"q3\": \"Retry failed background jobs\"\n  },\n  \"unknowns\": [\n    \"q2\"\n  ],\n  \"evidence\": {\n    \"q1\": [\n      \"e1\",\n      \"e2\",\n      \"e3\"\n    ],\n    \"q3\": [\n      \"e4\"\n    ]\n  ],\n  \"violations\": []\n}\n```\n\n\u7b49\u7b49\uff0c\u6211\u9700\u8981\u68c0\u67e5 `answers` \u7684\u683c\u5f0f\u3002\u901a\u5e38\uff0c\u5982\u679c\u7b54\u6848\u4e3a null\uff0c\u5b83\u53ef\u80fd\u4e0d\u4f1a\u51fa\u73b0\u5728 `answers` \u5bf9\u8c61\u4e2d\uff0c\u6216\u8005\u503c\u4e3a null\u3002\u63d0\u793a\u8bf4\u201c\u6ca1\u6709\u8db3\u591f\u4fe1\u606f\u7684\u95ee\u9898\u5fc5\u987b\u8fd4\u56de null\uff0c\u5e76\u628a\u95ee\u9898\u7f16\u53f7\u5199\u5165 unknowns\u201d\u3002\n\u6240\u4ee5 `answers` \u5e94\u8be5\u5305\u542b\u6709\u7b54\u6848\u7684\u95ee\u9898\u3002`unknowns` \u5305\u542b\u6ca1\u6709\u7b54\u6848\u7684\u95ee\u9898\u3002\n\n\u8ba9\u6211\u4eec\u5b8c\u5584 `answers` \u5bf9\u8c61\u3002\nq1: \"No\"\uff08\u6216 \"The deployment is not approved\"\uff09\u3002\u6211\u5c06\u575a\u6301\u4f7f\u7528\u7b80\u6d01\u7684 \"No\"\u3002\nq3: \"Retry failed background jobs\"\u3002\n\n\u8ba9\u6211\u4eec\u5b8c\u5584 `evidence` \u5bf9\u8c61\u3002\nq1 \u4f7f\u7528\u4e86 e1, e2, e3\u3002\nq3 \u4f7f\u7528\u4e86 e4\u3002\nq2 \u6ca1\u6709\u8bc1\u636e\uff0c\u56e0\u4e3a\u5b83\u672a\u77e5\u3002\n\n\u8ba9\u6211\u4eec\u5b8c\u5584 `violations`\u3002\n\u63d0\u4f9b\u7684\u6587\u672c\u4e2d\u672a\u8fdd\u53cd\u7b56\u7565\u3002\n\n**\u6700\u7ec8 JSON \u6784\u5efa\uff1a**\n```json\n{\n  \"answers\": {\n    \"q1\": \"No\",\n    \"q3\": \"Retry failed background jobs\"\n  },\n  \"unknowns\": [\n    \"q2\"\n  ],\n  \"evidence\": {\n    \"q1\": [\n      \"e1\",\n      \"e2\",\n      \"e3\"\n    ],\n    \"q3\": [\n      \"e4\"\n    ]\n  },\n  \"violations\": []\n}\n```\n\n\u518d\u6b21\u68c0\u67e5\u7ea6\u675f\u6761\u4ef6\uff1a\n- \u201c\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\u3002\u201d -> \u597d\u7684\u3002\n- \u201c\u6ca1\u6709\u8db3\u591f\u4fe1\u606f\u7684\u95ee\u9898\u5fc5\u987b\u8fd4\u56de null\uff0c\u5e76\u628a\u95ee\u9898\u7f16\u53f7\u5199\u5165 unknowns\u3002\u201d -> q2 \u5728 unknowns \u4e2d\u3002q2 \u4e0d\u5728 answers \u4e2d\uff08\u6216\u4e3a null\uff09\u3002\u901a\u5e38\uff0c\u5982\u679c\u5b83\u5728 unknowns \u4e2d\uff0c\u6700\u597d\u5c06\u5176\u4ece answers \u4e2d\u7701\u7565\u6216\u8bbe\u4e3a null\u3002\u6211\u5c06\u628a q2 \u4ece answers \u4e2d\u7701\u7565\uff0c\u4ee5\u4fdd\u6301\u6574\u6d01\uff0c\u6216\u8005\u5305\u542b\u5b83\u5e76\u8bbe\u4e3a null\u3002\u63d0\u793a\u8bf4\u201canswers \u5bf9\u8c61\u5b57\u6bb5\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b\u2026\u2026\u201d\u3002\u5982\u679c\u6211\u770b\u6807\u51c6\u7684\u903b\u8f91\u63a8\u7406\u4efb\u52a1\uff0c\u901a\u5e38 `answers` \u5305\u542b\u5df2\u56de\u7b54\u7684\u95ee\u9898\u3002\u6211\u5c06\u5305\u542b\u5df2\u56de\u7b54\u7684\u95ee\u9898\u3002\n- \u201c\u5bf9\u8c61\u5b57\u6bb5\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b\uff1aanswers, unknowns, evidence, violations\u201d -> \u597d\u7684\u3002\n\n\u8ba9\u6211\u4eec\u518d\u6b21\u9a8c\u8bc1 q1\u3002\ne1: \u6279\u51c6\u9700\u8981\u5b89\u5168\u5ba1\u67e5\u548c DBA\u3002\ne2: \u5b89\u5168\u5ba1\u67e5\u901a\u8fc7\u3002\ne3: DBA \u5f85\u5b9a\u3002\n\u7ed3\u8bba\uff1a\u672a\u6279\u51c6\u3002\u6b63\u786e\u3002\n\n\u8ba9\u6211\u4eec\u518d\u6b21\u9a8c\u8bc1 q2\u3002\n\u8c01\u6279\u51c6\u4e86 DBA\uff1f\ne3 \u8bf4\u5f85\u5b9a\u3002\u6240\u4ee5\u6ca1\u4eba\u6279\u51c6\u3002\n\u4fe1\u606f\u4e0d\u8db3\uff08\u6216\u7b54\u6848\u4e3a\u201c\u6ca1\u4eba\u201d\uff0c\u4f46\u901a\u5e38\u201c\u8c01\u201d\u6697\u793a\u4e00\u4e2a\u540d\u5b57\uff0c\u65e2\u7136\u5f85\u5b9a\uff0c\u7b54\u6848\u5b9e\u9645\u4e0a\u662f\u201c\u6ca1\u4eba\u6279\u51c6\uff0c\u56e0\u4e3a\u5b83\u5f85\u5b9a\u201d\uff0c\u4f46\u4e25\u683c\u6765\u8bf4\uff0c\u6587\u672c\u6ca1\u6709\u660e\u786e\u8bf4\u201c\u6ca1\u4eba\u6279\u51c6\u201d\uff0c\u53ea\u662f\u8bf4\u201c\u5f85\u5b9a\u201d\u3002\u7136\u800c\uff0c\u901a\u5e38\u201c\u8c01\u201d\u8be2\u95ee\u7684\u662f\u8eab\u4efd\u3002\u7531\u4e8e\u5b83\u5f85\u5b9a\uff0c\u8eab\u4efd\u672a\u77e5/\u4e0d\u5b58\u5728\u3002\u63d0\u793a\u8bf4\u201c\u6ca1\u6709\u8db3\u591f\u4fe1\u606f\u201d\u3002\u77e5\u9053\u5b83\u5f85\u5b9a\u7b97\u4f5c\u56de\u7b54\u201c\u6ca1\u4eba\u201d\u7684\u4fe1\u606f\u5417\uff1f\u8fd8\u662f\u7b97\u4f5c\u201c\u672a\u77e5\u201d\uff1f\n\u901a\u5e38\uff0c\u5728\u8fd9\u4e9b\u903b\u8f91\u8c1c\u9898\u4e2d\uff0c\u5982\u679c\u72b6\u6001\u662f\u201c\u5f85\u5b9a\u201d\uff0c\u8be2\u95ee\u201c\u8c01\u6279\u51c6\u4e86\u201d\u610f\u5473\u7740\u524d\u63d0\u9519\u8bef\u6216\u4fe1\u606f\u7f3a\u5931\u3002\n\u7136\u800c\uff0c\u63d0\u793a\u8bf4\u201c\u6ca1\u6709\u8db3\u591f\u4fe1\u606f\u7684\u95ee\u9898\u5fc5\u987b\u8fd4\u56de null\u201d\u3002\n\u201c\u8c01\u6279\u51c6\u4e86\uff1f\u201d -> \u6587\u672c\u8bf4\u201c\u5f85\u5b9a\u201d\u3002\u6240\u4ee5\u6ca1\u4eba\u6279\u51c6\u3002\n\u8fd9\u662f\u201c\u4fe1\u606f\u4e0d\u8db3\u201d\u8fd8\u662f\u201c\u7b54\u6848\u662f\u6ca1\u4eba\u201d\uff1f\n\u5982\u679c\u6211\u56de\u7b54\u201c\u6ca1\u4eba\u201d\uff0c\u6211\u6709\u8bc1\u636e [e3]\u3002\n\u5982\u679c\u6211\u56de\u7b54 null\uff0c\u6211\u628a\u5b83\u653e\u5728 unknowns \u4e2d\u3002\n\u8ba9\u6211\u4eec\u770b\u770b\u6807\u51c6\u7684\u89e3\u91ca\u3002\u5982\u679c\u95ee\u9898\u95ee\u201c\u8c01\u505a\u4e86 X\uff1f\u201d\uff0c\u800c X \u5c1a\u672a\u53d1\u751f\uff0c\u7b54\u6848\u5b9e\u9645\u4e0a\u662f\u201c\u6ca1\u4eba\u201d\u3002\u4f46\u901a\u5e38\uff0c\u8fd9\u4e9b\u63d0\u793a\u5c06\u201c\u8c01\u201d\u89c6\u4e3a\u5bfb\u627e\u7279\u5b9a\u5b9e\u4f53\u7684\u67e5\u8be2\u3002\u5982\u679c\u5b9e\u4f53\u4e0d\u5728\u90a3\u91cc\uff0c\u90a3\u5c31\u662f\u672a\u77e5/\u4e0d\u9002\u7528\u3002\n\u7136\u800c\uff0c\u67e5\u770b\u63d0\u793a\u6307\u4ee4\uff1a\u201c\u6ca1\u6709\u8db3\u591f\u4fe1\u606f\u7684\u95ee\u9898\u5fc5\u987b\u8fd4\u56de null\u201d\u3002\n\u6211\u6709\u8db3\u591f\u7684\u4fe1\u606f\u8bf4\u201c\u6ca1\u4eba\u201d\u5417\uff1f\u662f\u7684\uff0c\u56e0\u4e3a [e3]\u3002\n\u4f46\u201c\u6ca1\u4eba\u201d\u662f\u4e00\u4e2a\u540d\u5b57\u5417\uff1f\u4e0d\u662f\u3002\n\u8ba9\u6211\u4eec\u770b\u770b\u590d\u6742\u6027\u3002\n\u5982\u679c\u6211\u56de\u7b54\u201c\u6ca1\u4eba\u201d\uff0c\u6211\u9700\u8981\u8bc1\u636e\u3002\n\u5982\u679c\u6211\u56de\u7b54 null\uff0c\u6211\u628a\u5b83\u653e\u5728 unknowns \u4e2d\u3002\n\u8ba9\u6211\u4eec\u5047\u8bbe\u201c\u8c01\u201d\u6697\u793a\u5bfb\u627e\u4e00\u4e2a\u547d\u540d\u5b9e\u4f53\u3002\u7531\u4e8e\u6ca1\u6709\u547d\u540d\u5b9e\u4f53\uff0c\u4e14\u72b6\u6001\u4e3a\u5f85\u5b9a\uff0c\u4e25\u683c\u6765\u8bf4\uff0c\u6211\u65e0\u6cd5\u4ece\u6587\u672c\u4e2d\u63d0\u4f9b\u5de5\u7a0b\u5e08\u7684\u540d\u5b57\u3002\u56e0\u6b64\uff0c\u4fe1\u606f\u4e0d\u8db3\u3002\n\u6211\u5c06\u575a\u6301\u628a q2 \u653e\u5165 unknowns\u3002\n\n\u8ba9\u6211\u4eec\u518d\u6b21\u9a8c\u8bc1 q3\u3002\ne4: \u6545\u969c\u8f6c\u79fb\u540e\u91cd\u8bd5\u5931\u8d25\u7684\u540e\u53f0\u4f5c\u4e1a\u3002\n\u7b54\u6848\uff1a\u91cd\u8bd5\u5931\u8d25\u7684\u540e\u53f0\u4f5c\u4e1a\u3002\n\u8bc1\u636e\uff1a[e4]\u3002\n\n\u6700\u7ec8\u68c0\u67e5\u8f93\u51fa\u683c\u5f0f\u3002\n\u4ec5 JSON\u3002\u65e0 markdown\u3002\n\n```json\n{\n  \"answers\": {\n    \"q1\": \"No\",\n    \"q3\": \"Retry failed background jobs\"\n  },\n  \"unknowns\": [\n    \"q2\"\n  ],\n  \"evidence\": {\n    \"q1\": [\n      \"e1\",\n      \"e2\",\n      \"e3\"\n    ],\n    \"q3\": [\n      \"e4\"\n    ]\n  },\n  \"violations\": []\n}\n```",
+        "reasoning_visible": true,
+        "usage": {
+          "input_tokens": 156,
+          "output_tokens": 1695,
+          "reasoning_tokens": 1604,
+          "total_tokens": 1851
+        }
+      },
+      "error": null,
+      "features": {
+        "answer.answered_count": 2,
+        "answer.evidence_field_count": 2,
+        "answer.unknown_count": 1,
+        "answer.violation_count": 0,
+        "reasoning.backtrack_markers": 0,
+        "reasoning.hedge_density": 0.0,
+        "reasoning.step_count": 146,
+        "reasoning.uses_numbered_outline": false,
+        "score.abstention_accuracy": 1.0,
+        "score.answer_accuracy": 0.0,
+        "score.evidence_alignment": 0.0,
+        "score.violation_free": true,
+        "surface.constraint_retention": false,
+        "surface.field_order_match": false,
+        "surface.had_markdown_fence": false,
+        "surface.has_extra_text": false,
+        "transport.finish_reason": "stop",
+        "transport.latency_bucket_ms": 40000,
+        "transport.reasoning_tokens": 1604,
+        "transport.reasoning_visible": true
+      },
+      "prompt_id": "p015",
+      "raw_output": "{\n  \"answers\": {\n    \"q1\": \"No\",\n    \"q3\": \"Retry failed background jobs\"\n  },\n  \"unknowns\": [\n    \"q2\"\n  ],\n  \"evidence\": {\n    \"q1\": [\n      \"e1\",\n      \"e2\",\n      \"e3\"\n    ],\n    \"q3\": [\n      \"e4\"\n    ]\n  },\n  \"violations\": []\n}",
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 280,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\u3002\u6ca1\u6709\u8db3\u591f\u4fe1\u606f\u7684\u95ee\u9898\u5fc5\u987b\u8fd4\u56de null\uff0c\u5e76\u628a\u95ee\u9898\u7f16\u53f7\u5199\u5165 unknowns\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u53ea\u6839\u636e\u4e0b\u9762\u7b56\u7565\u56de\u7b54 q1\u3001q2\u3001q3\u3002\n\n[e1] A deployment is approved only after security review and DBA sign-off.\n[e2] The current request already passed security review.\n[e3] DBA sign-off is still pending.\n[e4] Retry failed background jobs after the failover completes.\n\n\u95ee\u9898\uff1a\n- q1: Is the deployment approved?\n- q2: Which engineer approved the DBA sign-off?\n- q3: What should happen after failover completes?\n\n\u8fd4\u56de JSON\uff0c\u5bf9\u8c61\u5b57\u6bb5\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b\uff1a\n- answers\n- unknowns\n- evidence\n- violations\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "completed",
+      "usage": {
+        "input_tokens": 156,
+        "output_tokens": 1695,
+        "reasoning_tokens": 1604,
+        "total_tokens": 1851
+      }
+    },
+    {
+      "canonical_output": {
+        "format_id": "strict_json_v2",
+        "payload": {
+          "answers": {
+            "q1": "Yes",
+            "q2": "the on-call engineer",
+            "q3": "the on-call engineer restarted the background workers"
+          },
+          "evidence": {
+            "q1": [
+              "e2"
+            ],
+            "q2": [
+              "e3"
+            ],
+            "q3": [
+              "e2",
+              "e3"
+            ]
+          },
+          "unknowns": [],
+          "violations": []
+        }
+      },
+      "canonicalization_events": [],
+      "completion": {
+        "answer_text": "{\n  \"answers\": {\n    \"q1\": \"Yes\",\n    \"q2\": \"the on-call engineer\",\n    \"q3\": \"the on-call engineer restarted the background workers\"\n  },\n  \"unknowns\": [],\n  \"evidence\": {\n    \"q1\": [\n      \"e2\"\n    ],\n    \"q2\": [\n      \"e3\"\n    ],\n    \"q3\": [\n      \"e2\",\n      \"e3\"\n    ]\n  },\n  \"violations\": []\n}",
+        "finish_reason": "stop",
+        "latency_ms": 62394,
+        "raw_response_path": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-09/siliconflow-zai-probe.fingerprint-suite-v2/p016.response.json",
+        "reasoning_text": "\u7528\u6237\u5e0c\u671b\u6211\u6839\u636e\u63d0\u4f9b\u7684\u65f6\u95f4\u7ebf\u56de\u7b54\u4e09\u4e2a\u95ee\u9898\uff08q1\u3001q2\u3001q3\uff09\u3002\n\u8f93\u51fa\u5fc5\u987b\u662f\u4e00\u4e2a JSON \u5bf9\u8c61\u3002\nJSON \u5bf9\u8c61\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b\u4ee5\u4e0b\u5b57\u6bb5\uff1a`answers`\u3001`unknowns`\u3001`evidence`\u3001`violations`\u3002\n\u6ca1\u6709\u8db3\u591f\u4fe1\u606f\u7684\u95ee\u9898\u5fc5\u987b\u8fd4\u56de `null`\uff0c\u5e76\u628a\u95ee\u9898\u7f16\u53f7\u5199\u5165 `unknowns` \u5217\u8868\u3002\n\u4e0d\u8981\u8f93\u51fa markdown\u3002\n\n\u65f6\u95f4\u7ebf\uff1a\n[e1] 09:00 \u7f13\u5b58\u96c6\u7fa4\u8fdb\u5165\u964d\u7ea7\u6a21\u5f0f\u3002\n[e2] 09:07 \u6545\u969c\u8f6c\u79fb\u6210\u529f\u5b8c\u6210\u3002\n[e3] 09:08 \u503c\u73ed\u5de5\u7a0b\u5e08\u91cd\u542f\u4e86\u540e\u53f0\u5de5\u4f5c\u8fdb\u7a0b\u3002\n[e4] \u65e5\u5fd7\u672a\u6307\u660e\u5de5\u7a0b\u5e08\u7684\u59d3\u540d\u3002\n\n\u95ee\u9898\uff1a\n- q1: \u6545\u969c\u8f6c\u79fb\u662f\u5426\u6210\u529f\u5b8c\u6210\uff1f\n- q2: \u8c01\u91cd\u542f\u4e86\u540e\u53f0\u5de5\u4f5c\u8fdb\u7a0b\uff1f\n- q3: \u6545\u969c\u8f6c\u79fb\u5b8c\u6210\u540e\u7d27\u63a5\u7740\u53d1\u751f\u4e86\u4ec0\u4e48\uff1f\n\n\u5206\u6790\uff1a\nq1: \u6545\u969c\u8f6c\u79fb\u662f\u5426\u6210\u529f\u5b8c\u6210\uff1f\n- \u6765\u6e90\uff1a[e2] \"09:07 failover finished successfully.\"\n- \u56de\u7b54\uff1aYes\u3002\n- \u8bc1\u636e\uff1a[e2]\n\nq2: \u8c01\u91cd\u542f\u4e86\u540e\u53f0\u5de5\u4f5c\u8fdb\u7a0b\uff1f\n- \u6765\u6e90\uff1a[e3] \"the on-call engineer restarted the background workers.\"\n- \u6765\u6e90\uff1a[e4] \"The log does not identify the engineer by name.\"\n- \u5206\u6790\uff1a\u6211\u4eec\u77e5\u9053\u662f\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\uff0c\u4f46\u4e0d\u77e5\u9053\u5177\u4f53\u540d\u5b57\u3002\u95ee\u9898\u95ee\u7684\u662f\u201c\u8c01\u201d\u3002\u901a\u5e38\uff0c\u5982\u679c\u6587\u672c\u8bf4\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\uff0c\u90a3\u5c31\u662f\u7b54\u6848\uff0c\u4f46 [e4] \u660e\u786e\u6307\u51fa\u65e5\u5fd7\u672a\u6307\u660e\u59d3\u540d\u3002\u7136\u800c\uff0c\u4e25\u683c\u6765\u8bf4\uff0c\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u5c31\u662f\u6587\u4e2d\u63d0\u5230\u7684\u4eba\u3002\u4f46\u901a\u5e38\u5728\u8fd9\u7c7b\u903b\u8f91\u63a8\u7406\u4efb\u52a1\u4e2d\uff0c\u5982\u679c\u7f3a\u5c11\u5177\u4f53\u8eab\u4efd\uff08\u59d3\u540d\uff09\uff0c\u53ef\u80fd\u4f1a\u88ab\u89c6\u4e3a\u672a\u77e5\u6216\u90e8\u5206\u5df2\u77e5\u3002\u8ba9\u6211\u4eec\u770b\u770b\u7ea6\u675f\u6761\u4ef6\uff1a\u201c\u6ca1\u6709\u8db3\u591f\u4fe1\u606f\u7684\u95ee\u9898\u5fc5\u987b\u8fd4\u56de null\u201d\u3002\u6211\u4eec\u6709\u8db3\u591f\u7684\u4fe1\u606f\u5417\uff1f\u6211\u4eec\u6709\u89d2\u8272\uff0c\u4f46\u6ca1\u6709\u540d\u5b57\u3002\u901a\u5e38\uff0c\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u662f\u4e00\u4e2a\u6709\u6548\u7684\u56de\u7b54\uff0c\u9664\u975e\u95ee\u9898\u660e\u786e\u8981\u6c42\u63d0\u4f9b\u540d\u5b57\u3002\u7136\u800c\uff0c[e4] \u5f3a\u8c03\u4e86\u8eab\u4efd\u8bc6\u522b\u7684\u7f3a\u5931\u3002\u8ba9\u6211\u4eec\u91cd\u65b0\u8bc4\u4f30\u3002\u5982\u679c\u6211\u95ee\u201c\u8c01\u505a\u7684\uff1f\u201d\uff0c\u56de\u7b54\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u662f\u57fa\u4e8e\u6587\u672c\u7684\u4e8b\u5b9e\u6b63\u786e\u7684\u3002\u56de\u7b54\u201cJohn Doe\u201d\u662f\u4e0d\u53ef\u80fd\u7684\u3002\u8fd9\u662f\u201c\u4fe1\u606f\u4e0d\u8db3\u201d\u5417\uff1f\u6587\u672c*\u786e\u5b9e*\u8bf4\u4e86\u662f\u8c01\u505a\u7684\uff08\u503c\u73ed\u5de5\u7a0b\u5e08\uff09\u3002\u5b83\u53ea\u662f\u6ca1\u7ed9\u540d\u5b57\u3002\u8ba9\u6211\u4eec\u5047\u8bbe\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u662f\u9884\u671f\u7684\u56de\u7b54\uff0c\u6216\u8005\u68c0\u67e5\u8fd9\u662f\u5426\u5c5e\u4e8e\u201c\u672a\u77e5\u201d\u3002\n- \u8ba9\u6211\u4eec\u770b\u770b\u6807\u51c6\u7684\u63d0\u53d6\u4efb\u52a1\u3002\u201c\u8c01\u201d\u901a\u5e38\u63a5\u53d7\u89d2\u8272\u3002\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u3002\n- \u7b49\u7b49\uff0c\u8ba9\u6211\u4eec\u770b\u770b [e4]\u3002\u5b83\u8bf4\u65e5\u5fd7\u6ca1\u6709\u6307\u660e\u540d\u5b57\u3002\u8fd9\u6697\u793a\u4e86\u5173\u4e8e\u5177\u4f53\u8eab\u4efd\u5b58\u5728\u4fe1\u606f\u7f3a\u5931\u3002\n- \u8ba9\u6211\u4eec\u8003\u8651\u63d0\u793a\u7684\u6307\u4ee4\uff1a\u201c\u6ca1\u6709\u8db3\u591f\u4fe1\u606f\u7684\u95ee\u9898\u5fc5\u987b\u8fd4\u56de null\u201d\u3002\n- \u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u7b97\u4f5c\u8db3\u591f\u7684\u4fe1\u606f\u5417\uff1f\u662f\u7684\uff0c\u5b83\u6807\u8bc6\u4e86\u884c\u52a8\u8005\u3002\n- \u7136\u800c\uff0c\u5982\u679c\u95ee\u9898\u6697\u793a\u5177\u4f53\u8eab\u4efd\uff0c\u90a3\u5c31\u662f\u672a\u77e5\u7684\u3002\n- \u8ba9\u6211\u4eec\u770b\u770b q3 \u6765\u5224\u65ad\u4e25\u683c\u7a0b\u5ea6\u3002\n\nq3: \u6545\u969c\u8f6c\u79fb\u5b8c\u6210\u540e\u7d27\u63a5\u7740\u53d1\u751f\u4e86\u4ec0\u4e48\uff1f\n- \u65f6\u95f4\u7ebf\uff1a\n  - [e2] 09:07 \u6545\u969c\u8f6c\u79fb\u5b8c\u6210\u3002\n  - [e3] 09:08 \u503c\u73ed\u5de5\u7a0b\u5e08\u91cd\u542f\u4e86\u540e\u53f0\u5de5\u4f5c\u8fdb\u7a0b\u3002\n- \u65f6\u95f4\u987a\u5e8f\uff1a[e2] -> [e3]\u3002\n- \u56de\u7b54\uff1a\u503c\u73ed\u5de5\u7a0b\u5e08\u91cd\u542f\u4e86\u540e\u53f0\u5de5\u4f5c\u8fdb\u7a0b\u3002\n- \u8bc1\u636e\uff1a[e2], [e3]\u3002\n\n\u91cd\u65b0\u8bc4\u4f30 q2\uff1a\n\u5982\u679c\u6211\u8bf4\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\uff0c\u6211\u662f\u57fa\u4e8e\u6587\u672c\u56de\u7b54\u7684\u3002\n\u5982\u679c\u6211\u8bf4 `null`\uff0c\u6211\u662f\u6697\u793a\u6587\u672c\u6ca1\u6709\u56de\u7b54\u201c\u8c01\u201d\u3002\n\u6587\u672c\u8bf4\uff1a\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u91cd\u542f\u4e86\u2026\u2026\u201d\u3002\n\u6240\u4ee5\u56de\u7b54\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u662f\u6709\u4f9d\u636e\u7684\u3002\n[e4] \u7684\u5b58\u5728\u662f\u4e3a\u4e86\u6f84\u6e05\u4e3a\u4ec0\u4e48\u6ca1\u6709\u7ed9\u51fa\u540d\u5b57\u3002\n\u6211\u5c06\u4e3a q2 \u63d0\u4f9b\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u4f5c\u4e3a\u56de\u7b54\u3002\u5982\u679c\u7528\u6237\u60f3\u8981\u540d\u5b57\uff0c\u90a3\u5c31\u662f null\u3002\u4f46\u201c\u8c01\u201d\u901a\u5e38\u63a5\u53d7\u89d2\u8272\u3002\n*\u81ea\u6211\u4fee\u6b63*\uff1a\u8ba9\u6211\u4eec\u770b\u770b\u8fd9\u7c7b\u63d0\u793a\u901a\u5e38\u5173\u8054\u7684\u201c\u8fdd\u89c4\u201d\u6216\u201c\u672a\u77e5\u201d\u903b\u8f91\u3002\u901a\u5e38\uff0c\u5982\u679c\u6587\u672c\u660e\u786e\u5426\u8ba4\u77e5\u9053\u540d\u5b57\uff0c\u8fd9\u53ef\u80fd\u662f\u9677\u9631\u3002\n\u4f46 [e3] \u660e\u786e\u6307\u51fa\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u3002\n\u8ba9\u6211\u4eec\u575a\u6301\u6587\u672c\u4e2d\u53ef\u7528\u7684\u6700\u5177\u4f53\u7684\u6807\u8bc6\u7b26\u3002\nq2 \u7684\u56de\u7b54\uff1a\"the on-call engineer\"\u3002\n\n\u8ba9\u6211\u4eec\u518d\u6b21\u68c0\u67e5 q3\u3002\n\u201c\u6545\u969c\u8f6c\u79fb\u5b8c\u6210\u540e\u7d27\u63a5\u7740\u53d1\u751f\u4e86\u4ec0\u4e48\uff1f\u201d\n[e2] \u5728 09:07 \u5b8c\u6210\u3002\n[e3] \u5728 09:08 \u53d1\u751f\u3002\n[e3] \u662f [e2] \u4e4b\u540e\u7d27\u63a5\u7740\u53d1\u751f\u7684\u5417\uff1f\u662f\u7684\uff0c\u57fa\u4e8e\u65f6\u95f4\u6233\u3002\n\u56de\u7b54\uff1a\u503c\u73ed\u5de5\u7a0b\u5e08\u91cd\u542f\u4e86\u540e\u53f0\u5de5\u4f5c\u8fdb\u7a0b\u3002\n\n\u8ba9\u6211\u4eec\u6784\u5efa JSON\u3002\n\nanswers:\n  q1: \"Yes\"\uff08\u6216 \"Yes, failover finished successfully.\"\uff09 -> \u8ba9\u6211\u4eec\u4fdd\u6301\u7b80\u6d01\u3002\"Yes\"\u3002\n  q2: \"the on-call engineer\"\n  q3: \"the on-call engineer restarted the background workers\"\n\nunknowns: []\uff08\u56e0\u4e3a\u6211\u627e\u5230\u4e86\u6240\u6709\u95ee\u9898\u7684\u56de\u7b54\uff09\u3002\n\nevidence:\n  q1: [\"e2\"]\n  q2: [\"e3\"]\uff08\u4e5f\u8bb8\u8fd8\u6709 e4\uff1fe4 \u89e3\u91ca\u4e86\u7f3a\u5931\u7684\u540d\u5b57\uff0c\u4f46 e3 \u63d0\u4f9b\u4e86\u56de\u7b54\uff09\u3002\u8ba9\u6211\u4eec\u575a\u6301\u4f7f\u7528 e3\u3002\n  q3: [\"e2\", \"e3\"]\n\nviolations: []\uff08\u65f6\u95f4\u7ebf\u4e2d\u6ca1\u6709\u77db\u76fe\u6216\u8fdd\u89c4\uff09\u3002\n\n\u7b49\u7b49\uff0c\u8ba9\u6211\u91cd\u65b0\u8003\u8651 q2\u3002\u5982\u679c\u95ee\u9898\u95ee\u201c\u8c01\u201d\uff0c\u800c\u6587\u672c\u8bf4\u201c\u65e5\u5fd7\u6ca1\u6709\u6307\u660e\u5de5\u7a0b\u5e08\u7684\u540d\u5b57\u201d\uff0c\u4e5f\u8bb8\u9884\u671f\u7684\u56de\u7b54\u662f `null`\uff0c\u56e0\u4e3a\u5177\u4f53\u8eab\u4efd\u672a\u77e5\uff1f\n\u8ba9\u6211\u4eec\u6bd4\u8f83\u4e00\u4e0b\uff1a\n\u60c5\u51b5 A\uff1a\u56de\u7b54\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u3002\u7406\u7531\uff1a\u6587\u672c\u6807\u8bc6\u4e86\u884c\u52a8\u8005\u3002\n\u60c5\u51b5 B\uff1a\u56de\u7b54 `null`\u3002\u7406\u7531\uff1a\u6587\u672c\u660e\u786e\u6307\u51fa\u5177\u4f53\u540d\u5b57\u672a\u77e5\uff08[e4]\uff09\u3002\n\u901a\u5e38\uff0c\u5728\u4fe1\u606f\u63d0\u53d6\u4e2d\uff0c\u201c\u8c01\u201d= \u5b9e\u4f53\u3002\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u662f\u4e00\u4e2a\u5b9e\u4f53\u3002\u201cJohn\u201d\u662f\u4e00\u4e2a\u5b9e\u4f53\u3002\n\u5982\u679c\u95ee\u9898\u662f\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u7684\u540d\u5b57\u662f\u4ec0\u4e48\uff1f\u201d\uff0c\u90a3\u5c31\u662f null\u3002\n\u65e2\u7136\u95ee\u9898\u662f\u201c\u8c01\u91cd\u542f\u4e86\u2026\u2026\u201d\uff0c\u800c\u6587\u672c\u8bf4\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u91cd\u542f\u4e86\u2026\u2026\u201d\uff0c\u56de\u7b54\u5c31\u662f\u503c\u73ed\u5de5\u7a0b\u5e08\u3002\n\u6211\u5c06\u575a\u6301\u60c5\u51b5 A\u3002\n\n\u8ba9\u6211\u4eec\u5b8c\u5584 JSON \u7ed3\u6784\u3002\n{\n  \"answers\": {\n    \"q1\": \"Yes\",\n    \"q2\": \"the on-call engineer\",\n    \"q3\": \"the on-call engineer restarted the background workers\"\n  },\n  \"unknowns\": [],\n  \"evidence\": {\n    \"q1\": [\"e2\"],\n    \"q2\": [\"e3\"],\n    \"q3\": [\"e2\", \"e3\"]\n  },\n  \"violations\": []\n}\n\n\u7b49\u7b49\uff0c\u518d\u6b21\u68c0\u67e5 q3\u3002\u201c\u7d27\u63a5\u7740\u201d\u3002\n\u65f6\u95f4\u7ebf\uff1a\ne1: 09:00\ne2: 09:07\ne3: 09:08\ne4:\uff08\u65e0\u65f6\u95f4\u6233\uff0c\u5173\u4e8e e3 \u7684\u5143\u8bc4\u8bba\uff09\ne3 \u662f\u7d27\u63a5\u7740 e2 \u7684\u5417\uff1f\u662f\u7684\uff0c\u5b83\u662f\u4e0b\u4e00\u4e2a\u65f6\u95f4\u6233\u4e8b\u4ef6\u3002\n\u6240\u4ee5 q3 \u662f\u6b63\u786e\u7684\u3002\n\n\u518d\u6b21\u68c0\u67e5 q2\u3002\n[e4] \u662f\u5426\u8ba9 q2 \u53d8\u5f97\u672a\u77e5\uff1f\n\u201c\u65e5\u5fd7\u6ca1\u6709\u6307\u660e\u5de5\u7a0b\u5e08\u7684\u540d\u5b57\u3002\u201d\n\u8fd9\u6697\u793a\u6211\u4eec\u4e0d\u77e5\u9053\u662f*\u54ea\u4f4d*\u5de5\u7a0b\u5e08\u3002\n\u4f46\u201c\u8c01\u201d\u6307\u7684\u662f\u884c\u52a8\u8005\u3002\u884c\u52a8\u8005\u662f\u503c\u73ed\u5de5\u7a0b\u5e08\u3002\n\u5982\u679c\u63d0\u793a\u975e\u5e38\u4e25\u683c\uff0c\u8981\u6c42\u63d0\u4f9b\u540d\u5b57\u624d\u7b97\u201c\u8db3\u591f\u4fe1\u606f\u201d\uff0c\u90a3\u4e48 q2 \u5c31\u662f null\u3002\n\u7136\u800c\uff0c\u901a\u5e38\u201c\u8c01\u201d\u63a5\u53d7\u89d2\u8272\u3002\n\u8ba9\u6211\u4eec\u770b\u770b\u63d0\u793a\u201c\u6ca1\u6709\u8db3\u591f\u4fe1\u606f\u7684\u95ee\u9898\u5fc5\u987b\u8fd4\u56de null\u201d\u3002\n\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u7b97\u4f5c\u8db3\u591f\u7684\u4fe1\u606f\u5417\uff1f\u662f\u7684\uff0c\u5b83\u6807\u8bc6\u4e86\u884c\u52a8\u8005\u3002\n\u5982\u679c\u6211\u95ee\u201c\u8c01\u5403\u7684\u86cb\u7cd5\uff1f\u201d\uff0c\u56de\u7b54\u201c\u6211\u7684\u5144\u5f1f\u201d\u662f\u4e00\u4e2a\u6709\u6548\u7684\u56de\u7b54\uff0c\u5373\u4f7f\u6211\u4e0d\u77e5\u9053\u6211\u5144\u5f1f\u7684\u540d\u5b57\u3002\n\u6240\u4ee5\uff0cq2 \u662f\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u3002\n\n\u6700\u540e\u68c0\u67e5\u5b57\u6bb5\u3002\n- answers: \u5bf9\u8c61\u3002\n- unknowns: \u6570\u7ec4\u3002\n- evidence: \u5bf9\u8c61\uff08\u5c06 q \u6620\u5c04\u5230 e \u6807\u7b7e\u6570\u7ec4\uff09\u3002\n- violations: \u6570\u7ec4\u3002\n\n\u4e00\u4e2a\u7ec6\u8282\uff1aq1 \u95ee\u201c\u6545\u969c\u8f6c\u79fb\u662f\u5426\u6210\u529f\u5b8c\u6210\uff1f\u201d\u3002\n[e2] \u8bf4\u201c\u6545\u969c\u8f6c\u79fb\u6210\u529f\u5b8c\u6210\u201d\u3002\n\u56de\u7b54\uff1aYes\u3002\n\n\u4e00\u4e2a\u7ec6\u8282\uff1aq3 \u95ee\u201c\u6545\u969c\u8f6c\u79fb\u5b8c\u6210\u540e\u7d27\u63a5\u7740\u53d1\u751f\u4e86\u4ec0\u4e48\uff1f\u201d\u3002\n[e2] \u6545\u969c\u8f6c\u79fb\u5b8c\u6210\u3002\n[e3] \u5de5\u7a0b\u5e08\u91cd\u542f\u4e86\u5de5\u4f5c\u8fdb\u7a0b\u3002\n\u56de\u7b54\uff1a\u5de5\u7a0b\u5e08\u91cd\u542f\u4e86\u5de5\u4f5c\u8fdb\u7a0b\u3002\n\nJSON \u683c\u5f0f\uff1a\n{\n\"answers\": { ... },\n\"unknowns\": [],\n\"evidence\": { ... },\n\"violations\": []\n}\n\n\u7b49\u7b49\uff0c\u6211\u5e94\u8be5\u68c0\u67e5 `violations` \u662f\u5426\u6697\u793a\u68c0\u67e5\u65f6\u95f4\u7ebf\u4e2d\u7684\u903b\u8f91\u4e0d\u4e00\u81f4\u3002\ne1: 09:00 \u964d\u7ea7\u3002\ne2: 09:07 \u6545\u969c\u8f6c\u79fb\u6210\u529f\u3002\ne3: 09:08 \u91cd\u542f\u3002\ne4: \u5143\u6570\u636e\u3002\n\u6ca1\u6709\u8fdd\u89c4\u3002\n\n\u8ba9\u6211\u4eec\u518d\u6b21\u9a8c\u8bc1 q2\u3002\n\u5982\u679c\u7528\u6237\u8ba4\u4e3a\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u662f\u4e00\u4e2a\u63cf\u8ff0\uff0c\u800c\u4e0d\u662f\u540d\u5b57\uff0c\u5e76\u8ba4\u4e3a\u4fe1\u606f\u4e0d\u8db3\u2026\u2026\n\u4f46 [e3] \u660e\u786e\u6307\u51fa\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u91cd\u542f\u4e86\u2026\u2026\u201d\u3002\n\u8fd9\u662f\u5bf9\u201c\u8c01\u201d\u7684\u76f4\u63a5\u56de\u7b54\u3002\n\u6211\u5c06\u575a\u6301\u4f7f\u7528\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u3002\n\n\u8ba9\u6211\u4eec\u683c\u5f0f\u5316\u8f93\u51fa\u3002\n\u7528\u6237\u8bf4\uff1a\u201c\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\u3002\u201d\n\u6240\u4ee5\u6211\u5fc5\u987b\u8f93\u51fa\u539f\u59cb JSON \u5b57\u7b26\u4e32\u3002\n\n```json\n{\n  \"answers\": {\n    \"q1\": \"Yes\",\n    \"q2\": \"the on-call engineer\",\n    \"q3\": \"the on-call engineer restarted the background workers\"\n  },\n  \"unknowns\": [],\n  \"evidence\": {\n    \"q1\": [\"e2\"],\n    \"q2\": [\"e3\"],\n    \"q3\": [\"e2\", \"e3\"]\n  },\n  \"violations\": []\n}\n```\n\n\u7b49\u7b49\uff0c\u518d\u6b21\u770b q2\u3002\u201c\u8c01\u91cd\u542f\u4e86\u540e\u53f0\u5de5\u4f5c\u8fdb\u7a0b\uff1f\u201d\n[e4] \u8bf4\u201c\u65e5\u5fd7\u6ca1\u6709\u6307\u660e\u5de5\u7a0b\u5e08\u7684\u540d\u5b57\u201d\u3002\n\u8fd9\u53ef\u80fd\u662f\u63d0\u793a\u4e2d\u7684\u4e00\u79cd\u6a21\u5f0f\uff0c\u5176\u4e2d [e4] \u5145\u5f53\u201c\u672a\u77e5\u201d\u7684\u9650\u5b9a\u7b26\u3002\n\u5982\u679c\u6211\u8bf4\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\uff0c\u6211\u662f\u5728\u4f7f\u7528 [e3]\u3002\n\u5982\u679c\u6211\u8bf4 null\uff0c\u6211\u662f\u5728\u4f7f\u7528 [e4]\u3002\n\u54ea\u4e2a\u66f4\u5f3a\uff1f\n\u901a\u5e38\uff0c\u5982\u679c\u6587\u672c\u8bf4\u201c\u67d0\u4eba\u505a\u4e86 X\u3002\u6211\u4eec\u4e0d\u77e5\u9053\u67d0\u4eba\u662f\u8c01\u201d\uff0c\u90a3\u4e48\u201c\u8c01\u505a\u4e86 X\uff1f\u201d\u7684\u56de\u7b54\u662f\u201c\u672a\u77e5\u201d\u3002\n\u8fd9\u91cc\uff1a\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u505a\u4e86 X\u3002\u65e5\u5fd7\u6ca1\u6709\u6307\u660e\u5de5\u7a0b\u5e08\u7684\u540d\u5b57\u3002\u201d\n\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u662f\u4e00\u4e2a\u7279\u5b9a\u7684\u89d2\u8272\u3002\u5b83\u4e0d\u662f\u201c\u67d0\u4eba\u201d\u3002\n\u6240\u4ee5\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u662f\u4e00\u4e2a\u6709\u6548\u7684\u6807\u8bc6\u7b26\u3002\n\u7136\u800c\uff0c\u5982\u679c\u95ee\u9898\u6697\u793a\u5177\u4f53\u7684\u4eba\uff08\u59d3\u540d\uff09\uff0c\u90a3\u5c31\u662f null\u3002\n\u9274\u4e8e\u201c\u6ca1\u6709\u8db3\u591f\u4fe1\u606f\u7684\u95ee\u9898\u5fc5\u987b\u8fd4\u56de null\u201d\uff0c\u6211\u9700\u8981\u6743\u8861\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u662f\u5426\u7b97\u4f5c\u8db3\u591f\u7684\u4fe1\u606f\u3002\n\u5728\u8bb8\u591a\u6570\u636e\u96c6\uff08\u5982 bAbI \u6216\u7c7b\u4f3c\u6570\u636e\u96c6\uff09\u4e2d\uff0c\u201c\u8c01\u201d\u63a5\u53d7\u89d2\u8272\u3002\n\u6211\u5c06\u63d0\u4f9b\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u3002\n\n\u8ba9\u6211\u4eec\u518d\u6b21\u68c0\u67e5 q3\u3002\n\u201c\u6545\u969c\u8f6c\u79fb\u5b8c\u6210\u540e\u7d27\u63a5\u7740\u53d1\u751f\u4e86\u4ec0\u4e48\uff1f\u201d\n[e2] 09:07 \u6545\u969c\u8f6c\u79fb\u5b8c\u6210\u3002\n[e3] 09:08 \u91cd\u542f\u5de5\u4f5c\u8fdb\u7a0b\u3002\n[e3] \u662f\u7d27\u63a5\u7740\u53d1\u751f\u7684\u5417\uff1f\u662f\u7684\u3002\n\u8fd8\u6709\u5176\u4ed6\u4e8b\u4ef6\u5417\uff1f\u6ca1\u6709\u3002\n\u6240\u4ee5\u56de\u7b54\u662f\u6b63\u786e\u7684\u3002\n\n\u6700\u540e\u68c0\u67e5 JSON \u7ed3\u6784\u3002\n\u5b57\u6bb5\uff1aanswers, unknowns, evidence, violations\u3002\n\u7c7b\u578b\uff1a\nanswers: \u5b57\u7b26\u4e32\u6620\u5c04 | null\u3002\nunknowns: \u5b57\u7b26\u4e32\u6570\u7ec4\uff08\u95ee\u9898 ID\uff09\u3002\nevidence: \u5b57\u7b26\u4e32\u6570\u7ec4\u6620\u5c04\uff08\u8bc1\u636e ID\uff09\u3002\nviolations: \u5b57\u7b26\u4e32\u6570\u7ec4\u3002\n\n\u4e00\u4e2a\u8fb9\u7f18\u60c5\u51b5\uff1aq1\u3002\u201c\u6545\u969c\u8f6c\u79fb\u662f\u5426\u6210\u529f\u5b8c\u6210\uff1f\u201d\n[e2] \u8bf4\u201c\u6545\u969c\u8f6c\u79fb\u6210\u529f\u5b8c\u6210\u201d\u3002\n\u56de\u7b54\u201cYes\u201d\u662f\u6b63\u786e\u7684\u3002\n\n\u4e00\u4e2a\u8fb9\u7f18\u60c5\u51b5\uff1aq3\u3002\n\u201c\u7d27\u63a5\u7740\u201d\u3002\n09:07 \u5230 09:08\u30021 \u5206\u949f\u95f4\u9694\u3002\n\u5728\u65e5\u5fd7\u4e2d\uff0c\u8fd9\u901a\u5e38\u88ab\u8ba4\u4e3a\u662f\u7d27\u63a5\u7740\u7684\u3002\n\u56de\u7b54\u662f\u6709\u6548\u7684\u3002\n\n\u6700\u7ec8\u51b3\u5b9a q2\uff1a\n\u6211\u5c06\u8f93\u51fa\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u3002\u5982\u679c\u7cfb\u7edf\u671f\u671b null\uff0c\u90a3\u662f\u56e0\u4e3a\u5bf9\u201c\u8c01\u201d\u7684\u4e25\u683c\u89e3\u91ca\uff08\u8981\u6c42\u63d0\u4f9b\u540d\u5b57\uff09\u3002\u4f46\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u662f\u6587\u672c\u4e2d\u63d0\u4f9b\u7684\u660e\u786e\u56de\u7b54\u3002\u5982\u679c\u6587\u672c\u8bf4\u201c\u4e00\u4f4d\u5de5\u7a0b\u5e08\u91cd\u542f\u4e86\u2026\u2026\u201d\uff0c\u7136\u540e\u201c\u65e5\u5fd7\u6ca1\u6709\u6307\u660e\u540d\u5b57\u201d\uff0c\u90a3\u4e48\u201c\u8c01\u201d\u53ef\u80fd\u662f\u672a\u77e5\u7684\u3002\u4f46\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u662f\u4e00\u4e2a\u5177\u4f53\u7684\u5206\u914d\u3002\n\n\u7b49\u7b49\uff0c\u5982\u679c\u6211\u770b [e4]\uff1a\u201c\u65e5\u5fd7\u6ca1\u6709\u6307\u660e\u5de5\u7a0b\u5e08\u7684\u540d\u5b57\u3002\u201d\n\u8fd9\u6697\u793a\u201c\u5de5\u7a0b\u5e08\u201d\u6307\u7684\u662f [e3] \u4e2d\u7684\u5b9e\u4f53\u3002\n[e3] \u8bf4\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u3002\n\u6240\u4ee5 [e4] \u8bf4\u201c\u65e5\u5fd7\u6ca1\u6709\u6307\u660e\u503c\u73ed\u5de5\u7a0b\u5e08\u7684\u540d\u5b57\u201d\u3002\n\u8fd9\u8bc1\u5b9e\u4e86\u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u662f\u5df2\u77e5\u5b9e\u4f53\uff0c\u540d\u5b57\u672a\u77e5\u3002\n\u95ee\u9898\u201c\u8c01\u201d -> \u201c\u503c\u73ed\u5de5\u7a0b\u5e08\u201d\u3002\n\u8fd9\u770b\u8d77\u6765\u5f88\u7a33\u5065\u3002\n\n\u8f93\u51fa\u539f\u59cb JSON\u3002",
+        "reasoning_visible": true,
+        "usage": {
+          "input_tokens": 158,
+          "output_tokens": 2561,
+          "reasoning_tokens": 2454,
+          "total_tokens": 2719
+        }
+      },
+      "error": null,
+      "features": {
+        "answer.answered_count": 3,
+        "answer.evidence_field_count": 3,
+        "answer.unknown_count": 0,
+        "answer.violation_count": 0,
+        "reasoning.backtrack_markers": 0,
+        "reasoning.hedge_density": 0.0,
+        "reasoning.step_count": 201,
+        "reasoning.uses_numbered_outline": false,
+        "score.abstention_accuracy": 0.0,
+        "score.answer_accuracy": 0.0,
+        "score.evidence_alignment": 0.0,
+        "score.violation_free": true,
+        "surface.constraint_retention": false,
+        "surface.field_order_match": false,
+        "surface.had_markdown_fence": false,
+        "surface.has_extra_text": false,
+        "transport.finish_reason": "stop",
+        "transport.latency_bucket_ms": 62000,
+        "transport.reasoning_tokens": 2454,
+        "transport.reasoning_visible": true
+      },
+      "prompt_id": "p016",
+      "raw_output": "{\n  \"answers\": {\n    \"q1\": \"Yes\",\n    \"q2\": \"the on-call engineer\",\n    \"q3\": \"the on-call engineer restarted the background workers\"\n  },\n  \"unknowns\": [],\n  \"evidence\": {\n    \"q1\": [\n      \"e2\"\n    ],\n    \"q2\": [\n      \"e3\"\n    ],\n    \"q3\": [\n      \"e2\",\n      \"e3\"\n    ]\n  },\n  \"violations\": []\n}",
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 280,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\u3002\u6ca1\u6709\u8db3\u591f\u4fe1\u606f\u7684\u95ee\u9898\u5fc5\u987b\u8fd4\u56de null\uff0c\u5e76\u628a\u95ee\u9898\u7f16\u53f7\u5199\u5165 unknowns\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u53ea\u6839\u636e\u4e0b\u9762\u65f6\u95f4\u7ebf\u56de\u7b54 q1\u3001q2\u3001q3\u3002\n\n[e1] 09:00 the cache cluster entered degraded mode.\n[e2] 09:07 failover finished successfully.\n[e3] 09:08 the on-call engineer restarted the background workers.\n[e4] The log does not identify the engineer by name.\n\n\u95ee\u9898\uff1a\n- q1: Did failover finish successfully?\n- q2: Who restarted the background workers?\n- q3: What happened immediately after failover finished?\n\n\u8fd4\u56de JSON\uff0c\u5bf9\u8c61\u5b57\u6bb5\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b\uff1a\n- answers\n- unknowns\n- evidence\n- violations\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "completed",
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 2561,
+        "reasoning_tokens": 2454,
+        "total_tokens": 2719
+      }
+    },
+    {
+      "canonical_output": null,
+      "canonicalization_events": [],
+      "completion": null,
+      "error": {
+        "http_status": null,
+        "kind": "network",
+        "message": "[Errno 8] nodename nor servname provided, or not known",
+        "retryable": true
+      },
+      "features": {},
+      "prompt_id": "p017",
+      "raw_output": null,
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 300,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u9644\u52a0\u89e3\u91ca\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u6839\u636e\u4e0b\u9762\u4e8b\u4ef6\uff0c\u8ba1\u7b97 ticket_a \u548c ticket_b \u7684\u6700\u7ec8 status\u3001owner\u3001priority\u3002\n\n\u89c4\u5219\uff1a\n- \u9ed8\u8ba4 priority \u662f p2\n- \u663e\u5f0f priority \u66f4\u65b0\u8986\u76d6\u9ed8\u8ba4\u503c\n- close \u4e8b\u4ef6\u4f1a\u4fdd\u7559\u6700\u540e\u4e00\u4e2a owner\n\n\u4e8b\u4ef6\uff1a\n- [r1] create ticket_a owner=ops\n- [r2] create ticket_b owner=db\n- [r3] update ticket_a priority=p1\n- [r4] close ticket_a\n- [r5] reopen ticket_b\n\n\u8fd4\u56de JSON\uff0c\u5bf9\u8c61\u5b57\u6bb5\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b\uff1a\n- task_result\n- derivation_codes\n- defaults_used\n- violations\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "transport_error",
+      "usage": null
+    },
+    {
+      "canonical_output": null,
+      "canonicalization_events": [],
+      "completion": null,
+      "error": {
+        "http_status": null,
+        "kind": "network",
+        "message": "[Errno 8] nodename nor servname provided, or not known",
+        "retryable": true
+      },
+      "features": {},
+      "prompt_id": "p018",
+      "raw_output": null,
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 300,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u9644\u52a0\u89e3\u91ca\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u6839\u636e\u4e0b\u9762\u4e8b\u4ef6\uff0c\u8ba1\u7b97 worker_x \u548c worker_y \u7684\u6700\u7ec8 status\u3001owner\u3001priority\u3002\n\n\u89c4\u5219\uff1a\n- \u9ed8\u8ba4 priority \u662f p3\n- suspend \u4f1a\u628a status \u8bbe\u4e3a suspended\n- assign \u4f1a\u66f4\u65b0 owner \u4f46\u4e0d\u4f1a\u6539\u53d8 priority\n\n\u4e8b\u4ef6\uff1a\n- [r1] create worker_x owner=ml\n- [r2] create worker_y owner=etl\n- [r3] assign worker_y owner=ops\n- [r4] suspend worker_x\n- [r5] update worker_y priority=p1\n\n\u8fd4\u56de JSON\uff0c\u5bf9\u8c61\u5b57\u6bb5\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b\uff1a\n- task_result\n- derivation_codes\n- defaults_used\n- violations\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "transport_error",
+      "usage": null
+    },
+    {
+      "canonical_output": null,
+      "canonicalization_events": [],
+      "completion": null,
+      "error": {
+        "http_status": null,
+        "kind": "network",
+        "message": "[Errno 8] nodename nor servname provided, or not known",
+        "retryable": true
+      },
+      "features": {},
+      "prompt_id": "p019",
+      "raw_output": null,
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 260,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u9644\u52a0\u89e3\u91ca\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u6839\u636e\u4e0b\u9762\u8bf4\u660e\u505a\u5b9e\u4f53\u5f52\u4e00\u3002\u80fd\u786e\u5b9a\u6620\u5c04\u7684\u522b\u540d\u5199\u5165 alias_map\uff0c\u65e0\u6cd5\u552f\u4e00\u786e\u5b9a\u7684\u7f29\u5199\u5199\u5165 ambiguous_mentions\u3002\n\n- Alice W. \u548c Alice Wong \u6307\u5411\u540c\u4e00\u4e2a\u4eba alice_wong\n- DB-east \u548c \u534e\u4e1c\u6570\u636e\u5e93\u96c6\u7fa4 \u6307\u5411\u540c\u4e00\u4e2a\u8d44\u6e90 db_cluster_east\n- OW \u53ef\u80fd\u8868\u793a OpenWhale\uff0c\u4e5f\u53ef\u80fd\u8868\u793a Ops Watch\uff0c\u4e0d\u80fd\u5f3a\u884c\u5f52\u4e00\n\n\u8fd4\u56de JSON\uff0c\u5bf9\u8c61\u5b57\u6bb5\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b\uff1a\n- canonical_entities\n- alias_map\n- ambiguous_mentions\n- violations\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "transport_error",
+      "usage": null
+    },
+    {
+      "canonical_output": null,
+      "canonicalization_events": [],
+      "completion": null,
+      "error": {
+        "http_status": null,
+        "kind": "network",
+        "message": "[Errno 8] nodename nor servname provided, or not known",
+        "retryable": true
+      },
+      "features": {},
+      "prompt_id": "p020",
+      "raw_output": null,
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 260,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u9644\u52a0\u89e3\u91ca\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u6839\u636e\u4e0b\u9762\u8bf4\u660e\u505a\u5b9e\u4f53\u5f52\u4e00\u3002\u80fd\u786e\u5b9a\u6620\u5c04\u7684\u522b\u540d\u5199\u5165 alias_map\uff0c\u65e0\u6cd5\u552f\u4e00\u786e\u5b9a\u7684\u7f29\u5199\u5199\u5165 ambiguous_mentions\u3002\n\n- Project Zephyr \u548c zephyr-core \u6307\u5411 zephyr_core\n- Orion Service \u548c orion-svc \u6307\u5411 orion_service\n- AC \u53ef\u80fd\u8868\u793a Access Control\uff0c\u4e5f\u53ef\u80fd\u8868\u793a Audit Collector\uff0c\u4e0d\u80fd\u5f3a\u884c\u5f52\u4e00\n\n\u8fd4\u56de JSON\uff0c\u5bf9\u8c61\u5b57\u6bb5\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b\uff1a\n- canonical_entities\n- alias_map\n- ambiguous_mentions\n- violations\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "transport_error",
+      "usage": null
+    }
+  ],
+  "protocol_compatibility": {
+    "issues": [
+      "[Errno 8] nodename nor servname provided, or not known",
+      "[Errno 8] nodename nor servname provided, or not known",
+      "[Errno 8] nodename nor servname provided, or not known",
+      "[Errno 8] nodename nor servname provided, or not known"
+    ],
+    "required_capabilities": [
+      "chat_completions"
+    ],
+    "satisfied": true
+  },
+  "reasoning_coverage_ratio": 0.6,
+  "run_id": "siliconflow-zai-probe.fingerprint-suite-v2",
+  "suite_id": "fingerprint-suite-v2",
+  "target_label": "siliconflow-zai-probe",
+  "trace_dir": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-09/siliconflow-zai-probe.fingerprint-suite-v2"
+}

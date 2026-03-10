@@ -17,9 +17,9 @@ messages:
       - Legacy row: temp-note is not an entity and must be rejected
 
       返回 JSON，对象字段必须且只能包含：
-      - task_result
-      - evidence
-      - unknowns
+      - task_result: {canonical_entities, alias_map, ambiguous_mentions, rejected_items}
+      - evidence: {}
+      - unknowns: {mention: reason_code}
       - violations
 generation:
   temperature: 0.0

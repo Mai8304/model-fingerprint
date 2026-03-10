@@ -22,6 +22,74 @@
       "title": "BooleanFeatureSummary",
       "type": "object"
     },
+    "CapabilityProfileSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "capabilities": {
+          "additionalProperties": {
+            "$ref": "#/$defs/CapabilityStateDistribution"
+          },
+          "minProperties": 1,
+          "propertyNames": {
+            "enum": [
+              "thinking",
+              "tools",
+              "streaming",
+              "image"
+            ]
+          },
+          "title": "Capabilities",
+          "type": "object"
+        },
+        "coverage_ratio": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Coverage Ratio"
+        }
+      },
+      "required": [
+        "capabilities"
+      ],
+      "title": "CapabilityProfileSummary",
+      "type": "object"
+    },
+    "CapabilityStateDistribution": {
+      "additionalProperties": false,
+      "properties": {
+        "distribution": {
+          "additionalProperties": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "type": "number"
+          },
+          "minProperties": 1,
+          "propertyNames": {
+            "enum": [
+              "supported",
+              "accepted_but_ignored",
+              "unsupported",
+              "insufficient_evidence"
+            ]
+          },
+          "title": "Distribution",
+          "type": "object"
+        }
+      },
+      "required": [
+        "distribution"
+      ],
+      "title": "CapabilityStateDistribution",
+      "type": "object"
+    },
     "EnumFeatureSummary": {
       "additionalProperties": false,
       "properties": {
@@ -181,6 +249,17 @@
       ],
       "default": null,
       "title": "Answer Coverage Ratio"
+    },
+    "capability_profile": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CapabilityProfileSummary"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "model_id": {
       "minLength": 1,

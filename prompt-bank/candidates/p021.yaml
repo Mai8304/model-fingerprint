@@ -19,8 +19,8 @@ messages:
 
       返回 JSON，对象字段必须且只能包含：
       - task_result: {owner, role, region, change_window}
-      - evidence
-      - unknowns
+      - evidence: {owner, role, region, change_window}
+      - unknowns: {field_name: reason_code}
       - violations
 generation:
   temperature: 0.0

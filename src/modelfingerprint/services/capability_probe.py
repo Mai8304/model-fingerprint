@@ -7,6 +7,8 @@ import urllib.request
 from dataclasses import asdict, dataclass, field
 from typing import Literal, cast
 
+from modelfingerprint.http_defaults import DEFAULT_BROWSER_USER_AGENT
+
 ProbeStatus = Literal[
     "supported",
     "accepted_but_ignored",
@@ -376,6 +378,7 @@ def _default_headers(
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
         "Accept": accept,
+        "User-Agent": DEFAULT_BROWSER_USER_AGENT,
     }
     if "openrouter.ai" in base_url:
         headers["HTTP-Referer"] = "https://codex.local"

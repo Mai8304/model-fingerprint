@@ -1,0 +1,690 @@
+{
+  "answer_coverage_ratio": 1.0,
+  "capability_profile": {
+    "capabilities": {
+      "image": {
+        "distribution": {
+          "insufficient_evidence": 1.0
+        }
+      },
+      "streaming": {
+        "distribution": {
+          "supported": 1.0
+        }
+      },
+      "thinking": {
+        "distribution": {
+          "supported": 1.0
+        }
+      },
+      "tools": {
+        "distribution": {
+          "supported": 1.0
+        }
+      }
+    },
+    "coverage_ratio": 0.75
+  },
+  "model_id": "glm-5",
+  "prompts": [
+    {
+      "answer_coverage_ratio": 1.0,
+      "expected_reasoning_visible": 1.0,
+      "features": {
+        "answer.evidence_field_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 3.0
+        },
+        "answer.filled_field_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 3.0
+        },
+        "answer.unknown_field_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "answer.violation_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "reasoning.backtrack_markers": {
+          "kind": "numeric",
+          "mad": 0.5,
+          "median": 0.5
+        },
+        "reasoning.hedge_density": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "reasoning.step_count": {
+          "kind": "numeric",
+          "mad": 21.5,
+          "median": 111.5
+        },
+        "reasoning.uses_numbered_outline": {
+          "kind": "boolean",
+          "p_true": 0.5
+        },
+        "score.abstention_compliance": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "score.evidence_alignment": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "score.value_accuracy": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "score.violation_free": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "surface.constraint_retention": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "surface.field_order_match": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "surface.had_markdown_fence": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_prefix_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_suffix_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.key_alias_normalized": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.parse_repaired": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.repair_event_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "transport.finish_reason": {
+          "distribution": {
+            "stop": 1.0
+          },
+          "kind": "enum"
+        },
+        "transport.latency_bucket_ms": {
+          "kind": "numeric",
+          "mad": 9000.0,
+          "median": 46000.0
+        },
+        "transport.reasoning_tokens": {
+          "kind": "numeric",
+          "mad": 167.5,
+          "median": 1728.5
+        },
+        "transport.reasoning_visible": {
+          "kind": "boolean",
+          "p_true": 1.0
+        }
+      },
+      "prompt_id": "p021",
+      "reasoning_coverage_ratio": 1.0,
+      "weight": 0.97
+    },
+    {
+      "answer_coverage_ratio": 1.0,
+      "expected_reasoning_visible": 1.0,
+      "features": {
+        "answer.confusion_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "answer.excluded_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 5.0
+        },
+        "answer.found_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 4.0
+        },
+        "answer.paragraph_annotation_rate": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "reasoning.backtrack_markers": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "reasoning.hedge_density": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "reasoning.step_count": {
+          "kind": "numeric",
+          "mad": 29.5,
+          "median": 111.5
+        },
+        "reasoning.uses_numbered_outline": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "score.confusion_free": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "score.entity_precision": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "score.entity_recall": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "score.exclusion_accuracy": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "score.order_accuracy": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "score.paragraph_accuracy": {
+          "kind": "numeric",
+          "mad": 0.5,
+          "median": 0.5
+        },
+        "surface.constraint_retention": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "surface.field_order_match": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "surface.had_markdown_fence": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_prefix_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_suffix_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.key_alias_normalized": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.parse_repaired": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.repair_event_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "transport.finish_reason": {
+          "distribution": {
+            "stop": 1.0
+          },
+          "kind": "enum"
+        },
+        "transport.latency_bucket_ms": {
+          "kind": "numeric",
+          "mad": 6000.0,
+          "median": 42000.0
+        },
+        "transport.reasoning_tokens": {
+          "kind": "numeric",
+          "mad": 371.5,
+          "median": 1802.5
+        },
+        "transport.reasoning_visible": {
+          "kind": "boolean",
+          "p_true": 1.0
+        }
+      },
+      "prompt_id": "p022",
+      "reasoning_coverage_ratio": 1.0,
+      "weight": 0.95
+    },
+    {
+      "answer_coverage_ratio": 1.0,
+      "expected_reasoning_visible": 1.0,
+      "features": {
+        "answer.answered_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 2.0
+        },
+        "answer.conflict_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "answer.evidence_field_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 4.0
+        },
+        "answer.unknown_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "answer.violation_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "reasoning.backtrack_markers": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "reasoning.hedge_density": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "reasoning.step_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 156.0
+        },
+        "reasoning.uses_numbered_outline": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "score.answer_accuracy": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "score.conflict_accuracy": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "score.evidence_alignment": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "score.unknown_accuracy": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "score.violation_free": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.constraint_retention": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "surface.field_order_match": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "surface.had_markdown_fence": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_prefix_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_suffix_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.key_alias_normalized": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.parse_repaired": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.repair_event_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "transport.finish_reason": {
+          "distribution": {
+            "stop": 1.0
+          },
+          "kind": "enum"
+        },
+        "transport.latency_bucket_ms": {
+          "kind": "numeric",
+          "mad": 2000.0,
+          "median": 46000.0
+        },
+        "transport.reasoning_tokens": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1794.0
+        },
+        "transport.reasoning_visible": {
+          "kind": "boolean",
+          "p_true": 1.0
+        }
+      },
+      "prompt_id": "p023",
+      "reasoning_coverage_ratio": 1.0,
+      "weight": 0.97
+    },
+    {
+      "answer_coverage_ratio": 1.0,
+      "expected_reasoning_visible": 1.0,
+      "features": {
+        "answer.default_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 3.0
+        },
+        "answer.derivation_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "answer.resolved_object_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 3.0
+        },
+        "answer.violation_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "reasoning.backtrack_markers": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "reasoning.hedge_density": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "reasoning.step_count": {
+          "kind": "numeric",
+          "mad": 4.5,
+          "median": 190.5
+        },
+        "reasoning.uses_numbered_outline": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "score.default_usage_accuracy": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "score.derivation_accuracy": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "score.snapshot_accuracy": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "score.violation_free": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "surface.constraint_retention": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "surface.field_order_match": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "surface.had_markdown_fence": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_prefix_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_suffix_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.key_alias_normalized": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.parse_repaired": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.repair_event_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "transport.finish_reason": {
+          "distribution": {
+            "stop": 1.0
+          },
+          "kind": "enum"
+        },
+        "transport.latency_bucket_ms": {
+          "kind": "numeric",
+          "mad": 4000.0,
+          "median": 71000.0
+        },
+        "transport.reasoning_tokens": {
+          "kind": "numeric",
+          "mad": 42.0,
+          "median": 2655.0
+        },
+        "transport.reasoning_visible": {
+          "kind": "boolean",
+          "p_true": 1.0
+        }
+      },
+      "prompt_id": "p024",
+      "reasoning_coverage_ratio": 1.0,
+      "weight": 0.99
+    },
+    {
+      "answer_coverage_ratio": 1.0,
+      "expected_reasoning_visible": 1.0,
+      "features": {
+        "answer.alias_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 3.0
+        },
+        "answer.ambiguous_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "answer.canonical_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 3.0
+        },
+        "answer.rejected_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "answer.violation_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "reasoning.backtrack_markers": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "reasoning.hedge_density": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "reasoning.step_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 96.0
+        },
+        "reasoning.uses_numbered_outline": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "score.alias_accuracy": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "score.ambiguity_preservation": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "score.canonical_accuracy": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "score.rejection_accuracy": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "score.violation_free": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "surface.constraint_retention": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "surface.field_order_match": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "surface.had_markdown_fence": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_prefix_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_suffix_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.key_alias_normalized": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.parse_repaired": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.repair_event_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "transport.finish_reason": {
+          "distribution": {
+            "stop": 1.0
+          },
+          "kind": "enum"
+        },
+        "transport.latency_bucket_ms": {
+          "kind": "numeric",
+          "mad": 500.0,
+          "median": 33500.0
+        },
+        "transport.reasoning_tokens": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1222.0
+        },
+        "transport.reasoning_visible": {
+          "kind": "boolean",
+          "p_true": 1.0
+        }
+      },
+      "prompt_id": "p025",
+      "reasoning_coverage_ratio": 1.0,
+      "weight": 0.96
+    }
+  ],
+  "protocol_expectations": {
+    "issues": [],
+    "required_capabilities": [
+      "chat_completions"
+    ],
+    "satisfied": true
+  },
+  "reasoning_coverage_ratio": 1.0,
+  "sample_count": 2,
+  "suite_id": "fingerprint-suite-v3"
+}

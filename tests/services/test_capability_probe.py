@@ -5,6 +5,7 @@ from typing import Any
 from modelfingerprint.services.capability_probe import (
     CapabilityProbeOutcome,
     HttpProbeResponse,
+    _default_headers,
     _failure_outcome,
     classify_image_outcome,
     classify_streaming_outcome,
@@ -136,6 +137,7 @@ def test_probe_thinking_sends_only_minimal_baseline_body(monkeypatch) -> None:
         "messages": [{"role": "user", "content": "只返回 ok"}],
         "max_tokens": 32,
     }
+    assert "User-Agent" in captured["headers"]
 
 
 def test_probe_tools_adds_only_tools_delta(monkeypatch) -> None:
@@ -311,3 +313,9 @@ def test_probe_capabilities_returns_probe_metadata_and_coverage(monkeypatch) -> 
     assert payload["probe_mode"] == "minimal"
     assert payload["probe_version"] == "v1"
     assert payload["coverage_ratio"] == 0.75
+
+
+def test_default_headers_include_browser_user_agent() -> None:
+    headers = _default_headers("https://api.example.com/v1", "secret")
+
+    assert headers["User-Agent"].startswith("Mozilla/5.0")

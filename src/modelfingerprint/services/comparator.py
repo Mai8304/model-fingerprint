@@ -35,19 +35,7 @@ class ComparisonResult:
 
 
 def compare_run(run: RunArtifact, profiles: list[ProfileArtifact]) -> ComparisonResult:
-    scored_profiles: list[ProfileMatchScore] = []
-
-    for profile in profiles:
-        scored_profiles.append(score_run_against_profile(run, profile))
-
-    ranked = sorted(
-        scored_profiles,
-        key=lambda item: (
-            -item.overall_similarity,
-            _protocol_rank(item.protocol_status),
-            item.model_id,
-        ),
-    )
+    ranked = rank_run_against_profiles(run, profiles)
     top1 = ranked[0]
     top2 = ranked[1] if len(ranked) > 1 else ranked[0]
     claimed_similarity = next(
@@ -80,6 +68,23 @@ def compare_run(run: RunArtifact, profiles: list[ProfileArtifact]) -> Comparison
         protocol_status=top1.protocol_status,
         protocol_issues=top1.protocol_issues,
         hard_mismatches=top1.hard_mismatches,
+    )
+
+
+def rank_run_against_profiles(
+    run: RunArtifact,
+    profiles: list[ProfileArtifact],
+) -> list[ProfileMatchScore]:
+    scored_profiles: list[ProfileMatchScore] = []
+    for profile in profiles:
+        scored_profiles.append(score_run_against_profile(run, profile))
+    return sorted(
+        scored_profiles,
+        key=lambda item: (
+            -item.overall_similarity,
+            _protocol_rank(item.protocol_status),
+            item.model_id,
+        ),
     )
 
 

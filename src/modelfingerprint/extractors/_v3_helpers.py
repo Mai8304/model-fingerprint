@@ -23,4 +23,9 @@ def shared_unknowns(payload: Mapping[str, object]) -> dict[str, object]:
 
 
 def shared_violations(payload: Mapping[str, object]) -> list[str]:
-    return string_list(payload.get("violations", []), field_name="violations")
+    value = payload.get("violations", [])
+    if isinstance(value, Mapping):
+        if len(value) == 0:
+            return []
+        raise TypeError("violations must be a list of strings")
+    return string_list(value, field_name="violations")

@@ -1,0 +1,601 @@
+{
+  "answer_coverage_ratio": 1.0,
+  "capability_probe": {
+    "capabilities": {
+      "image": {
+        "detail": "",
+        "evidence": {
+          "http_status": 404
+        },
+        "http_status": 404,
+        "latency_ms": 79,
+        "status": "unsupported"
+      },
+      "streaming": {
+        "detail": "response used SSE event chunks",
+        "evidence": {
+          "content_type": "",
+          "http_status": 200
+        },
+        "http_status": 200,
+        "latency_ms": 899,
+        "status": "supported"
+      },
+      "thinking": {
+        "detail": "request succeeded but no visible reasoning signal was returned",
+        "evidence": {
+          "http_status": 200
+        },
+        "http_status": 200,
+        "latency_ms": 968,
+        "status": "accepted_but_ignored"
+      },
+      "tools": {
+        "detail": "response contains tool_calls",
+        "evidence": {
+          "finish_reason": "tool_calls",
+          "http_status": 200,
+          "tool_call_count": 1
+        },
+        "http_status": 200,
+        "latency_ms": 1592,
+        "status": "supported"
+      }
+    },
+    "coverage_ratio": 1.0,
+    "probe_mode": "minimal",
+    "probe_version": "v1"
+  },
+  "claimed_model": "deepseek-chat",
+  "endpoint_profile_id": "deepseek-openai-chat",
+  "prompt_count_completed": 5,
+  "prompt_count_scoreable": 5,
+  "prompt_count_total": 5,
+  "prompts": [
+    {
+      "canonical_output": {
+        "format_id": "tolerant_json_v3",
+        "payload": {
+          "evidence": {
+            "change_window": "e5",
+            "owner": "e2, e3",
+            "region": null,
+            "role": "e2"
+          },
+          "task_result": {
+            "change_window": "2026-03-21 02:00 UTC",
+            "owner": "Alice Wong",
+            "region": null,
+            "role": "Primary DBA"
+          },
+          "unknowns": {
+            "region": "insufficient_evidence"
+          },
+          "violations": []
+        }
+      },
+      "canonicalization_events": [
+        {
+          "code": "removed_fence",
+          "message": "removed markdown fence"
+        }
+      ],
+      "completion": {
+        "answer_text": "```json\n{\n    \"task_result\": {\n        \"owner\": \"Alice Wong\",\n        \"role\": \"Primary DBA\",\n        \"region\": null,\n        \"change_window\": \"2026-03-21 02:00 UTC\"\n    },\n    \"evidence\": {\n        \"owner\": \"e2, e3\",\n        \"role\": \"e2\",\n        \"region\": null,\n        \"change_window\": \"e5\"\n    },\n    \"unknowns\": {\n        \"region\": \"insufficient_evidence\"\n    },\n    \"violations\": []\n}\n```",
+        "finish_reason": "stop",
+        "latency_ms": 5803,
+        "raw_response_path": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-10/deepseek-chat-v3-probe-r3.fingerprint-suite-v3/p021.response.json",
+        "reasoning_text": null,
+        "reasoning_visible": false,
+        "usage": {
+          "input_tokens": 195,
+          "output_tokens": 120,
+          "reasoning_tokens": 0,
+          "total_tokens": 315
+        }
+      },
+      "error": null,
+      "features": {
+        "answer.evidence_field_count": 3,
+        "answer.filled_field_count": 3,
+        "answer.unknown_field_count": 1,
+        "answer.violation_count": 0,
+        "score.abstention_compliance": 1.0,
+        "score.evidence_alignment": 1.0,
+        "score.value_accuracy": 1.0,
+        "score.violation_free": true,
+        "surface.constraint_retention": false,
+        "surface.field_order_match": true,
+        "surface.had_markdown_fence": true,
+        "surface.has_extra_prefix_text": false,
+        "surface.has_extra_suffix_text": false,
+        "surface.has_extra_text": false,
+        "surface.key_alias_normalized": false,
+        "surface.parse_repaired": true,
+        "surface.repair_event_count": 1,
+        "transport.finish_reason": "stop",
+        "transport.latency_bucket_ms": 5000,
+        "transport.reasoning_tokens": 0,
+        "transport.reasoning_visible": false
+      },
+      "prompt_id": "p021",
+      "raw_output": "```json\n{\n    \"task_result\": {\n        \"owner\": \"Alice Wong\",\n        \"role\": \"Primary DBA\",\n        \"region\": null,\n        \"change_window\": \"2026-03-21 02:00 UTC\"\n    },\n    \"evidence\": {\n        \"owner\": \"e2, e3\",\n        \"role\": \"e2\",\n        \"region\": null,\n        \"change_window\": \"e5\"\n    },\n    \"unknowns\": {\n        \"region\": \"insufficient_evidence\"\n    },\n    \"violations\": []\n}\n```",
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 320,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u9644\u52a0\u89e3\u91ca\u3002\u672a\u77e5\u5b57\u6bb5\u4e0d\u8981\u731c\uff0c\u653e\u8fdb unknowns\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u53ea\u6839\u636e\u4e0b\u5217\u8bc1\u636e\u5224\u65ad\u5f53\u524d owner\u3001role\u3001region\u3001change_window\u3002\n\n[e1] Draft sheet from February listed Kevin Lin as owner and a provisional Sunday window.\n[e2] Alice Wong is the current Primary DBA for the payments platform.\n[e3] Priya confirmed that Alice Wong owns the approved rollout.\n[e4] Alice covered the APAC rotation last month, but this does not define her home region.\n[e5] The approved change window is 2026-03-21 02:00 UTC.\n[e6] Alice joined the payments platform in 2023.\n\n\u8fd4\u56de JSON\uff0c\u5bf9\u8c61\u5b57\u6bb5\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b\uff1a\n- task_result: {owner, role, region, change_window}\n- evidence: {owner, role, region, change_window}\n- unknowns: {field_name: reason_code}\n- violations\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "completed",
+      "usage": {
+        "input_tokens": 195,
+        "output_tokens": 120,
+        "reasoning_tokens": 0,
+        "total_tokens": 315
+      }
+    },
+    {
+      "canonical_output": {
+        "format_id": "tolerant_json_v3",
+        "payload": {
+          "evidence": {
+            "paragraph_map": {
+              "alpha": [
+                "p1",
+                "p4"
+              ],
+              "beta": [
+                "p2"
+              ],
+              "gamma": [
+                "p2"
+              ],
+              "zephyr": [
+                "p3"
+              ]
+            }
+          },
+          "task_result": {
+            "excluded_entities": [
+              "alpha-2",
+              "zephyr-old",
+              "gamma-9",
+              "delta",
+              "beta-legacy"
+            ],
+            "found_entities": [
+              "alpha",
+              "beta",
+              "gamma",
+              "zephyr"
+            ]
+          },
+          "unknowns": {},
+          "violations": []
+        }
+      },
+      "canonicalization_events": [],
+      "completion": {
+        "answer_text": "{\n  \"task_result\": {\n    \"found_entities\": [\"alpha\", \"beta\", \"gamma\", \"zephyr\"],\n    \"excluded_entities\": [\"alpha-2\", \"zephyr-old\", \"gamma-9\", \"delta\", \"beta-legacy\"]\n  },\n  \"evidence\": {\n    \"paragraph_map\": {\n      \"alpha\": [\"p1\", \"p4\"],\n      \"beta\": [\"p2\"],\n      \"gamma\": [\"p2\"],\n      \"zephyr\": [\"p3\"]\n    }\n  },\n  \"unknowns\": {},\n  \"violations\": []\n}",
+        "finish_reason": "stop",
+        "latency_ms": 5663,
+        "raw_response_path": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-10/deepseek-chat-v3-probe-r3.fingerprint-suite-v3/p022.response.json",
+        "reasoning_text": null,
+        "reasoning_visible": false,
+        "usage": {
+          "input_tokens": 193,
+          "output_tokens": 126,
+          "reasoning_tokens": 0,
+          "total_tokens": 319
+        }
+      },
+      "error": null,
+      "features": {
+        "answer.confusion_count": 0,
+        "answer.excluded_count": 5,
+        "answer.found_count": 4,
+        "answer.paragraph_annotation_rate": 1.0,
+        "score.confusion_free": true,
+        "score.entity_precision": 1.0,
+        "score.entity_recall": 1.0,
+        "score.exclusion_accuracy": 1.0,
+        "score.order_accuracy": true,
+        "score.paragraph_accuracy": 0.0,
+        "surface.constraint_retention": true,
+        "surface.field_order_match": true,
+        "surface.had_markdown_fence": false,
+        "surface.has_extra_prefix_text": false,
+        "surface.has_extra_suffix_text": false,
+        "surface.has_extra_text": false,
+        "surface.key_alias_normalized": false,
+        "surface.parse_repaired": false,
+        "surface.repair_event_count": 0,
+        "transport.finish_reason": "stop",
+        "transport.latency_bucket_ms": 5000,
+        "transport.reasoning_tokens": 0,
+        "transport.reasoning_visible": false
+      },
+      "prompt_id": "p022",
+      "raw_output": "{\n  \"task_result\": {\n    \"found_entities\": [\"alpha\", \"beta\", \"gamma\", \"zephyr\"],\n    \"excluded_entities\": [\"alpha-2\", \"zephyr-old\", \"gamma-9\", \"delta\", \"beta-legacy\"]\n  },\n  \"evidence\": {\n    \"paragraph_map\": {\n      \"alpha\": [\"p1\", \"p4\"],\n      \"beta\": [\"p2\"],\n      \"gamma\": [\"p2\"],\n      \"zephyr\": [\"p3\"]\n    }\n  },\n  \"unknowns\": {},\n  \"violations\": []\n}",
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 340,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u9644\u52a0\u89e3\u91ca\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u9605\u8bfb\u4e0b\u9762\u56db\u6bb5\u6587\u672c\uff0c\u627e\u51fa\u5f53\u524d\u6709\u6548\u7684 alpha\u3001beta\u3001gamma\u3001zephyr\uff0c\u5e76\u6309\u9996\u6b21\u51fa\u73b0\u987a\u5e8f\u8fd4\u56de\u3002\u88ab\u64a4\u9500\u3001\u4ec5\u5386\u53f2\u51fa\u73b0\u3001\u88ab\u5426\u5b9a\u6216\u53ea\u662f\u5e72\u6270\u9879\u7684\u540d\u5b57\u4e0d\u80fd\u653e\u8fdb found_entities\u3002\n\n[p1] alpha-2 was only a draft alias. alpha became active after the final review. zephyr-old remained archived.\n[p2] beta stayed active through the freeze. gamma appeared in a rejected proposal, but gamma itself was later approved.\n[p3] delta was cancelled. zephyr is active in the current registry. gamma-9 is a distractor only.\n[p4] beta-legacy was retired last quarter. alpha remains active.\n\n\u8fd4\u56de JSON\uff0c\u5bf9\u8c61\u5b57\u6bb5\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b\uff1a\n- task_result: {found_entities, excluded_entities}\n- evidence: {paragraph_map}\n- unknowns: {}\n- violations\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "completed",
+      "usage": {
+        "input_tokens": 193,
+        "output_tokens": 126,
+        "reasoning_tokens": 0,
+        "total_tokens": 319
+      }
+    },
+    {
+      "canonical_output": {
+        "format_id": "tolerant_json_v3",
+        "payload": {
+          "evidence": {
+            "q1": "e1",
+            "q2": "e5",
+            "q3": "e1",
+            "q4": "e3, e4"
+          },
+          "task_result": {
+            "q1": {
+              "status": "answer",
+              "value": "yes"
+            },
+            "q2": {
+              "status": "unknown",
+              "value": null
+            },
+            "q3": {
+              "status": "answer",
+              "value": "retry failed background jobs"
+            },
+            "q4": {
+              "status": "conflict_unresolved",
+              "value": null
+            }
+          },
+          "unknowns": {
+            "q2": "information_not_provided"
+          },
+          "violations": []
+        }
+      },
+      "canonicalization_events": [
+        {
+          "code": "removed_fence",
+          "message": "removed markdown fence"
+        }
+      ],
+      "completion": {
+        "answer_text": "```json\n{\n    \"task_result\": {\n        \"q1\": {\n            \"status\": \"answer\",\n            \"value\": \"yes\"\n        },\n        \"q2\": {\n            \"status\": \"unknown\",\n            \"value\": null\n        },\n        \"q3\": {\n            \"status\": \"answer\",\n            \"value\": \"retry failed background jobs\"\n        },\n        \"q4\": {\n            \"status\": \"conflict_unresolved\",\n            \"value\": null\n        }\n    },\n    \"evidence\": {\n        \"q1\": \"e1\",\n        \"q2\": \"e5\",\n        \"q3\": \"e1\",\n        \"q4\": \"e3, e4\"\n    },\n    \"unknowns\": {\n        \"q2\": \"information_not_provided\"\n    },\n    \"violations\": []\n}\n```",
+        "finish_reason": "stop",
+        "latency_ms": 7948,
+        "raw_response_path": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-10/deepseek-chat-v3-probe-r3.fingerprint-suite-v3/p023.response.json",
+        "reasoning_text": null,
+        "reasoning_visible": false,
+        "usage": {
+          "input_tokens": 242,
+          "output_tokens": 180,
+          "reasoning_tokens": 0,
+          "total_tokens": 422
+        }
+      },
+      "error": null,
+      "features": {
+        "answer.answered_count": 2,
+        "answer.conflict_count": 1,
+        "answer.evidence_field_count": 4,
+        "answer.unknown_count": 1,
+        "answer.violation_count": 0,
+        "score.answer_accuracy": 0.5,
+        "score.conflict_accuracy": 1.0,
+        "score.evidence_alignment": 0.5,
+        "score.unknown_accuracy": 1.0,
+        "score.violation_free": true,
+        "surface.constraint_retention": false,
+        "surface.field_order_match": true,
+        "surface.had_markdown_fence": true,
+        "surface.has_extra_prefix_text": false,
+        "surface.has_extra_suffix_text": false,
+        "surface.has_extra_text": false,
+        "surface.key_alias_normalized": false,
+        "surface.parse_repaired": true,
+        "surface.repair_event_count": 1,
+        "transport.finish_reason": "stop",
+        "transport.latency_bucket_ms": 7000,
+        "transport.reasoning_tokens": 0,
+        "transport.reasoning_visible": false
+      },
+      "prompt_id": "p023",
+      "raw_output": "```json\n{\n    \"task_result\": {\n        \"q1\": {\n            \"status\": \"answer\",\n            \"value\": \"yes\"\n        },\n        \"q2\": {\n            \"status\": \"unknown\",\n            \"value\": null\n        },\n        \"q3\": {\n            \"status\": \"answer\",\n            \"value\": \"retry failed background jobs\"\n        },\n        \"q4\": {\n            \"status\": \"conflict_unresolved\",\n            \"value\": null\n        }\n    },\n    \"evidence\": {\n        \"q1\": \"e1\",\n        \"q2\": \"e5\",\n        \"q3\": \"e1\",\n        \"q4\": \"e3, e4\"\n    },\n    \"unknowns\": {\n        \"q2\": \"information_not_provided\"\n    },\n    \"violations\": []\n}\n```",
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 340,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u9644\u52a0\u89e3\u91ca\u3002\u4fe1\u606f\u4e0d\u8db3\u7528 unknown\uff0c\u51b2\u7a81\u672a\u89e3\u7528 conflict_unresolved\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u53ea\u6839\u636e\u4e0b\u9762\u8bb0\u5f55\u56de\u7b54\u95ee\u9898\u3002\n\n[e1] Priya approved retrying failed background jobs after the rollback.\n[e2] The rollback finished before 03:00 UTC.\n[e3] One note says the change was approved on Friday.\n[e4] Another note says the approval date is still unconfirmed.\n[e5] The notes do not identify who restarted the workers.\n\n\u56de\u7b54\u4e0b\u5217\u95ee\u9898\uff1a\n- q1: Was retrying failed background jobs approved?\n- q2: Who restarted the workers?\n- q3: What action should happen after the rollback?\n- q4: On which date was the change approved?\n\n\u8fd4\u56de JSON\uff0c\u5bf9\u8c61\u5b57\u6bb5\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b\uff1a\n- task_result: {q1, q2, q3, q4}\n- every qN must be {status, value}\n- status \u53ea\u80fd\u662f answer\u3001unknown\u3001conflict_unresolved\n- evidence: {q1, q2, q3, q4}\n- unknowns: {qN: reason_code}\n- violations\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "completed",
+      "usage": {
+        "input_tokens": 242,
+        "output_tokens": 180,
+        "reasoning_tokens": 0,
+        "total_tokens": 422
+      }
+    },
+    {
+      "canonical_output": {
+        "format_id": "tolerant_json_v3",
+        "payload": {
+          "evidence": {
+            "defaults_used": [
+              "ticket_a:p2",
+              "ticket_b:p2",
+              "worker_x:p2"
+            ],
+            "derivation_codes": {
+              "ticket_a": "r1:create(owner=ops,priority=p2);r4:update(priority=p1);r5:close(owner=ops)",
+              "ticket_b": "r2:create(owner=db,priority=p2);r6:reopen(status=open)",
+              "worker_x": "r3:create(owner=ml,priority=p2);r7:assign(owner=ops);r8:suspend(status=suspended,owner=ops);r9:assign(owner=ml) ignored due to suspend;r10:update(priority=p3)"
+            }
+          },
+          "task_result": {
+            "ticket_a": {
+              "owner": "ops",
+              "priority": "p1",
+              "status": "closed"
+            },
+            "ticket_b": {
+              "owner": "db",
+              "priority": "p2",
+              "status": "open"
+            },
+            "worker_x": {
+              "owner": "ops",
+              "priority": "p3",
+              "status": "suspended"
+            }
+          },
+          "unknowns": {},
+          "violations": []
+        }
+      },
+      "canonicalization_events": [],
+      "completion": {
+        "answer_text": "{\n  \"task_result\": {\n    \"ticket_a\": {\n      \"status\": \"closed\",\n      \"owner\": \"ops\",\n      \"priority\": \"p1\"\n    },\n    \"ticket_b\": {\n      \"status\": \"open\",\n      \"owner\": \"db\",\n      \"priority\": \"p2\"\n    },\n    \"worker_x\": {\n      \"status\": \"suspended\",\n      \"owner\": \"ops\",\n      \"priority\": \"p3\"\n    }\n  },\n  \"evidence\": {\n    \"derivation_codes\": {\n      \"ticket_a\": \"r1:create(owner=ops,priority=p2);r4:update(priority=p1);r5:close(owner=ops)\",\n      \"ticket_b\": \"r2:create(owner=db,priority=p2);r6:reopen(status=open)\",\n      \"worker_x\": \"r3:create(owner=ml,priority=p2);r7:assign(owner=ops);r8:suspend(status=suspended,owner=ops);r9:assign(owner=ml) ignored due to suspend;r10:update(priority=p3)\"\n    },\n    \"defaults_used\": [\"ticket_a:p2\", \"ticket_b:p2\", \"worker_x:p2\"]\n  },\n  \"unknowns\": {},\n  \"violations\": []\n}",
+        "finish_reason": "stop",
+        "latency_ms": 12146,
+        "raw_response_path": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-10/deepseek-chat-v3-probe-r3.fingerprint-suite-v3/p024.response.json",
+        "reasoning_text": null,
+        "reasoning_visible": false,
+        "usage": {
+          "input_tokens": 264,
+          "output_tokens": 290,
+          "reasoning_tokens": 0,
+          "total_tokens": 554
+        }
+      },
+      "error": null,
+      "features": {
+        "answer.default_count": 3,
+        "answer.derivation_count": 3,
+        "answer.resolved_object_count": 3,
+        "answer.violation_count": 0,
+        "score.default_usage_accuracy": 0.0,
+        "score.derivation_accuracy": 0.0,
+        "score.snapshot_accuracy": 0.8888888888888888,
+        "score.violation_free": true,
+        "surface.constraint_retention": true,
+        "surface.field_order_match": true,
+        "surface.had_markdown_fence": false,
+        "surface.has_extra_prefix_text": false,
+        "surface.has_extra_suffix_text": false,
+        "surface.has_extra_text": false,
+        "surface.key_alias_normalized": false,
+        "surface.parse_repaired": false,
+        "surface.repair_event_count": 0,
+        "transport.finish_reason": "stop",
+        "transport.latency_bucket_ms": 12000,
+        "transport.reasoning_tokens": 0,
+        "transport.reasoning_visible": false
+      },
+      "prompt_id": "p024",
+      "raw_output": "{\n  \"task_result\": {\n    \"ticket_a\": {\n      \"status\": \"closed\",\n      \"owner\": \"ops\",\n      \"priority\": \"p1\"\n    },\n    \"ticket_b\": {\n      \"status\": \"open\",\n      \"owner\": \"db\",\n      \"priority\": \"p2\"\n    },\n    \"worker_x\": {\n      \"status\": \"suspended\",\n      \"owner\": \"ops\",\n      \"priority\": \"p3\"\n    }\n  },\n  \"evidence\": {\n    \"derivation_codes\": {\n      \"ticket_a\": \"r1:create(owner=ops,priority=p2);r4:update(priority=p1);r5:close(owner=ops)\",\n      \"ticket_b\": \"r2:create(owner=db,priority=p2);r6:reopen(status=open)\",\n      \"worker_x\": \"r3:create(owner=ml,priority=p2);r7:assign(owner=ops);r8:suspend(status=suspended,owner=ops);r9:assign(owner=ml) ignored due to suspend;r10:update(priority=p3)\"\n    },\n    \"defaults_used\": [\"ticket_a:p2\", \"ticket_b:p2\", \"worker_x:p2\"]\n  },\n  \"unknowns\": {},\n  \"violations\": []\n}",
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 360,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u9644\u52a0\u89e3\u91ca\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u6839\u636e\u4e0b\u9762\u89c4\u5219\u548c\u4e8b\u4ef6\uff0c\u8ba1\u7b97 ticket_a\u3001ticket_b\u3001worker_x \u7684\u6700\u7ec8\u72b6\u6001\u3002\n\n\u89c4\u5219\uff1a\n- \u9ed8\u8ba4 priority \u662f p2\n- \u663e\u5f0f priority \u66f4\u65b0\u8986\u76d6\u9ed8\u8ba4\u503c\n- suspend \u4f1a\u4fdd\u7559\u6700\u540e\u4e00\u4e2a owner\uff0c\u5e76\u628a status \u53d8\u6210 suspended\n- close \u4f1a\u4fdd\u7559\u6700\u540e\u4e00\u4e2a owner\n- reopen \u4f1a\u628a status \u53d8\u56de open\n\n\u4e8b\u4ef6\uff1a\n- [r1] create ticket_a owner=ops\n- [r2] create ticket_b owner=db\n- [r3] create worker_x owner=ml\n- [r4] update ticket_a priority=p1\n- [r5] close ticket_a\n- [r6] reopen ticket_b\n- [r7] assign worker_x owner=ops\n- [r8] suspend worker_x\n- [r9] assign worker_x owner=ml\n- [r10] update worker_x priority=p3\n\n\u8fd4\u56de JSON\uff0c\u5bf9\u8c61\u5b57\u6bb5\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b\uff1a\n- task_result: {ticket_a, ticket_b, worker_x}\n- every object must be {status, owner, priority}\n- evidence: {derivation_codes, defaults_used}\n- unknowns: {}\n- violations\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "completed",
+      "usage": {
+        "input_tokens": 264,
+        "output_tokens": 290,
+        "reasoning_tokens": 0,
+        "total_tokens": 554
+      }
+    },
+    {
+      "canonical_output": {
+        "format_id": "tolerant_json_v3",
+        "payload": {
+          "evidence": {},
+          "task_result": {
+            "alias_map": {
+              "alice_wong": [
+                "Alice W.",
+                "Alice Wong",
+                "\u738b\u827e\u4e3d"
+              ],
+              "db_cluster_east": [
+                "DB-east",
+                "\u534e\u4e1c\u6570\u636e\u5e93\u96c6\u7fa4",
+                "db-cluster-east"
+              ],
+              "zephyr_core": [
+                "Zephyr Core",
+                "zephyr-core",
+                "Project Zephyr"
+              ]
+            },
+            "ambiguous_mentions": [
+              "OW"
+            ],
+            "canonical_entities": [
+              "alice_wong",
+              "db_cluster_east",
+              "zephyr_core"
+            ],
+            "rejected_items": [
+              "temp-note"
+            ]
+          },
+          "unknowns": {},
+          "violations": {}
+        }
+      },
+      "canonicalization_events": [
+        {
+          "code": "removed_fence",
+          "message": "removed markdown fence"
+        }
+      ],
+      "completion": {
+        "answer_text": "```json\n{\n    \"task_result\": {\n        \"canonical_entities\": [\"alice_wong\", \"db_cluster_east\", \"zephyr_core\"],\n        \"alias_map\": {\n            \"alice_wong\": [\"Alice W.\", \"Alice Wong\", \"\u738b\u827e\u4e3d\"],\n            \"db_cluster_east\": [\"DB-east\", \"\u534e\u4e1c\u6570\u636e\u5e93\u96c6\u7fa4\", \"db-cluster-east\"],\n            \"zephyr_core\": [\"Zephyr Core\", \"zephyr-core\", \"Project Zephyr\"]\n        },\n        \"ambiguous_mentions\": [\"OW\"],\n        \"rejected_items\": [\"temp-note\"]\n    },\n    \"evidence\": {},\n    \"unknowns\": {},\n    \"violations\": {}\n}\n```",
+        "finish_reason": "stop",
+        "latency_ms": 7340,
+        "raw_response_path": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-10/deepseek-chat-v3-probe-r3.fingerprint-suite-v3/p025.response.json",
+        "reasoning_text": null,
+        "reasoning_visible": false,
+        "usage": {
+          "input_tokens": 191,
+          "output_tokens": 157,
+          "reasoning_tokens": 0,
+          "total_tokens": 348
+        }
+      },
+      "error": null,
+      "features": {
+        "answer.alias_count": 3,
+        "answer.ambiguous_count": 1,
+        "answer.canonical_count": 3,
+        "answer.rejected_count": 1,
+        "answer.violation_count": 0,
+        "score.alias_accuracy": 0.0,
+        "score.ambiguity_preservation": 1.0,
+        "score.canonical_accuracy": 1.0,
+        "score.rejection_accuracy": 1.0,
+        "score.violation_free": true,
+        "surface.constraint_retention": false,
+        "surface.field_order_match": true,
+        "surface.had_markdown_fence": true,
+        "surface.has_extra_prefix_text": false,
+        "surface.has_extra_suffix_text": false,
+        "surface.has_extra_text": false,
+        "surface.key_alias_normalized": false,
+        "surface.parse_repaired": true,
+        "surface.repair_event_count": 1,
+        "transport.finish_reason": "stop",
+        "transport.latency_bucket_ms": 7000,
+        "transport.reasoning_tokens": 0,
+        "transport.reasoning_visible": false
+      },
+      "prompt_id": "p025",
+      "raw_output": "```json\n{\n    \"task_result\": {\n        \"canonical_entities\": [\"alice_wong\", \"db_cluster_east\", \"zephyr_core\"],\n        \"alias_map\": {\n            \"alice_wong\": [\"Alice W.\", \"Alice Wong\", \"\u738b\u827e\u4e3d\"],\n            \"db_cluster_east\": [\"DB-east\", \"\u534e\u4e1c\u6570\u636e\u5e93\u96c6\u7fa4\", \"db-cluster-east\"],\n            \"zephyr_core\": [\"Zephyr Core\", \"zephyr-core\", \"Project Zephyr\"]\n        },\n        \"ambiguous_mentions\": [\"OW\"],\n        \"rejected_items\": [\"temp-note\"]\n    },\n    \"evidence\": {},\n    \"unknowns\": {},\n    \"violations\": {}\n}\n```",
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 360,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u9644\u52a0\u89e3\u91ca\u3002\u65e0\u6cd5\u552f\u4e00\u786e\u5b9a\u7684\u7f29\u5199\u5fc5\u987b\u4fdd\u7559\u4e3a ambiguous\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u6839\u636e\u4e0b\u9762\u8bf4\u660e\u505a\u5b9e\u4f53\u5f52\u4e00\uff0c\u5e76\u5254\u9664\u65e0\u6548\u9879\u3002\n\n- Alice W.\u3001Alice Wong\u3001\u738b\u827e\u4e3d \u6307\u5411\u540c\u4e00\u4e2a\u4eba alice_wong\n- DB-east\u3001\u534e\u4e1c\u6570\u636e\u5e93\u96c6\u7fa4\u3001db-cluster-east \u6307\u5411\u540c\u4e00\u4e2a\u8d44\u6e90 db_cluster_east\n- Zephyr Core\u3001zephyr-core\u3001Project Zephyr \u6307\u5411\u540c\u4e00\u4e2a\u670d\u52a1 zephyr_core\n- OW \u53ef\u80fd\u8868\u793a OpenWhale\uff0c\u4e5f\u53ef\u80fd\u8868\u793a Ops Watch\uff0c\u4e0d\u80fd\u5f3a\u884c\u5f52\u4e00\n- Legacy row: temp-note is not an entity and must be rejected\n\n\u8fd4\u56de JSON\uff0c\u5bf9\u8c61\u5b57\u6bb5\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b\uff1a\n- task_result: {canonical_entities, alias_map, ambiguous_mentions, rejected_items}\n- evidence: {}\n- unknowns: {mention: reason_code}\n- violations\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "completed",
+      "usage": {
+        "input_tokens": 191,
+        "output_tokens": 157,
+        "reasoning_tokens": 0,
+        "total_tokens": 348
+      }
+    }
+  ],
+  "protocol_compatibility": {
+    "issues": [],
+    "required_capabilities": [
+      "chat_completions"
+    ],
+    "satisfied": true
+  },
+  "reasoning_coverage_ratio": 0.0,
+  "run_id": "deepseek-chat-v3-probe-r3.fingerprint-suite-v3",
+  "suite_id": "fingerprint-suite-v3",
+  "target_label": "deepseek-chat-v3-probe-r3",
+  "trace_dir": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-10/deepseek-chat-v3-probe-r3.fingerprint-suite-v3"
+}
