@@ -15,6 +15,7 @@ from modelfingerprint.contracts.run import (
     CanonicalizationEvent,
     CanonicalizedOutput,
     NormalizedCompletion,
+    PromptAttemptSummary,
     PromptExecutionError,
     PromptRequestSnapshot,
     PromptRunResult,
@@ -45,6 +46,7 @@ class PromptExecutionResult:
     completion: NormalizedCompletion | None = None
     canonical_output: CanonicalizedOutput | None = None
     canonicalization_events: list[CanonicalizationEvent] = field(default_factory=list)
+    attempts: list[PromptAttemptSummary] = field(default_factory=list)
     error: PromptExecutionError | None = None
 
 
@@ -177,6 +179,7 @@ class FeaturePipeline:
                     completion=execution.completion,
                     canonical_output=canonical_output,
                     canonicalization_events=canonicalization_events,
+                    attempts=list(execution.attempts),
                     features=features,
                     error=error,
                 )

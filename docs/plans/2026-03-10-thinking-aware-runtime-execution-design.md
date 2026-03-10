@@ -610,3 +610,11 @@ This feature is complete only when all of the following are true:
   - `NON_THINKING_ROUND_WINDOWS_SECONDS = [30]`
   - `MAX_PROMPT_ROUNDS = 2`
 - Runtime policy resolution is now available in code, but transport execution still uses the legacy path until P1 and P2 land.
+
+### P1 completion notes
+
+- `LiveRunner` now accepts an optional `runtime_policy`.
+- When `runtime_policy` is present, `LiveRunner` executes prompt rounds/windows from the resolved policy instead of the legacy endpoint `thinking_policy`.
+- Live content requests now use the runtime output token cap when provided by policy.
+- `PromptExecutionResult` and run artifacts now preserve prompt-attempt summaries.
+- The legacy endpoint-driven path still exists as a compatibility fallback for callers that have not yet been wired to runtime policy.

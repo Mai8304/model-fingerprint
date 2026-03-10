@@ -8,6 +8,7 @@ from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.dialects.openai_chat import OpenAIChatDialectAdapter
 from modelfingerprint.extractors.registry import build_default_registry
 from modelfingerprint.services.feature_pipeline import FeaturePipeline
+from modelfingerprint.services.runtime_policy import resolve_runtime_policy
 from modelfingerprint.transports.http_client import HttpClientError
 from modelfingerprint.transports.live_runner import LiveRunner
 
@@ -97,6 +98,24 @@ def build_endpoint() -> EndpointProfile:
                 "retryable_statuses": [408, 429, 500, 502, 503, 504],
             },
         }
+    )
+
+
+def build_runtime_policy(
+    thinking_status: str,
+    *,
+    endpoint: EndpointProfile | None = None,
+):
+    resolved_endpoint = endpoint or build_endpoint()
+    return resolve_runtime_policy(
+        capability_probe_payload={
+            "results": {
+                "thinking": {
+                    "status": thinking_status,
+                }
+            }
+        },
+        supports_output_token_cap=resolved_endpoint.capabilities.supports_output_token_cap,
     )
 
 
@@ -205,6 +224,44 @@ class ThinkingFallbackHttpClient:
         )
 
 
+class AlwaysTruncatedHttpClient:
+    def __init__(self) -> None:
+        self.calls: list[dict[str, object]] = []
+
+    def send(self, request, *, connect_timeout_seconds: int, read_timeout_seconds: int):
+        self.calls.append(
+            {
+                "url": request.url,
+                "headers": dict(request.headers),
+                "body": dict(request.body),
+                "connect_timeout_seconds": connect_timeout_seconds,
+                "read_timeout_seconds": read_timeout_seconds,
+            }
+        )
+        return (
+            {
+                "choices": [
+                    {
+                        "finish_reason": "length",
+                        "message": {
+                            "content": None,
+                            "reasoning_content": "thinking forever",
+                        },
+                    }
+                ],
+                "usage": {
+                    "prompt_tokens": 12,
+                    "completion_tokens": 96,
+                    "total_tokens": 160,
+                    "completion_tokens_details": {
+                        "reasoning_tokens": 120,
+                    },
+                },
+            },
+            30001,
+        )
+
+
 def test_live_runner_retries_retryable_errors_and_persists_traces(tmp_path: Path) -> None:
     client = FakeHttpClient()
     trace_dir = tmp_path / "traces" / "run-1"
@@ -214,6 +271,7 @@ def test_live_runner_retries_retryable_errors_and_persists_traces(tmp_path: Path
         dialect=OpenAIChatDialectAdapter(),
         http_client=client,
         trace_dir=trace_dir,
+        runtime_policy=build_runtime_policy("accepted_but_ignored"),
     )
 
     result = runner.execute(build_prompt())
@@ -223,8 +281,12 @@ def test_live_runner_retries_retryable_errors_and_persists_traces(tmp_path: Path
     assert result.completion is not None
     assert result.completion.usage.reasoning_tokens == 24
     assert len(client.calls) == 2
-    assert client.calls[0]["body"]["max_tokens"] == 96
-    assert client.calls[1]["body"]["max_tokens"] == 96
+    assert client.calls[0]["body"]["max_tokens"] == 3000
+    assert client.calls[1]["body"]["max_tokens"] == 3000
+    assert client.calls[0]["read_timeout_seconds"] == 30
+    assert client.calls[1]["read_timeout_seconds"] == 30
+    assert len(result.attempts) == 1
+    assert result.attempts[0].status == "completed"
     assert (trace_dir / "p003.request.json").exists()
     assert (trace_dir / "p003.response.json").exists()
 
@@ -232,31 +294,10 @@ def test_live_runner_retries_retryable_errors_and_persists_traces(tmp_path: Path
     assert request_trace["headers"]["Authorization"] == "Bearer ***REDACTED***"
 
 
-def test_live_runner_retries_with_thinking_fallback_after_truncated_no_answer(
+def test_live_runner_uses_thinking_windows_after_truncated_no_answer(
     tmp_path: Path,
 ) -> None:
-    endpoint = EndpointProfile.model_validate(
-        {
-            **build_endpoint().model_dump(mode="json"),
-            "request_mapping": {
-                "output_token_cap_field": "max_tokens",
-                "json_response_shape": {"type": "json_object"},
-                "static_body": {"reasoning": {"effort": "minimal", "exclude": False}},
-            },
-            "thinking_policy": {
-                "retry_on_finish_reasons": ["length"],
-                "retry_on_empty_answer": True,
-                "attempts": [
-                    {
-                        "output_token_cap": 240,
-                        "request_body_overrides": {
-                            "reasoning": {"effort": "none", "exclude": True}
-                        },
-                    }
-                ],
-            },
-        }
-    )
+    endpoint = build_endpoint()
     client = ThinkingFallbackHttpClient()
     trace_dir = tmp_path / "traces" / "run-thinking"
     runner = LiveRunner(
@@ -265,6 +306,7 @@ def test_live_runner_retries_with_thinking_fallback_after_truncated_no_answer(
         dialect=OpenAIChatDialectAdapter(),
         http_client=client,
         trace_dir=trace_dir,
+        runtime_policy=build_runtime_policy("supported", endpoint=endpoint),
     )
 
     result = runner.execute(build_prompt())
@@ -272,13 +314,38 @@ def test_live_runner_retries_with_thinking_fallback_after_truncated_no_answer(
     assert result.status == "completed"
     assert result.raw_output == '{"answer":"yes","confidence":"high"}'
     assert len(client.calls) == 2
-    assert client.calls[0]["body"]["max_tokens"] == 96
-    assert client.calls[0]["body"]["reasoning"] == {"effort": "minimal", "exclude": False}
-    assert client.calls[1]["body"]["max_tokens"] == 240
-    assert client.calls[1]["body"]["reasoning"] == {"effort": "none", "exclude": True}
+    assert client.calls[0]["body"]["max_tokens"] == 3000
+    assert client.calls[1]["body"]["max_tokens"] == 3000
+    assert client.calls[0]["read_timeout_seconds"] == 30
+    assert client.calls[1]["read_timeout_seconds"] == 30
+    assert len(result.attempts) == 2
+    assert result.attempts[0].status == "invalid_response"
+    assert result.attempts[0].error_kind == "missing_answer_text"
+    assert result.attempts[1].status == "completed"
     assert (trace_dir / "p003.request.json").exists()
     assert (trace_dir / "p003.attempt-2.request.json").exists()
     assert (trace_dir / "p003.attempt-2.response.json").exists()
+
+
+def test_live_runner_stops_after_two_rounds_for_non_thinking_prompts(tmp_path: Path) -> None:
+    client = AlwaysTruncatedHttpClient()
+    runner = LiveRunner(
+        endpoint=build_endpoint(),
+        api_key="secret-key",
+        dialect=OpenAIChatDialectAdapter(),
+        http_client=client,
+        trace_dir=tmp_path / "traces" / "run-non-thinking",
+        runtime_policy=build_runtime_policy("accepted_but_ignored"),
+    )
+
+    result = runner.execute(build_prompt())
+
+    assert result.status == "invalid_response"
+    assert len(client.calls) == 2
+    assert all(call["read_timeout_seconds"] == 30 for call in client.calls)
+    assert len(result.attempts) == 2
+    assert all(attempt.status == "invalid_response" for attempt in result.attempts)
+    assert all(attempt.error_kind == "missing_answer_text" for attempt in result.attempts)
 
 
 def test_feature_pipeline_preserves_live_runner_metadata(tmp_path: Path) -> None:
@@ -290,6 +357,7 @@ def test_feature_pipeline_preserves_live_runner_metadata(tmp_path: Path) -> None
         dialect=OpenAIChatDialectAdapter(),
         http_client=client,
         trace_dir=trace_dir,
+        runtime_policy=build_runtime_policy("supported"),
     )
     execution = runner.execute(build_prompt())
 
@@ -309,3 +377,5 @@ def test_feature_pipeline_preserves_live_runner_metadata(tmp_path: Path) -> None
     assert artifact.prompts[0].request_snapshot is not None
     assert artifact.prompts[0].completion is not None
     assert artifact.prompts[0].completion.reasoning_visible is True
+    assert artifact.prompts[0].attempts
+    assert artifact.prompts[0].attempts[0].read_timeout_seconds == 30

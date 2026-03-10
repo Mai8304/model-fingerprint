@@ -10,6 +10,7 @@ from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.contracts.run import RunArtifact, UsageMetadata
 from modelfingerprint.dialects.openai_chat import OpenAIChatDialectAdapter
 from modelfingerprint.services.feature_pipeline import PromptExecutionResult
+from modelfingerprint.services.runtime_policy import resolve_runtime_policy
 from modelfingerprint.services.suite_runner import SuiteRunner
 from modelfingerprint.settings import RepositoryPaths
 from modelfingerprint.transports.live_runner import LiveRunner
@@ -218,10 +219,21 @@ def test_live_runner_preserves_messages_and_output_token_cap_field_exactly() -> 
         dialect=OpenAIChatDialectAdapter(),
         http_client=client,
         trace_dir=None,
+        runtime_policy=resolve_runtime_policy(
+            capability_probe_payload={
+                "results": {
+                    "thinking": {
+                        "status": "accepted_but_ignored",
+                    }
+                }
+            },
+            supports_output_token_cap=True,
+        ),
     )
 
     runner.execute(prompt)
 
-    assert client.calls[0]["body"]["max_completion_tokens"] == 96
+    assert client.calls[0]["body"]["max_completion_tokens"] == 3000
+    assert client.calls[0]["read_timeout_seconds"] == 30
     assert client.calls[0]["body"]["messages"] == original_messages
     assert [message.model_dump(mode="json") for message in prompt.messages] == original_messages

@@ -161,3 +161,15 @@ git push origin main
 - prompt attempts are captured in results
 - focused transport tests, ruff, and mypy pass
 
+---
+
+## Completion Notes
+
+- Completed on 2026-03-10.
+- `LiveRunner` now supports a policy-driven path via `runtime_policy`.
+- Policy-driven execution records prompt-attempt summaries and uses the runtime output cap.
+- The legacy endpoint `thinking_policy` path remains as a fallback until CLI/suite wiring is completed in P2.
+- Verification used:
+  - `uv run pytest tests/transports/test_live_runner.py tests/transports/test_protocol_invariants.py tests/transports/test_openai_chat_dialect.py -q`
+  - `uv run ruff check src tests`
+  - `uv run mypy src`
