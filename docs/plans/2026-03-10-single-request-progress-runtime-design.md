@@ -590,3 +590,4 @@ The feature is complete only if all of the following are true:
   - byte-progress snapshots
   - cooperative cancellation
   - shared transport logic for both `send(...)` and `start(...)`
+- 2026-03-10 P2 switched the runtime-policy execution path in `LiveRunner` to the single-request monitor state machine and updated `show-run` to report checkpoint/deadline semantics directly.

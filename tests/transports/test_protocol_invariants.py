@@ -13,6 +13,7 @@ from modelfingerprint.services.feature_pipeline import PromptExecutionResult
 from modelfingerprint.services.runtime_policy import resolve_runtime_policy
 from modelfingerprint.services.suite_runner import SuiteRunner
 from modelfingerprint.settings import RepositoryPaths
+from modelfingerprint.transports.http_client import HttpProgressSnapshot, HttpTerminalResult
 from modelfingerprint.transports.live_runner import LiveRunner
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -142,7 +143,7 @@ class RecordingHttpClient:
     def __init__(self) -> None:
         self.calls: list[dict[str, object]] = []
 
-    def send(self, request, *, connect_timeout_seconds: int, read_timeout_seconds: int):
+    def start(self, request, *, connect_timeout_seconds: int, read_timeout_seconds: int):
         self.calls.append(
             {
                 "url": request.url,
@@ -151,26 +152,48 @@ class RecordingHttpClient:
                 "read_timeout_seconds": read_timeout_seconds,
             }
         )
-        return (
-            {
-                "choices": [
-                    {
-                        "finish_reason": "stop",
-                        "message": {
-                            "content": '{"answer":"yes","confidence":"high"}',
-                            "reasoning_content": "1. comply with the fixed protocol",
+
+        class ImmediateHandle:
+            def snapshot(self_nonlocal) -> HttpProgressSnapshot:
+                return HttpProgressSnapshot(
+                    bytes_received=192,
+                    has_any_data=True,
+                    elapsed_ms=3210,
+                    first_byte_latency_ms=2000,
+                    last_progress_latency_ms=3200,
+                    completed=True,
+                )
+
+            def wait_until_terminal(
+                self_nonlocal,
+                timeout_seconds: float | None = None,
+            ) -> HttpTerminalResult | None:
+                return HttpTerminalResult(
+                    payload={
+                        "choices": [
+                            {
+                                "finish_reason": "stop",
+                                "message": {
+                                    "content": '{"answer":"yes","confidence":"high"}',
+                                    "reasoning_content": "1. comply with the fixed protocol",
+                                },
+                            }
+                        ],
+                        "usage": {
+                            "prompt_tokens": 12,
+                            "completion_tokens": 18,
+                            "total_tokens": 54,
+                            "completion_tokens_details": {"reasoning_tokens": 24},
                         },
-                    }
-                ],
-                "usage": {
-                    "prompt_tokens": 12,
-                    "completion_tokens": 18,
-                    "total_tokens": 54,
-                    "completion_tokens_details": {"reasoning_tokens": 24},
-                },
-            },
-            3210,
-        )
+                    },
+                    latency_ms=3210,
+                    error=None,
+                )
+
+            def cancel(self_nonlocal) -> None:
+                return None
+
+        return ImmediateHandle()
 
 
 def test_suite_runner_marks_unsupported_capabilities_without_silent_adaptation(
@@ -234,6 +257,6 @@ def test_live_runner_preserves_messages_and_output_token_cap_field_exactly() -> 
     runner.execute(prompt)
 
     assert client.calls[0]["body"]["max_completion_tokens"] == 3000
-    assert client.calls[0]["read_timeout_seconds"] == 30
+    assert client.calls[0]["read_timeout_seconds"] == 120
     assert client.calls[0]["body"]["messages"] == original_messages
     assert [message.model_dump(mode="json") for message in prompt.messages] == original_messages

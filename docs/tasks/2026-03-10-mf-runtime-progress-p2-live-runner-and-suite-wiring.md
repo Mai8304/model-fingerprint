@@ -133,3 +133,22 @@ git push origin main
 - suite remains prompt-isolated
 - reporting exposes the new semantics
 
+---
+
+## Completion Notes
+
+- Completed on 2026-03-10.
+- `LiveRunner` runtime-policy path now:
+  - starts one in-flight request per prompt
+  - checks no-data checkpoints from the resolved policy
+  - switches to `10s` polling after the first observed response bytes
+  - aborts on no-data timeout or total deadline exhaustion
+- Runtime-policy execution no longer re-submits prompts on checkpoint expiry.
+- `show-run` now prints:
+  - `runtime_no_data_checkpoints`
+  - `runtime_progress_poll_interval_seconds`
+  - `runtime_total_deadline_seconds`
+- Verification used:
+  - `uv run pytest tests/transports/test_live_runner.py tests/e2e/test_suite_runner.py tests/test_cli_commands.py tests/transports/test_protocol_invariants.py -q`
+  - `uv run ruff check src tests`
+  - `uv run mypy src`

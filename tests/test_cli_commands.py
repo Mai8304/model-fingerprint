@@ -198,6 +198,9 @@ def test_show_run_and_show_profile_commands_print_v2_coverage_fields(tmp_path: P
     assert "capability_coverage_ratio: 0.7500" in show_run.stdout
     assert "protocol_status: incompatible_protocol" in show_run.stdout
     assert "runtime_execution_class: thinking" in show_run.stdout
+    assert "runtime_no_data_checkpoints: 30,60" in show_run.stdout
+    assert "runtime_progress_poll_interval_seconds: 10" in show_run.stdout
+    assert "runtime_total_deadline_seconds: 120" in show_run.stdout
     assert "runtime_output_token_cap: 3000" in show_run.stdout
 
     show_run_json = runner.invoke(app, ["show-run", str(run_path), "--json"])

@@ -146,6 +146,17 @@ def show_run(path: Path, json_output: bool = typer.Option(False, "--json")) -> N
     if artifact.runtime_policy is not None:
         typer.echo(f"runtime_execution_class: {artifact.runtime_policy.execution_class}")
         typer.echo(
+            "runtime_no_data_checkpoints: "
+            + ",".join(str(value) for value in artifact.runtime_policy.no_data_checkpoints_seconds)
+        )
+        typer.echo(
+            "runtime_progress_poll_interval_seconds: "
+            f"{artifact.runtime_policy.progress_poll_interval_seconds}"
+        )
+        typer.echo(
+            f"runtime_total_deadline_seconds: {artifact.runtime_policy.total_deadline_seconds}"
+        )
+        typer.echo(
             f"runtime_output_token_cap: {artifact.runtime_policy.output_token_cap or 'n/a'}"
         )
     typer.echo(f"protocol_status: {_run_protocol_status(artifact)}")
