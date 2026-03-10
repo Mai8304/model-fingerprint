@@ -1,0 +1,68 @@
+from __future__ import annotations
+
+import json
+import re
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Callable
+
+from modelfingerprint.storage.filesystem import ensure_directories
+from modelfingerprint.webapi.contracts import WebRunInput, WebRunPrompt, WebRunRecord
+
+RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9._-]+$")
+
+
+class RunStore:
+    def __init__(
+        self,
+        directory: Path,
+        *,
+        now: Callable[[], datetime] | None = None,
+    ) -> None:
+        self._directory = directory
+        self._now = now or (lambda: datetime.now(UTC))
+        ensure_directories(self._directory)
+
+    def create_run(
+        self,
+        *,
+        run_id: str,
+        input: WebRunInput,
+        prompt_ids: list[str],
+    ) -> WebRunRecord:
+        timestamp = self._now()
+        record = WebRunRecord(
+            run_id=run_id,
+            run_status="validating",
+            created_at=timestamp,
+            updated_at=timestamp,
+            input=input,
+            prompts=[WebRunPrompt(prompt_id=prompt_id, status="pending") for prompt_id in prompt_ids],
+        )
+        self._write(record)
+        return record
+
+    def get(self, run_id: str) -> WebRunRecord:
+        return WebRunRecord.model_validate(json.loads(self._path_for(run_id).read_text(encoding="utf-8")))
+
+    def save(self, record: WebRunRecord) -> WebRunRecord:
+        updated = record.model_copy(update={"updated_at": self._now()})
+        self._write(updated)
+        return updated
+
+    def mark_cancel_requested(self, run_id: str) -> WebRunRecord:
+        record = self.get(run_id)
+        updated = record.model_copy(update={"cancel_requested": True, "updated_at": self._now()})
+        self._write(updated)
+        return updated
+
+    def _write(self, record: WebRunRecord) -> None:
+        self._path_for(record.run_id).write_text(
+            json.dumps(record.model_dump(mode="json"), indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+
+    def _path_for(self, run_id: str) -> Path:
+        if not RUN_ID_PATTERN.fullmatch(run_id):
+            raise ValueError(f"unsafe run_id: {run_id}")
+        return self._directory / f"{run_id}.json"
