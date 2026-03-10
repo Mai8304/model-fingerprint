@@ -618,3 +618,10 @@ This feature is complete only when all of the following are true:
 - Live content requests now use the runtime output token cap when provided by policy.
 - `PromptExecutionResult` and run artifacts now preserve prompt-attempt summaries.
 - The legacy endpoint-driven path still exists as a compatibility fallback for callers that have not yet been wired to runtime policy.
+
+### P2 completion notes
+
+- `run-suite` now resolves runtime policy from the capability probe and passes it into `LiveRunner`.
+- `SuiteRunner` now converts unexpected transport/runtime exceptions into prompt-level `transport_error` results instead of aborting the suite.
+- `RunArtifact` enrichment now persists `runtime_policy` when the transport exposes it.
+- `show-run` now prints runtime execution class and runtime output token cap when present.

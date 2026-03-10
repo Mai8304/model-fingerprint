@@ -94,6 +94,10 @@ class SuiteRunner:
         return RunWriter(self._paths).write(artifact, run_date or date.today())
 
     def _execute_prompt(self, prompt: PromptDefinition) -> PromptExecutionResult:
+        request_snapshot = PromptRequestSnapshot(
+            messages=prompt.messages,
+            generation=prompt.generation,
+        )
         if hasattr(self._transport, "endpoint"):
             try:
                 endpoint_aware = cast(EndpointAwareTransport, self._transport)
@@ -102,10 +106,7 @@ class SuiteRunner:
                 return PromptExecutionResult(
                     prompt=prompt,
                     status="unsupported_capability",
-                    request_snapshot=PromptRequestSnapshot(
-                        messages=prompt.messages,
-                        generation=prompt.generation,
-                    ),
+                    request_snapshot=request_snapshot,
                     error=PromptExecutionError(
                         kind="unsupported_capability",
                         message=str(exc),
@@ -115,19 +116,44 @@ class SuiteRunner:
 
         if hasattr(self._transport, "execute"):
             executor = cast(PromptExecutionTransport, self._transport)
-            return executor.execute(prompt)
+            try:
+                return executor.execute(prompt)
+            except Exception as exc:
+                return PromptExecutionResult(
+                    prompt=prompt,
+                    status="transport_error",
+                    request_snapshot=request_snapshot,
+                    error=PromptExecutionError(
+                        kind="unexpected_transport_runtime_error",
+                        message=str(exc) or "transport execution failed",
+                        retryable=False,
+                    ),
+                )
 
         legacy_transport = cast(LegacyCompletionTransport, self._transport)
-        result = legacy_transport.complete(prompt)
-        return PromptExecutionResult(
-            prompt=prompt,
-            raw_output=result.content,
-            usage=UsageMetadata(
-                input_tokens=result.input_tokens,
-                output_tokens=result.output_tokens,
-                total_tokens=result.total_tokens,
-            ),
-        )
+        try:
+            result = legacy_transport.complete(prompt)
+            return PromptExecutionResult(
+                prompt=prompt,
+                raw_output=result.content,
+                usage=UsageMetadata(
+                    input_tokens=result.input_tokens,
+                    output_tokens=result.output_tokens,
+                    total_tokens=result.total_tokens,
+                ),
+                request_snapshot=request_snapshot,
+            )
+        except Exception as exc:
+            return PromptExecutionResult(
+                prompt=prompt,
+                status="transport_error",
+                request_snapshot=request_snapshot,
+                error=PromptExecutionError(
+                    kind="unexpected_transport_runtime_error",
+                    message=str(exc) or "legacy transport execution failed",
+                    retryable=False,
+                ),
+            )
 
     def _enrich_artifact(
         self,
@@ -138,11 +164,14 @@ class SuiteRunner:
     ) -> RunArtifact:
         endpoint_profile_id = None
         trace_dir = None
+        runtime_policy = None
         if hasattr(self._transport, "endpoint"):
             endpoint_aware = cast(EndpointAwareTransport, self._transport)
             endpoint_profile_id = endpoint_aware.endpoint.id
         if hasattr(self._transport, "trace_dir"):
             trace_dir = getattr(self._transport, "trace_dir")
+        if hasattr(self._transport, "runtime_policy"):
+            runtime_policy = getattr(self._transport, "runtime_policy")
 
         issues = [
             prompt.error.message
@@ -167,6 +196,7 @@ class SuiteRunner:
             update={
                 "endpoint_profile_id": endpoint_profile_id,
                 "trace_dir": None if trace_dir is None else str(trace_dir),
+                "runtime_policy": runtime_policy,
                 "capability_probe": _normalize_capability_probe_payload(capability_probe_payload),
                 "protocol_compatibility": protocol_compatibility,
             }

@@ -7,7 +7,12 @@ from pathlib import Path
 from typer.testing import CliRunner
 
 from modelfingerprint.cli import app
-from modelfingerprint.contracts.run import RunArtifact
+from modelfingerprint.contracts.run import (
+    PromptExecutionError,
+    RunArtifact,
+    UsageMetadata,
+)
+from modelfingerprint.services.feature_pipeline import PromptExecutionResult
 
 ROOT = Path(__file__).resolve().parents[2]
 runner = CliRunner()
@@ -218,3 +223,64 @@ def test_run_suite_command_executes_fixture_mode_and_writes_v3_run(tmp_path: Pat
     assert artifact.protocol_compatibility is not None
     assert artifact.protocol_compatibility.satisfied is True
     assert all(prompt.canonical_output is not None for prompt in artifact.prompts)
+
+
+class FlakyTransport:
+    def __init__(self) -> None:
+        self.called_prompt_ids: list[str] = []
+
+    def execute(self, prompt) -> PromptExecutionResult:
+        self.called_prompt_ids.append(prompt.id)
+        if prompt.id == "p001":
+            raise RuntimeError("socket exploded")
+        payloads = {
+            "p003": '{"answer":"yes","confidence":"high"}',
+            "p005": '@@ -1 +1 @@\n-print("old")\n+print("new")',
+            "p007": (
+                '{"requested_fields":["name","role"],"extracted":{"name":"Alice","role":"admin"},'
+                '"evidence":{"name":["e1"],"role":["e1"]},"hallucinated":[]}'
+            ),
+            "p009": (
+                '{"expected_needles":["alpha","beta","gamma"],'
+                '"found_needles":["alpha","beta","gamma"]}'
+            ),
+        }
+        return PromptExecutionResult(
+            prompt=prompt,
+            raw_output=payloads[prompt.id],
+            usage=UsageMetadata(input_tokens=10, output_tokens=5, total_tokens=15),
+        )
+
+
+def test_suite_runner_keeps_running_when_one_prompt_transport_raises(tmp_path: Path) -> None:
+    from modelfingerprint.services.suite_runner import SuiteRunner
+    from modelfingerprint.settings import RepositoryPaths
+
+    shutil.copytree(ROOT / "prompt-bank", tmp_path / "prompt-bank")
+    shutil.copytree(ROOT / "extractors", tmp_path / "extractors")
+
+    transport = FlakyTransport()
+    runner_instance = SuiteRunner(paths=RepositoryPaths(root=tmp_path), transport=transport)
+
+    output_path = runner_instance.run_suite(
+        suite_id="quick-check-v1",
+        target_label="suspect-b",
+        claimed_model=None,
+    )
+
+    artifact = RunArtifact.model_validate(json.loads(output_path.read_text(encoding="utf-8")))
+
+    assert transport.called_prompt_ids == ["p001", "p003", "p005", "p007", "p009"]
+    prompt_statuses = {prompt.prompt_id: prompt.status for prompt in artifact.prompts}
+    assert prompt_statuses["p001"] == "transport_error"
+    assert prompt_statuses["p003"] == "completed"
+    assert prompt_statuses["p005"] == "completed"
+    assert prompt_statuses["p007"] == "completed"
+    assert prompt_statuses["p009"] == "completed"
+    first_prompt = next(prompt for prompt in artifact.prompts if prompt.prompt_id == "p001")
+    assert first_prompt.error == PromptExecutionError(
+        kind="unexpected_transport_runtime_error",
+        message="socket exploded",
+        retryable=False,
+        http_status=None,
+    )

@@ -39,6 +39,7 @@ class LiveRunner:
         self._http_client = http_client or StandardHttpClient()
         self.trace_dir = trace_dir
         self._runtime_policy = runtime_policy
+        self.runtime_policy = runtime_policy
 
     def execute(self, prompt: PromptDefinition) -> PromptExecutionResult:
         request_snapshot = PromptRequestSnapshot(

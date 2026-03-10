@@ -126,3 +126,15 @@ git push origin main
 - run reporting exposes runtime metadata
 - focused e2e/CLI tests, ruff, and mypy pass
 
+---
+
+## Completion Notes
+
+- Completed on 2026-03-10.
+- `run-suite` now passes resolved runtime policy into `LiveRunner`.
+- `SuiteRunner` now hardens prompt execution by converting unexpected transport/runtime exceptions into prompt-level failures.
+- `show-run` now exposes runtime execution class and output token cap.
+- Verification used:
+  - `uv run pytest tests/e2e/test_suite_runner.py tests/test_cli_commands.py tests/e2e/test_golden_flow.py -q`
+  - `uv run ruff check src tests`
+  - `uv run mypy src`

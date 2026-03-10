@@ -34,6 +34,7 @@ from modelfingerprint.services.prompt_bank import (
     validate_suite_references,
     validate_suite_subset,
 )
+from modelfingerprint.services.runtime_policy import resolve_runtime_policy
 from modelfingerprint.services.suite_runner import SuiteRunner
 from modelfingerprint.services.verdicts import decide_verdict
 from modelfingerprint.settings import RepositoryPaths
@@ -142,6 +143,11 @@ def show_run(path: Path, json_output: bool = typer.Option(False, "--json")) -> N
     typer.echo(f"answer_coverage_ratio: {_format_ratio(artifact.answer_coverage_ratio)}")
     typer.echo(f"reasoning_coverage_ratio: {_format_ratio(artifact.reasoning_coverage_ratio)}")
     typer.echo(f"capability_coverage_ratio: {_format_ratio(_run_capability_coverage(artifact))}")
+    if artifact.runtime_policy is not None:
+        typer.echo(f"runtime_execution_class: {artifact.runtime_policy.execution_class}")
+        typer.echo(
+            f"runtime_output_token_cap: {artifact.runtime_policy.output_token_cap or 'n/a'}"
+        )
     typer.echo(f"protocol_status: {_run_protocol_status(artifact)}")
 
 
@@ -226,12 +232,17 @@ def run_suite(
             api_key=api_key,
             model=endpoint.model,
         )
+        runtime_policy = resolve_runtime_policy(
+            capability_probe_payload=capability_probe_payload,
+            supports_output_token_cap=endpoint.capabilities.supports_output_token_cap,
+        )
         trace_dir = paths.traces_dir / run_date / f"{target_label}.{suite_id}"
         transport = LiveRunner(
             endpoint=endpoint,
             api_key=api_key,
             dialect=_build_dialect(endpoint),
             trace_dir=trace_dir,
+            runtime_policy=runtime_policy,
         )
 
     runner = SuiteRunner(paths, transport=transport)
