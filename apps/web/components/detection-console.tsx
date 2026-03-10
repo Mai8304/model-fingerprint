@@ -1,14 +1,17 @@
 "use client"
 
-import { FlaskConical, Play, ShieldCheck } from "lucide-react"
+import { FlaskConical } from "lucide-react"
 
+import { CheckConfigForm } from "@/components/check-config-form"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { TopBar } from "@/components/top-bar"
 import { useLocale } from "@/lib/i18n/provider"
+import type { CheckConfigValues } from "@/lib/check-config-schema"
 
 export function DetectionConsole() {
   const { t } = useLocale()
+  const handleSubmit = (_values: CheckConfigValues) => undefined
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
@@ -19,39 +22,8 @@ export function DetectionConsole() {
           <CardHeader>
             <CardTitle>Configuration</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-slate-900">API Key</p>
-              <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-400">
-                sk-********************************
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-slate-900">Base URL</p>
-              <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500">
-                https://api.example.com/v1
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-slate-900">Model Name</p>
-              <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500">
-                gpt-4.1-mini
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-              <div className="flex items-start gap-3">
-                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
-                <p>Your API key is used only for this check and is not stored after the request completes.</p>
-              </div>
-            </div>
-
-            <Button className="w-full gap-2">
-              <Play className="h-4 w-4" />
-              {t("actions.startCheck")}
-            </Button>
+          <CardContent>
+            <CheckConfigForm disabled={false} onSubmit={handleSubmit} />
           </CardContent>
         </Card>
 
