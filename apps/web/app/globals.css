@@ -2,9 +2,43 @@
 
 :root {
   color-scheme: light;
+  --background: #f4f7fb;
+  --foreground: #0f172a;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(244, 247, 251, 0.96)),
+    radial-gradient(circle at top, rgba(56, 189, 248, 0.1), transparent 40%);
+  color: var(--foreground);
+  font-family:
+    "SF Pro Text",
+    "Segoe UI",
+    sans-serif;
+}
+
+body::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.3), transparent 70%);
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #020617;
+  --foreground: #e2e8f0;
+}
+
+.dark body {
+  background:
+    linear-gradient(180deg, rgba(2, 6, 23, 0.98), rgba(15, 23, 42, 0.96)),
+    radial-gradient(circle at top, rgba(59, 130, 246, 0.14), transparent 35%);
 }
