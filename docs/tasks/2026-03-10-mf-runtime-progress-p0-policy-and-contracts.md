@@ -164,3 +164,26 @@ git push origin main
 - run contracts validate the new attempt summary shape
 - schema export and tests pass
 
+---
+
+## Completion Notes
+
+- Completed on 2026-03-10.
+- `RuntimePolicySnapshot` now carries:
+  - `no_data_checkpoints_seconds`
+  - `progress_poll_interval_seconds`
+  - `total_deadline_seconds`
+  - `output_token_cap`
+- Legacy fields `round_windows_seconds` and `max_rounds` remain temporarily optional to keep the pre-existing executor path working until P2 lands.
+- `PromptAttemptSummary` now supports progress-monitoring fields:
+  - `request_attempt_index`
+  - `bytes_received`
+  - `first_byte_latency_ms`
+  - `last_progress_latency_ms`
+  - `completed`
+  - `abort_reason`
+- Verification used:
+  - `uv run python -c 'from modelfingerprint.contracts.schema_export import export_schemas; export_schemas()'`
+  - `uv run pytest tests/services/test_runtime_policy.py tests/contracts/test_json_schemas.py tests/test_cli_commands.py -q`
+  - `uv run ruff check src tests`
+  - `uv run mypy src`

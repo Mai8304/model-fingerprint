@@ -579,3 +579,9 @@ The feature is complete only if all of the following are true:
 7. Run artifacts and CLI output expose the new runtime semantics clearly.
 8. Focused unit/integration tests, `ruff`, and `mypy` all pass.
 
+---
+
+## Incremental Implementation Notes
+
+- 2026-03-10 P0 landed the new checkpoint/deadline policy fields and progress-oriented attempt fields.
+- Legacy runtime fields remain temporarily present as an explicit compatibility bridge so the old executor path can continue to run until the new in-flight monitor path lands.

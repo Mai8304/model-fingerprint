@@ -135,6 +135,8 @@ class LiveRunner:
         request_snapshot: PromptRequestSnapshot,
     ) -> PromptExecutionResult:
         assert self._runtime_policy is not None
+        assert self._runtime_policy.max_rounds is not None
+        assert self._runtime_policy.round_windows_seconds is not None
         attempts: list[PromptAttemptSummary] = []
         http_attempt_index = 0
         last_result: PromptExecutionResult | None = None

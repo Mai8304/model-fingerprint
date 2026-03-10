@@ -287,9 +287,46 @@
     "PromptAttemptSummary": {
       "additionalProperties": false,
       "properties": {
+        "abort_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Abort Reason"
+        },
         "answer_text_present": {
           "title": "Answer Text Present",
           "type": "boolean"
+        },
+        "bytes_received": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bytes Received"
+        },
+        "completed": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Completed"
         },
         "error_kind": {
           "anyOf": [
@@ -315,10 +352,31 @@
           "default": null,
           "title": "Finish Reason"
         },
+        "first_byte_latency_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "First Byte Latency Ms"
+        },
         "http_attempt_index": {
-          "minimum": 1,
-          "title": "Http Attempt Index",
-          "type": "integer"
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Http Attempt Index"
         },
         "http_status": {
           "anyOf": [
@@ -333,6 +391,19 @@
           ],
           "default": null,
           "title": "Http Status"
+        },
+        "last_progress_latency_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Progress Latency Ms"
         },
         "latency_ms": {
           "anyOf": [
@@ -377,10 +448,31 @@
           "default": null,
           "title": "Reasoning Visible"
         },
+        "request_attempt_index": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Attempt Index"
+        },
         "round_index": {
-          "minimum": 1,
-          "title": "Round Index",
-          "type": "integer"
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Round Index"
         },
         "status": {
           "enum": [
@@ -396,15 +488,20 @@
           "type": "string"
         },
         "window_index": {
-          "minimum": 1,
-          "title": "Window Index",
-          "type": "integer"
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Window Index"
         }
       },
       "required": [
-        "round_index",
-        "window_index",
-        "http_attempt_index",
         "read_timeout_seconds",
         "status",
         "answer_text_present"
@@ -669,9 +766,25 @@
           "type": "string"
         },
         "max_rounds": {
-          "minimum": 1,
-          "title": "Max Rounds",
-          "type": "integer"
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Rounds"
+        },
+        "no_data_checkpoints_seconds": {
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 1,
+          "title": "No Data Checkpoints Seconds",
+          "type": "array"
         },
         "output_token_cap": {
           "anyOf": [
@@ -691,13 +804,26 @@
           "title": "Policy Id",
           "type": "string"
         },
+        "progress_poll_interval_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Progress Poll Interval Seconds",
+          "type": "integer"
+        },
         "round_windows_seconds": {
-          "items": {
-            "type": "integer"
-          },
-          "minItems": 1,
-          "title": "Round Windows Seconds",
-          "type": "array"
+          "anyOf": [
+            {
+              "items": {
+                "type": "integer"
+              },
+              "minItems": 1,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Round Windows Seconds"
         },
         "thinking_probe_status": {
           "enum": [
@@ -708,14 +834,20 @@
           ],
           "title": "Thinking Probe Status",
           "type": "string"
+        },
+        "total_deadline_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Total Deadline Seconds",
+          "type": "integer"
         }
       },
       "required": [
         "policy_id",
         "thinking_probe_status",
         "execution_class",
-        "round_windows_seconds",
-        "max_rounds"
+        "no_data_checkpoints_seconds",
+        "progress_poll_interval_seconds",
+        "total_deadline_seconds"
       ],
       "title": "RuntimePolicySnapshot",
       "type": "object"

@@ -81,15 +81,16 @@ class RuntimePolicySnapshot(ContractModel):
     policy_id: str = Field(min_length=1)
     thinking_probe_status: ProbeCapabilityStatus
     execution_class: RuntimeExecutionClass
-    round_windows_seconds: list[int] = Field(min_length=1)
-    max_rounds: int = Field(ge=1)
+    no_data_checkpoints_seconds: list[int] = Field(min_length=1)
+    progress_poll_interval_seconds: int = Field(gt=0)
+    total_deadline_seconds: int = Field(gt=0)
     output_token_cap: int | None = Field(default=None, ge=1)
+    round_windows_seconds: list[int] | None = Field(default=None, min_length=1)
+    max_rounds: int | None = Field(default=None, ge=1)
 
 
 class PromptAttemptSummary(ContractModel):
-    round_index: int = Field(ge=1)
-    window_index: int = Field(ge=1)
-    http_attempt_index: int = Field(ge=1)
+    request_attempt_index: int | None = Field(default=None, ge=1)
     read_timeout_seconds: int = Field(gt=0)
     output_token_cap: int | None = Field(default=None, ge=1)
     status: Literal[
@@ -107,6 +108,14 @@ class PromptAttemptSummary(ContractModel):
     finish_reason: str | None = None
     answer_text_present: bool
     reasoning_visible: bool | None = None
+    bytes_received: int | None = Field(default=None, ge=0)
+    first_byte_latency_ms: int | None = Field(default=None, ge=0)
+    last_progress_latency_ms: int | None = Field(default=None, ge=0)
+    completed: bool | None = None
+    abort_reason: str | None = None
+    round_index: int | None = Field(default=None, ge=1)
+    window_index: int | None = Field(default=None, ge=1)
+    http_attempt_index: int | None = Field(default=None, ge=1)
 
 
 class PromptRunResult(ContractModel):

@@ -6,11 +6,15 @@ from typing import cast
 from modelfingerprint.contracts._common import ProbeCapabilityStatus, RuntimeExecutionClass
 from modelfingerprint.contracts.run import CapabilityProbeResult, RuntimePolicySnapshot
 
-RUNTIME_POLICY_ID = "thinking_aware_runtime_v1"
+RUNTIME_POLICY_ID = "single_request_progress_runtime_v1"
 LIVE_CONTENT_OUTPUT_TOKEN_CAP = 3000
-THINKING_ROUND_WINDOWS_SECONDS = [30, 30]
-NON_THINKING_ROUND_WINDOWS_SECONDS = [30]
-MAX_PROMPT_ROUNDS = 2
+THINKING_NO_DATA_CHECKPOINTS_SECONDS = [30, 60]
+NON_THINKING_NO_DATA_CHECKPOINTS_SECONDS = [30]
+PROGRESS_POLL_INTERVAL_SECONDS = 10
+TOTAL_REQUEST_DEADLINE_SECONDS = 120
+LEGACY_THINKING_ROUND_WINDOWS_SECONDS = [30, 30]
+LEGACY_NON_THINKING_ROUND_WINDOWS_SECONDS = [30]
+LEGACY_MAX_PROMPT_ROUNDS = 2
 
 
 def resolve_runtime_policy(
@@ -22,18 +26,26 @@ def resolve_runtime_policy(
     execution_class: RuntimeExecutionClass = (
         "thinking" if thinking_status == "supported" else "non_thinking"
     )
-    round_windows_seconds = (
-        THINKING_ROUND_WINDOWS_SECONDS
+    no_data_checkpoints_seconds = (
+        THINKING_NO_DATA_CHECKPOINTS_SECONDS
         if execution_class == "thinking"
-        else NON_THINKING_ROUND_WINDOWS_SECONDS
+        else NON_THINKING_NO_DATA_CHECKPOINTS_SECONDS
+    )
+    legacy_round_windows_seconds = (
+        LEGACY_THINKING_ROUND_WINDOWS_SECONDS
+        if execution_class == "thinking"
+        else LEGACY_NON_THINKING_ROUND_WINDOWS_SECONDS
     )
     return RuntimePolicySnapshot(
         policy_id=RUNTIME_POLICY_ID,
         thinking_probe_status=thinking_status,
         execution_class=execution_class,
-        round_windows_seconds=list(round_windows_seconds),
-        max_rounds=MAX_PROMPT_ROUNDS,
+        no_data_checkpoints_seconds=list(no_data_checkpoints_seconds),
+        progress_poll_interval_seconds=PROGRESS_POLL_INTERVAL_SECONDS,
+        total_deadline_seconds=TOTAL_REQUEST_DEADLINE_SECONDS,
         output_token_cap=LIVE_CONTENT_OUTPUT_TOKEN_CAP if supports_output_token_cap else None,
+        round_windows_seconds=list(legacy_round_windows_seconds),
+        max_rounds=LEGACY_MAX_PROMPT_ROUNDS,
     )
 
 

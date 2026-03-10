@@ -85,11 +85,12 @@ def test_show_run_and_show_profile_commands_print_v2_coverage_fields(tmp_path: P
                     "answer_coverage_ratio": 1.0,
                     "reasoning_coverage_ratio": 0.5,
                     "runtime_policy": {
-                        "policy_id": "thinking_aware_runtime_v1",
+                        "policy_id": "single_request_progress_runtime_v1",
                         "thinking_probe_status": "supported",
                         "execution_class": "thinking",
-                        "round_windows_seconds": [30, 30],
-                        "max_rounds": 2,
+                        "no_data_checkpoints_seconds": [30, 60],
+                        "progress_poll_interval_seconds": 10,
+                        "total_deadline_seconds": 120,
                         "output_token_cap": 3000,
                     },
                     "capability_probe": {
@@ -122,9 +123,7 @@ def test_show_run_and_show_profile_commands_print_v2_coverage_fields(tmp_path: P
                             },
                             "attempts": [
                                 {
-                                    "round_index": 1,
-                                    "window_index": 1,
-                                    "http_attempt_index": 1,
+                                    "request_attempt_index": 1,
                                     "read_timeout_seconds": 30,
                                     "output_token_cap": 3000,
                                     "status": "completed",
@@ -132,6 +131,10 @@ def test_show_run_and_show_profile_commands_print_v2_coverage_fields(tmp_path: P
                                     "finish_reason": "stop",
                                     "answer_text_present": True,
                                     "reasoning_visible": False,
+                                    "bytes_received": 192,
+                                    "first_byte_latency_ms": 400,
+                                    "last_progress_latency_ms": 900,
+                                    "completed": True,
                                 }
                             ],
                             "features": {"answer.char_len": 12},
