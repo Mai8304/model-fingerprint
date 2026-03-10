@@ -6,6 +6,7 @@ from typing import Literal
 from pydantic import Field
 
 from modelfingerprint.contracts._common import ContractModel, SuiteId
+from modelfingerprint.contracts.comparison import ComparisonVerdict
 
 WebRunStatus = Literal[
     "validating",
@@ -30,6 +31,12 @@ WebPromptStatus = Literal[
     "completed",
     "failed",
     "stopped",
+]
+
+WebProtocolStatus = Literal[
+    "compatible",
+    "insufficient_evidence",
+    "incompatible_protocol",
 ]
 
 
@@ -63,6 +70,43 @@ class WebRunFailure(ContractModel):
     http_status: int | None = Field(default=None, ge=100, le=599)
 
 
+class WebRunResultFingerprint(ContractModel):
+    id: str = Field(min_length=1)
+    label: str = Field(min_length=1)
+
+
+class WebRunResultSummary(ContractModel):
+    similarity_score: float | None = Field(default=None, ge=0.0, le=1.0)
+    confidence_low: float | None = Field(default=None, ge=0.0, le=1.0)
+    confidence_high: float | None = Field(default=None, ge=0.0, le=1.0)
+    top_candidate_model_id: str | None = None
+    top_candidate_label: str | None = None
+
+
+class WebRunResultCandidate(ContractModel):
+    model_id: str = Field(min_length=1)
+    label: str = Field(min_length=1)
+    similarity: float = Field(ge=0.0, le=1.0)
+
+
+class WebRunResultDiagnostics(ContractModel):
+    protocol_status: WebProtocolStatus
+    protocol_issues: list[str] = Field(default_factory=list)
+    hard_mismatches: list[str] = Field(default_factory=list)
+
+
+class WebRunResult(ContractModel):
+    run_id: str = Field(min_length=1)
+    result_state: WebResultState
+    selected_fingerprint: WebRunResultFingerprint
+    completed_prompts: int = Field(ge=0)
+    total_prompts: int = Field(ge=0)
+    verdict: ComparisonVerdict | None = None
+    summary: WebRunResultSummary | None = None
+    candidates: list[WebRunResultCandidate] = Field(default_factory=list)
+    diagnostics: WebRunResultDiagnostics
+
+
 class WebRunRecord(ContractModel):
     run_id: str = Field(min_length=1)
     run_status: WebRunStatus
@@ -74,6 +118,7 @@ class WebRunRecord(ContractModel):
     prompts: list[WebRunPrompt] = Field(default_factory=list)
     eta_seconds: int | None = Field(default=None, ge=0)
     failure: WebRunFailure | None = None
+    result: WebRunResult | None = None
 
 
 class WebRunProgressSnapshot(ContractModel):

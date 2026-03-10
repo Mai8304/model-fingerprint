@@ -1,4 +1,11 @@
-import { messages, type LocaleKey } from "@/lib/i18n/messages"
+import { messages, type LocaleKey, type MessageKey } from "@/lib/i18n/messages"
+
+export type MessageValues = Record<string, string | number | undefined>
+
+export type TranslationHelpers = {
+  t: (key: MessageKey) => string
+  format: (key: MessageKey, values?: MessageValues) => string
+}
 
 export function resolveInitialLocale(rawLocale?: string | null): LocaleKey {
   const normalized = (rawLocale ?? "").toLowerCase()
@@ -16,4 +23,21 @@ export function resolveInitialLocale(rawLocale?: string | null): LocaleKey {
 
 export function getMessages(locale: LocaleKey) {
   return messages[locale]
+}
+
+export function formatMessage(template: string, values: MessageValues = {}) {
+  return template.replaceAll(/\{(\w+)\}/g, (_match, key: string) => {
+    const value = values[key]
+
+    return value === undefined ? "" : String(value)
+  })
+}
+
+export function createTranslationHelpers(locale: LocaleKey): TranslationHelpers {
+  const dictionary = getMessages(locale)
+
+  return {
+    t: (key) => dictionary[key],
+    format: (key, values) => formatMessage(dictionary[key], values),
+  }
 }

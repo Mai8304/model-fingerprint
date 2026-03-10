@@ -85,7 +85,7 @@ and avoid embedding user-facing English prose as the primary contract.
 {
   "id": "claude-3.7-sonnet",
   "label": "Claude 3.7 Sonnet",
-  "suite_id": "fingerprint-suite-v2",
+  "suite_id": "fingerprint-suite-v3",
   "available": true
 }
 ```
@@ -351,7 +351,7 @@ Response `200`:
     {
       "id": "claude-3.7-sonnet",
       "label": "Claude 3.7 Sonnet",
-      "suite_id": "fingerprint-suite-v2",
+      "suite_id": "fingerprint-suite-v3",
       "available": true
     }
   ]
@@ -519,4 +519,3 @@ The HTTP API should map from engine artifacts rather than fork their meaning:
 - no artifact download endpoint in `v1`
 - no training, calibration, or profile build endpoints in `v1`
 - no guarantee that the frontend can reconstruct an in-flight run without polling this API
-

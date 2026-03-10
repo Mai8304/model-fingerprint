@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Callable
 
 from modelfingerprint.storage.filesystem import ensure_directories
 from modelfingerprint.webapi.contracts import WebRunInput, WebRunPrompt, WebRunRecord
@@ -37,13 +37,17 @@ class RunStore:
             created_at=timestamp,
             updated_at=timestamp,
             input=input,
-            prompts=[WebRunPrompt(prompt_id=prompt_id, status="pending") for prompt_id in prompt_ids],
+            prompts=[
+                WebRunPrompt(prompt_id=prompt_id, status="pending")
+                for prompt_id in prompt_ids
+            ],
         )
         self._write(record)
         return record
 
     def get(self, run_id: str) -> WebRunRecord:
-        return WebRunRecord.model_validate(json.loads(self._path_for(run_id).read_text(encoding="utf-8")))
+        payload = json.loads(self._path_for(run_id).read_text(encoding="utf-8"))
+        return WebRunRecord.model_validate(payload)
 
     def save(self, record: WebRunRecord) -> WebRunRecord:
         updated = record.model_copy(update={"updated_at": self._now()})

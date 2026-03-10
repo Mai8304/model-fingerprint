@@ -1,25 +1,54 @@
 "use client"
 
+import { Languages } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useLocale } from "@/lib/i18n/provider"
 import type { LocaleKey } from "@/lib/i18n/messages"
 
 const locales: LocaleKey[] = ["en", "zh-CN", "ja"]
 
+const localeLabelKey: Record<LocaleKey, "locale.english" | "locale.simplifiedChinese" | "locale.japanese"> = {
+  en: "locale.english",
+  "zh-CN": "locale.simplifiedChinese",
+  ja: "locale.japanese",
+}
+
 export function LocaleSwitcher() {
-  const { locale, setLocale } = useLocale()
+  const { locale, setLocale, t } = useLocale()
 
   return (
-    <div aria-label="Locale switcher">
-      {locales.map((item) => (
-        <button
-          key={item}
-          aria-pressed={locale === item}
-          onClick={() => setLocale(item)}
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          aria-label={t("actions.changeLanguage")}
+          size="icon"
           type="button"
+          variant="outline"
         >
-          {item}
-        </button>
-      ))}
-    </div>
+          <Languages className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>{t("actions.language")}</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuRadioGroup onValueChange={(value) => setLocale(value as LocaleKey)} value={locale}>
+          {locales.map((item) => (
+            <DropdownMenuRadioItem key={item} value={item}>
+              {t(localeLabelKey[item])}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

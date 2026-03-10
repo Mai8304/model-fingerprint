@@ -121,6 +121,8 @@ The completion rules from the approved UI design become contract rules:
 - `<3/5` usable prompts -> `insufficient_evidence`
 - protocol incompatibility overrides evidence-count rules
 
+For the shipped web MVP, the five-prompt run is backed by `fingerprint-suite-v3`.
+
 These rules must live in the contract and not only in the web UI.
 
 ### 7. Cancellation semantics
@@ -146,4 +148,3 @@ The approved direction is:
 The source-of-truth contract lives in:
 
 - `docs/apis/web_api_contract.md`
-

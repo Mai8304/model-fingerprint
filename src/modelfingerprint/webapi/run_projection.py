@@ -10,7 +10,10 @@ from modelfingerprint.webapi.contracts import (
 def project_run_snapshot(record: WebRunRecord) -> WebRunSnapshot:
     completed_prompts = sum(1 for prompt in record.prompts if prompt.status == "completed")
     failed_prompts = sum(1 for prompt in record.prompts if prompt.status == "failed")
-    current_prompt = next((prompt.prompt_id for prompt in record.prompts if prompt.status == "running"), None)
+    current_prompt = next(
+        (prompt.prompt_id for prompt in record.prompts if prompt.status == "running"),
+        None,
+    )
 
     return WebRunSnapshot(
         run_id=record.run_id,

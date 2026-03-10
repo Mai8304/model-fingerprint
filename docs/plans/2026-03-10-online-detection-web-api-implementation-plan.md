@@ -82,7 +82,7 @@ Expected: FAIL because the web API projection module does not exist yet.
 
 **Step 3: Implement the registry projection**
 
-Create a small service that returns web-facing `fingerprint_model` items from existing stored profiles or registry metadata.
+Create a small service that returns web-facing `fingerprint_model` items from existing stored profiles or registry metadata. The web registry should read from `profiles/fingerprint-suite-v3`.
 
 **Step 4: Run test to verify it passes**
 
@@ -170,7 +170,7 @@ Wrap existing engine/service calls:
 
 - capability probe
 - runtime policy resolution
-- suite execution
+- `fingerprint-suite-v3` execution
 - comparison artifact build and verdict decision
 
 Update run store between phases so polling can observe progress.
@@ -373,4 +373,3 @@ Only add fields if they are proven necessary. Do not widen the contract speculat
 git add docs/apis/web_api_contract.md apps/web/output/playwright
 git commit -m "test: verify live web api contract end to end"
 ```
-

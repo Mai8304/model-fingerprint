@@ -1,82 +1,159 @@
-import type { RunSnapshot, WorkbenchState } from "@/lib/run-types"
+import type { LocaleKey } from "@/lib/i18n/messages"
+import type { TranslationHelpers } from "@/lib/i18n/locale"
+import { getPromptLabel } from "@/lib/prompt-copy"
+import type { RunResource, RunResultResource, RunSnapshot, WorkbenchState } from "@/lib/run-types"
 
-export function deriveWorkbenchState(run: RunSnapshot): WorkbenchState {
+export function projectRunSnapshot(
+  snapshot: RunResource | null,
+  result: RunResultResource | null,
+  options: {
+    locale: LocaleKey
+    failureReason?: string | null
+  },
+): RunSnapshot {
+  if (snapshot === null) {
+    if (options.failureReason) {
+      return {
+        runId: null,
+        status: "configuration_error",
+        resultState: "configuration_error",
+        cancelRequested: false,
+        completedPrompts: 0,
+        totalPrompts: 5,
+        currentPromptId: null,
+        currentPromptLabel: null,
+        selectedFingerprint: "",
+        failureReason: options.failureReason,
+      }
+    }
+
+    return {
+      runId: null,
+      status: "idle",
+      resultState: null,
+      cancelRequested: false,
+      completedPrompts: 0,
+      totalPrompts: 5,
+      currentPromptId: null,
+      currentPromptLabel: null,
+      selectedFingerprint: "",
+    }
+  }
+
+  const currentPromptId = snapshot.progress.current_prompt_id
+
+  return {
+    runId: snapshot.run_id,
+    status: snapshot.run_status,
+    resultState: result?.result_state ?? snapshot.result_state,
+    cancelRequested: snapshot.cancel_requested,
+    completedPrompts: result?.completed_prompts ?? snapshot.progress.completed_prompts,
+    totalPrompts: result?.total_prompts ?? snapshot.progress.total_prompts,
+    currentPromptId,
+    currentPromptLabel:
+      currentPromptId === null ? null : getPromptLabel(currentPromptId, options.locale),
+    selectedFingerprint:
+      result?.selected_fingerprint.label ?? snapshot.input.fingerprint_model_id,
+    topCandidate: result?.summary?.top_candidate_label ?? undefined,
+    similarityScore: result?.summary?.similarity_score ?? undefined,
+    failureReason: options.failureReason ?? snapshot.failure?.message ?? undefined,
+  }
+}
+
+export function deriveWorkbenchState(
+  run: RunSnapshot,
+  { t, format }: TranslationHelpers,
+): WorkbenchState {
   if (run.status === "idle") {
     return {
       kind: "empty",
-      title: "No active check",
-      description:
-        "Enter endpoint details, choose a fingerprint model, and start a live five-prompt check.",
+      title: t("state.empty.title"),
+      description: t("state.empty.description"),
     }
   }
 
   if (run.status === "configuration_error") {
     return {
       kind: "configuration_error",
-      title: "Unable to start check",
-      description:
-        run.failureReason ??
-        "The endpoint configuration did not pass validation. Update the input fields and retry.",
+      title: t("state.configurationError.title"),
+      description: run.failureReason ?? t("state.configurationError.description"),
     }
   }
 
-  if (run.status === "stopped" || run.stoppedByUser) {
+  if (run.status === "stopped" || run.resultState === "stopped") {
     return {
       kind: "stopped",
-      title: "Check stopped",
-      description: "This run was stopped before enough evidence was collected for a final conclusion.",
+      title: t("state.stopped.title"),
+      description: t("state.stopped.description"),
       completedPrompts: run.completedPrompts,
+      totalPrompts: run.totalPrompts,
     }
   }
 
   if (run.status === "validating" || run.status === "running") {
     return {
       kind: "running",
-      title: "Running model fingerprint check",
-      description: "The workbench is collecting live evidence from the configured endpoint.",
+      title: t("state.running.title"),
+      description: t("state.running.description"),
+      completedPrompts: run.completedPrompts,
+      totalPrompts: run.totalPrompts,
+      currentPromptLabel: run.currentPromptLabel,
     }
   }
 
-  if (run.incompatibleProtocol) {
+  if (run.resultState === "incompatible_protocol") {
     return {
       kind: "incompatible_protocol",
-      title: "Incompatible protocol",
-      description:
-        "The endpoint did not satisfy the expected response protocol consistently. This does not prove a model mismatch.",
+      title: t("state.incompatibleProtocol.title"),
+      description: t("state.incompatibleProtocol.description"),
       completedPrompts: run.completedPrompts,
+      totalPrompts: run.totalPrompts,
     }
   }
 
-  if (run.completedPrompts < 3) {
+  if (
+    run.resultState === "insufficient_evidence" ||
+    (run.status === "completed" && run.completedPrompts < 3)
+  ) {
     return {
       kind: "insufficient_evidence",
-      title: "Insufficient evidence",
-      description:
-        "The run finished with too little usable data to judge whether the endpoint matches the selected fingerprint.",
+      title: t("state.insufficientEvidence.title"),
+      description: t("state.insufficientEvidence.description"),
       completedPrompts: run.completedPrompts,
+      totalPrompts: run.totalPrompts,
     }
   }
 
-  if (run.completedPrompts < run.totalPrompts) {
+  if (
+    run.resultState === "provisional" ||
+    (run.status === "completed" && run.completedPrompts < run.totalPrompts)
+  ) {
     return {
       kind: "provisional",
-      title: "Provisional observation",
+      title: t("state.provisional.title"),
       description:
         run.topCandidate === undefined
-          ? "Partial evidence is available, but the run is incomplete and cannot support a final verdict."
-          : `Partial evidence currently looks closer to ${run.topCandidate}. Treat this as a temporary observation, not a final conclusion.`,
+          ? t("state.provisional.description")
+          : format("state.provisional.withCandidate", { candidate: run.topCandidate }),
       candidate: run.topCandidate,
       completedPrompts: run.completedPrompts,
+      totalPrompts: run.totalPrompts,
+      similarityScore: run.similarityScore,
     }
   }
 
   return {
     kind: "formal_result",
-    title: "Formal conclusion",
+    title: t("state.formalResult.title"),
     description:
       run.topCandidate === undefined
-        ? "All prompts completed and the run is ready for a final comparison summary."
-        : `All prompts completed. The endpoint can now be compared formally against ${run.selectedFingerprint}, with ${run.topCandidate} as the nearest candidate if applicable.`,
+        ? t("state.formalResult.description")
+        : format("state.formalResult.withCandidate", {
+            fingerprint: run.selectedFingerprint,
+            candidate: run.topCandidate,
+          }),
     completedPrompts: run.completedPrompts,
+    totalPrompts: run.totalPrompts,
+    similarityScore: run.similarityScore,
   }
 }

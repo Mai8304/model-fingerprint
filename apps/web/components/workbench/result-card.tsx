@@ -1,6 +1,9 @@
+"use client"
+
 import { AlertTriangle, FlaskConical, ShieldAlert, StopCircle, CheckCircle2 } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useLocale } from "@/lib/i18n/provider"
 import type { WorkbenchState } from "@/lib/run-types"
 
 const iconByState = {
@@ -25,24 +28,48 @@ const toneByState = {
   stopped: "border-slate-300 bg-slate-100 text-slate-800",
 } as const
 
-export function ResultCard({ state }: { state: WorkbenchState }) {
+function ResultCardBody({ state }: { state: WorkbenchState }) {
   const Icon = iconByState[state.kind]
+
+  return (
+    <div className={`rounded-2xl border px-4 py-4 ${toneByState[state.kind]}`}>
+      <div className="flex items-start gap-3">
+        <Icon className="mt-0.5 h-5 w-5 shrink-0" />
+        <div className="space-y-1">
+          <p className="text-sm font-semibold">{state.title}</p>
+          <p className="text-sm leading-6">{state.description}</p>
+          {state.totalPrompts !== undefined ? (
+            <div className="flex flex-wrap items-center gap-2 pt-2 text-xs font-semibold uppercase tracking-[0.12em]">
+              <span>{state.completedPrompts ?? 0} / {state.totalPrompts}</span>
+              {state.currentPromptLabel ? <span>{state.currentPromptLabel}</span> : null}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export function ResultCard({
+  state,
+  embedded = false,
+}: {
+  state: WorkbenchState
+  embedded?: boolean
+}) {
+  const { t } = useLocale()
+
+  if (embedded) {
+    return <ResultCardBody state={state} />
+  }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Result</CardTitle>
+        <CardTitle>{t("sections.result")}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className={`rounded-2xl border px-4 py-4 ${toneByState[state.kind]}`}>
-          <div className="flex items-start gap-3">
-            <Icon className="mt-0.5 h-5 w-5 shrink-0" />
-            <div className="space-y-1">
-              <p className="text-sm font-semibold">{state.title}</p>
-              <p className="text-sm leading-6">{state.description}</p>
-            </div>
-          </div>
-        </div>
+        <ResultCardBody state={state} />
       </CardContent>
     </Card>
   )

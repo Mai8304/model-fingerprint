@@ -17,7 +17,7 @@ test("shows validation errors before submit", async () => {
 
   await user.click(screen.getByRole("button", { name: /start check/i }))
 
-  expect(await screen.findByText("API key is required.")).toBeInTheDocument()
+  expect(await screen.findByText("API Key is required.")).toBeInTheDocument()
   expect(await screen.findByText("Base URL must be a valid URL.")).toBeInTheDocument()
   expect(await screen.findByText("Model name is required.")).toBeInTheDocument()
   expect(await screen.findByText("Choose a fingerprint model.")).toBeInTheDocument()

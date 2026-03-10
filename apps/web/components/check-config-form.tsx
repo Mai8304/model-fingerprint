@@ -1,25 +1,36 @@
 "use client"
 
+import { useMemo } from "react"
 import { ShieldCheck } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { checkConfigSchema, type CheckConfigValues } from "@/lib/check-config-schema"
-import { fingerprintOptions } from "@/lib/fingerprint-options"
+import { createCheckConfigSchema, type CheckConfigValues } from "@/lib/check-config-schema"
+import { fingerprintOptions as defaultFingerprintOptions } from "@/lib/fingerprint-options"
 import { useLocale } from "@/lib/i18n/provider"
+import type { FingerprintOption } from "@/lib/run-types"
 
 export function CheckConfigForm({
   disabled,
+  fingerprintOptions = defaultFingerprintOptions,
   onSubmit,
 }: {
   disabled: boolean
-  onSubmit: (values: CheckConfigValues) => void
+  fingerprintOptions?: FingerprintOption[]
+  onSubmit: (values: CheckConfigValues) => void | Promise<void>
 }) {
   const { t } = useLocale()
+  const schema = useMemo(
+    () =>
+      createCheckConfigSchema((key) => {
+        return t(key)
+      }),
+    [t],
+  )
   const form = useForm<CheckConfigValues>({
-    resolver: zodResolver(checkConfigSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       apiKey: "",
       baseUrl: "",
@@ -85,9 +96,9 @@ export function CheckConfigForm({
           className="flex h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-400 focus:bg-white focus:ring-2 focus:ring-sky-100 disabled:cursor-not-allowed disabled:opacity-50"
           id="fingerprintModel"
           {...form.register("fingerprintModel")}
-          disabled={disabled}
+          disabled={disabled || fingerprintOptions.length === 0}
         >
-          <option value="">Select a fingerprint</option>
+          <option value="">{t("form.selectFingerprintPlaceholder")}</option>
           {fingerprintOptions.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
@@ -106,7 +117,7 @@ export function CheckConfigForm({
         </div>
       </div>
 
-      <Button className="w-full" disabled={disabled} type="submit">
+      <Button className="w-full" disabled={disabled || fingerprintOptions.length === 0} type="submit">
         {t("actions.startCheck")}
       </Button>
     </form>

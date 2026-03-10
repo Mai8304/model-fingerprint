@@ -3,12 +3,14 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react"
 
 import type { LocaleKey, MessageKey } from "@/lib/i18n/messages"
-import { getMessages } from "@/lib/i18n/locale"
+import type { MessageValues } from "@/lib/i18n/locale"
+import { createTranslationHelpers } from "@/lib/i18n/locale"
 
 type LocaleContextValue = {
   locale: LocaleKey
   setLocale: (locale: LocaleKey) => void
   t: (key: MessageKey) => string
+  format: (key: MessageKey, values?: MessageValues) => string
 }
 
 const LocaleContext = createContext<LocaleContextValue | null>(null)
@@ -23,12 +25,13 @@ export function LocaleProvider({
   const [locale, setLocale] = useState<LocaleKey>(initialLocale)
 
   const value = useMemo<LocaleContextValue>(() => {
-    const dictionary = getMessages(locale)
+    const { t, format } = createTranslationHelpers(locale)
 
     return {
       locale,
       setLocale,
-      t: (key) => dictionary[key],
+      t,
+      format,
     }
   }, [locale])
 

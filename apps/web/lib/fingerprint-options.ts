@@ -1,5 +1,6 @@
-export const fingerprintOptions = [
+import type { FingerprintOption } from "@/lib/run-types"
+
+export const fingerprintOptions: FingerprintOption[] = [
   { value: "deepseek-chat", label: "DeepSeek Chat" },
   { value: "glm-5", label: "GLM-5" },
-  { value: "gpt-4.1-mini", label: "GPT-4.1 Mini" },
 ]
