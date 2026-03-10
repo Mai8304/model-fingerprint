@@ -92,25 +92,25 @@ risk_level: low
 def test_quick_check_suite_must_be_strict_subset_of_fingerprint_suite(tmp_path: Path) -> None:
     suites_dir = tmp_path / "prompt-bank" / "suites"
     write_yaml(
-        suites_dir / "fingerprint-suite-v1.yaml",
+        suites_dir / "fingerprint-suite-v3.yaml",
         """
-id: fingerprint-suite-v1
-name: fingerprint suite v1
+id: fingerprint-suite-v3
+name: fingerprint suite v3
 prompt_ids: [p001, p002, p003]
 """.strip(),
     )
     write_yaml(
-        suites_dir / "quick-check-v1.yaml",
+        suites_dir / "quick-check-v3.yaml",
         """
-id: quick-check-v1
-name: quick check v1
+id: quick-check-v3
+name: quick check v3
 prompt_ids: [p001, p002]
 """.strip(),
     )
 
     suites = load_suites(suites_dir)
 
-    validate_suite_subset(suites["fingerprint-suite-v1"], suites["quick-check-v1"])
+    validate_suite_subset(suites["fingerprint-suite-v3"], suites["quick-check-v3"])
 
 
 def test_repository_v3_suite_is_loadable_and_has_expected_prompt_ids() -> None:
@@ -122,7 +122,7 @@ def test_repository_v3_suite_is_loadable_and_has_expected_prompt_ids() -> None:
 
     assert suite.prompt_ids == ["p021", "p022", "p023", "p024", "p025"]
     assert set(quick_check.prompt_ids) < set(suite.prompt_ids)
-    assert "quick-check-v2" in suites
+    assert set(suites) == {"fingerprint-suite-v3", "quick-check-v3"}
 
 
 def test_duplicate_prompt_ids_and_unknown_extractors_are_rejected(

@@ -6,12 +6,6 @@ import yaml
 
 from modelfingerprint.contracts.prompt import PromptDefinition, SuiteDefinition
 
-RESEARCH_SET_SUITE_ID = "research-set-v1"
-FINGERPRINT_SUITE_ID = "fingerprint-suite-v1"
-QUICK_CHECK_SUITE_ID = "quick-check-v1"
-FINGERPRINT_SUITE_V2_ID = "fingerprint-suite-v2"
-QUICK_CHECK_SUITE_V2_ID = "quick-check-v2"
-
 KNOWN_EXTRACTOR_IDS = frozenset(
     {
         "style_brief_v1",

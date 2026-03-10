@@ -13,8 +13,8 @@ def test_run_writer_persists_run_artifacts_under_date_directory(tmp_path: Path) 
     writer = RunWriter(RepositoryPaths(root=tmp_path))
     artifact = RunArtifact.model_validate(
         {
-            "run_id": "suspect-a.fingerprint-suite-v1",
-            "suite_id": "fingerprint-suite-v1",
+            "run_id": "suspect-a.fingerprint-suite-v3",
+            "suite_id": "fingerprint-suite-v3",
             "target_label": "suspect-a",
             "claimed_model": "gpt-5.3",
             "prompts": [
@@ -37,7 +37,7 @@ def test_run_writer_persists_run_artifacts_under_date_directory(tmp_path: Path) 
 
     path = writer.write(artifact, run_date=date(2026, 3, 9))
 
-    assert path == tmp_path / "runs" / "2026-03-09" / "suspect-a.fingerprint-suite-v1.json"
+    assert path == tmp_path / "runs" / "2026-03-09" / "suspect-a.fingerprint-suite-v3.json"
     payload = json.loads(path.read_text(encoding="utf-8"))
     assert payload["prompts"][0]["raw_output"] == "Use CRUD first. Event sourcing adds overhead."
     assert payload["prompts"][0]["usage"]["total_tokens"] == 20

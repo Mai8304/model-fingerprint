@@ -155,8 +155,8 @@ def test_feature_pipeline_extracts_multi_channel_features_and_preserves_events()
     )
 
     artifact = pipeline.build_run_artifact(
-        run_id="suspect-a.fingerprint-suite-v1",
-        suite_id="fingerprint-suite-v1",
+        run_id="suspect-a.fingerprint-suite-v3",
+        suite_id="fingerprint-suite-v3",
         target_label="suspect-a",
         claimed_model=None,
         executions=[

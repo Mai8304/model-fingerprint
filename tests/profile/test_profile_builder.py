@@ -26,7 +26,7 @@ def build_run(
     return RunArtifact.model_validate(
         {
             "run_id": run_id,
-            "suite_id": "fingerprint-suite-v1",
+            "suite_id": "fingerprint-suite-v3",
             "target_label": "gpt-5.3",
             "claimed_model": "gpt-5.3",
             "answer_coverage_ratio": 1.0,
@@ -68,7 +68,7 @@ def test_profile_builder_aggregates_weighted_multi_channel_statistics() -> None:
 
     prompt = profile.prompts[0]
 
-    assert profile.suite_id == "fingerprint-suite-v1"
+    assert profile.suite_id == "fingerprint-suite-v3"
     assert profile.sample_count == 3
     assert profile.answer_coverage_ratio == 1.0
     assert profile.reasoning_coverage_ratio == pytest.approx(2 / 3)
@@ -93,7 +93,7 @@ def test_profile_builder_rejects_mixed_suite_runs() -> None:
         char_len=40,
         reasoning_visible=True,
         step_count=2,
-    ).model_copy(update={"suite_id": "quick-check-v1"})
+    ).model_copy(update={"suite_id": "quick-check-v3"})
 
     with pytest.raises(ProfileBuildError):
         build_profile(

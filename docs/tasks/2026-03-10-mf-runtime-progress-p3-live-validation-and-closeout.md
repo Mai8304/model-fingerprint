@@ -1,5 +1,8 @@
 # Runtime Progress P3 Live Validation and Closeout
 
+> Implementation update (2026-03-10):
+> Validation must confirm that direct HTTP and the in-flight runtime path have materially aligned first-byte and completion timing, and that prompt execution no longer depends on short socket polling timeouts.
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Validate the new single-request progress runtime against real providers, refresh representative artifacts if needed, and close the feature in a documented, tested state.

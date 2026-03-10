@@ -57,15 +57,15 @@ class ControlledStreamingResponse:
         self._closed_event = closed_event
 
     def read1(self, amt: int | None = None) -> bytes:
-        if self._closed_event.is_set():
-            raise OSError("connection closed")
         if not self._chunks:
             return b""
         event = self._release_events[0]
-        if not event.wait(0.01):
-            raise TimeoutError("waiting for response bytes")
-        self._release_events.pop(0)
-        return self._chunks.pop(0)
+        while True:
+            if self._closed_event.is_set():
+                raise OSError("connection closed")
+            if event.wait(0.01):
+                self._release_events.pop(0)
+                return self._chunks.pop(0)
 
 
 class TimedOutObjectResponse(ControlledStreamingResponse):
@@ -180,6 +180,8 @@ def test_standard_http_client_reads_json_within_total_window(
     assert payload == {"ok": True}
     assert latency_ms == 22000
     assert connection.sock.timeouts
+    assert connection.sock.timeouts[0] == 30
+    assert all(timeout_value > 1.0 for timeout_value in connection.sock.timeouts)
 
 
 def test_standard_http_client_prefers_read1_when_available(
@@ -208,6 +210,8 @@ def test_standard_http_client_prefers_read1_when_available(
 
     assert payload == {"ok": True}
     assert latency_ms == 22000
+    assert connection.sock.timeouts[0] == 30
+    assert all(timeout_value > 1.0 for timeout_value in connection.sock.timeouts)
 
 
 def test_start_exposes_progress_before_terminal_payload(
@@ -291,7 +295,7 @@ def test_start_cancellation_settles_request(
     assert terminal.error.kind == "cancelled"
 
 
-def test_standard_http_client_treats_timed_out_object_reads_as_idle_waits(
+def test_standard_http_client_surfaces_timed_out_object_reads_as_timeouts(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     closed_event = threading.Event()
@@ -314,11 +318,9 @@ def test_standard_http_client_treats_timed_out_object_reads_as_idle_waits(
         read_timeout_seconds=30,
     )
 
-    release_one.set()
-    wait_until(lambda: handle.snapshot().bytes_received > 0)
-    release_two.set()
     terminal = handle.wait_until_terminal(timeout_seconds=1.0)
 
     assert terminal is not None
-    assert terminal.error is None
-    assert terminal.payload == {"ok": True}
+    assert terminal.payload is None
+    assert terminal.error is not None
+    assert terminal.error.kind == "timeout"

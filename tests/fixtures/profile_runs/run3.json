@@ -1,6 +1,6 @@
 {
-  "run_id": "gpt-5.3.fingerprint-suite-v1.003",
-  "suite_id": "fingerprint-suite-v1",
+  "run_id": "gpt-5.3.fingerprint-suite-v3.003",
+  "suite_id": "fingerprint-suite-v3",
   "target_label": "gpt-5.3",
   "claimed_model": "gpt-5.3",
   "prompts": [

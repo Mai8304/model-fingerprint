@@ -229,8 +229,8 @@
         },
         "transport.latency_bucket_ms": {
           "kind": "numeric",
-          "mad": 500.0,
-          "median": 5500.0
+          "mad": 0.0,
+          "median": 6000.0
         },
         "transport.reasoning_tokens": {
           "kind": "numeric",
@@ -344,7 +344,7 @@
         },
         "transport.latency_bucket_ms": {
           "kind": "numeric",
-          "mad": 1000.0,
+          "mad": 0.0,
           "median": 8000.0
         },
         "transport.reasoning_tokens": {
@@ -449,8 +449,8 @@
         },
         "transport.latency_bucket_ms": {
           "kind": "numeric",
-          "mad": 500.0,
-          "median": 11500.0
+          "mad": 0.0,
+          "median": 13000.0
         },
         "transport.reasoning_tokens": {
           "kind": "numeric",
@@ -564,8 +564,8 @@
         },
         "transport.latency_bucket_ms": {
           "kind": "numeric",
-          "mad": 0.0,
-          "median": 7000.0
+          "mad": 1000.0,
+          "median": 8000.0
         },
         "transport.reasoning_tokens": {
           "kind": "numeric",
@@ -590,6 +590,6 @@
     "satisfied": true
   },
   "reasoning_coverage_ratio": 0.0,
-  "sample_count": 2,
+  "sample_count": 3,
   "suite_id": "fingerprint-suite-v3"
 }

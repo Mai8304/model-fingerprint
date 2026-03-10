@@ -3,7 +3,7 @@
 Standalone CLI toolkit for building and comparing file-based model
 fingerprints from versioned probe suites.
 
-The current v2 architecture is:
+The current v3 architecture is:
 
 - thinking-aware
 - dialect-driven with endpoint-profile configuration
@@ -49,7 +49,7 @@ uv run python -m modelfingerprint.cli validate-endpoints --root .
 Run a suite offline through fixture responses:
 
 ```bash
-uv run python -m modelfingerprint.cli run-suite quick-check-v1 \
+uv run python -m modelfingerprint.cli run-suite quick-check-v3 \
   --root . \
   --target-label suspect-a \
   --claimed-model gpt-5.3 \
@@ -61,7 +61,7 @@ Run the same suite live through an endpoint profile:
 
 ```bash
 export MODEL_FINGERPRINT_API_KEY=your-api-key
-uv run python -m modelfingerprint.cli run-suite quick-check-v1 \
+uv run python -m modelfingerprint.cli run-suite quick-check-v3 \
   --root . \
   --target-label suspect-a \
   --claimed-model gpt-5.3 \
@@ -75,8 +75,8 @@ Build profiles from stored runs:
 uv run python -m modelfingerprint.cli build-profile \
   --root . \
   --model-id gpt-5.3 \
-  --run runs/2026-03-09/gpt-a1.quick-check-v1.json \
-  --run runs/2026-03-09/gpt-a2.quick-check-v1.json
+  --run runs/2026-03-09/gpt-a1.quick-check-v3.json \
+  --run runs/2026-03-09/gpt-a2.quick-check-v3.json
 ```
 
 Calibrate a suite from baseline runs and profiles:
@@ -84,22 +84,22 @@ Calibrate a suite from baseline runs and profiles:
 ```bash
 uv run python -m modelfingerprint.cli calibrate \
   --root . \
-  --profile profiles/quick-check-v1/gpt-5.3.json \
-  --profile profiles/quick-check-v1/claude-ops-4.6.json \
-  --run runs/2026-03-09/gpt-a1.quick-check-v1.json \
-  --run runs/2026-03-09/gpt-a2.quick-check-v1.json \
-  --run runs/2026-03-09/claude-a1.quick-check-v1.json \
-  --run runs/2026-03-09/claude-a2.quick-check-v1.json
+  --profile profiles/quick-check-v3/gpt-5.3.json \
+  --profile profiles/quick-check-v3/claude-ops-4.6.json \
+  --run runs/2026-03-09/gpt-a1.quick-check-v3.json \
+  --run runs/2026-03-09/gpt-a2.quick-check-v3.json \
+  --run runs/2026-03-09/claude-a1.quick-check-v3.json \
+  --run runs/2026-03-09/claude-a2.quick-check-v3.json
 ```
 
 Compare a suspect run to known profiles:
 
 ```bash
 uv run python -m modelfingerprint.cli compare \
-  --run runs/2026-03-09/suspect-a.quick-check-v1.json \
-  --profile profiles/quick-check-v1/gpt-5.3.json \
-  --profile profiles/quick-check-v1/claude-ops-4.6.json \
-  --calibration calibration/quick-check-v1.json \
+  --run runs/2026-03-09/suspect-a.quick-check-v3.json \
+  --profile profiles/quick-check-v3/gpt-5.3.json \
+  --profile profiles/quick-check-v3/claude-ops-4.6.json \
+  --calibration calibration/quick-check-v3.json \
   --json
 ```
 

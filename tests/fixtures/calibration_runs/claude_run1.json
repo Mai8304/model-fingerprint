@@ -1,6 +1,6 @@
 {
-  "run_id": "claude-ops-4.6.fingerprint-suite-v1.cal-001",
-  "suite_id": "fingerprint-suite-v1",
+  "run_id": "claude-ops-4.6.fingerprint-suite-v3.cal-001",
+  "suite_id": "fingerprint-suite-v3",
   "target_label": "claude-ops-4.6",
   "claimed_model": "claude-ops-4.6",
   "prompts": [

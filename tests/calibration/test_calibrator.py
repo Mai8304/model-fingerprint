@@ -20,7 +20,7 @@ def build_run(
     return RunArtifact.model_validate(
         {
             "run_id": run_id,
-            "suite_id": "fingerprint-suite-v1",
+            "suite_id": "fingerprint-suite-v3",
             "target_label": model_id,
             "claimed_model": model_id,
             "answer_coverage_ratio": 1.0,
@@ -115,7 +115,7 @@ def test_calibrator_builds_similarity_and_coverage_thresholds(tmp_path: Path) ->
     artifact = calibrator.calibrate(gpt_runs + claude_runs, profiles)
     path = calibrator.write(artifact)
 
-    assert artifact.suite_id == "fingerprint-suite-v1"
+    assert artifact.suite_id == "fingerprint-suite-v3"
     assert artifact.same_model_stats.mean > artifact.cross_model_stats.mean
     assert (
         artifact.thresholds.match
@@ -130,5 +130,5 @@ def test_calibrator_builds_similarity_and_coverage_thresholds(tmp_path: Path) ->
         "required_capabilities": ["chat_completions", "visible_reasoning"],
         "issues": [],
     }
-    assert path == tmp_path / "calibration" / "fingerprint-suite-v1.json"
-    assert json.loads(path.read_text(encoding="utf-8"))["suite_id"] == "fingerprint-suite-v1"
+    assert path == tmp_path / "calibration" / "fingerprint-suite-v3.json"
+    assert json.loads(path.read_text(encoding="utf-8"))["suite_id"] == "fingerprint-suite-v3"

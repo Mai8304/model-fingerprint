@@ -78,7 +78,7 @@ def build_run(
     return RunArtifact.model_validate(
         {
             "run_id": run_id,
-            "suite_id": "fingerprint-suite-v1",
+            "suite_id": "fingerprint-suite-v3",
             "target_label": target_label,
             "claimed_model": claimed_model,
             "answer_coverage_ratio": answer_coverage_ratio,
@@ -97,7 +97,7 @@ def build_run(
 def build_calibration() -> CalibrationArtifact:
     return CalibrationArtifact.model_validate(
         {
-            "suite_id": "fingerprint-suite-v1",
+            "suite_id": "fingerprint-suite-v3",
             "thresholds": {
                 "match": 0.82,
                 "suspicious": 0.7,
@@ -251,7 +251,7 @@ def test_comparator_uses_score_channel_when_available() -> None:
     profile_a = ProfileArtifact.model_validate(
         {
             "model_id": "model-a",
-            "suite_id": "fingerprint-suite-v2",
+            "suite_id": "fingerprint-suite-v3",
             "sample_count": 2,
             "answer_coverage_ratio": 1.0,
             "reasoning_coverage_ratio": 0.0,
@@ -270,7 +270,7 @@ def test_comparator_uses_score_channel_when_available() -> None:
     profile_b = ProfileArtifact.model_validate(
         {
             "model_id": "model-b",
-            "suite_id": "fingerprint-suite-v2",
+            "suite_id": "fingerprint-suite-v3",
             "sample_count": 2,
             "answer_coverage_ratio": 1.0,
             "reasoning_coverage_ratio": 0.0,
@@ -289,7 +289,7 @@ def test_comparator_uses_score_channel_when_available() -> None:
     target = RunArtifact.model_validate(
         {
             "run_id": "suspect-score",
-            "suite_id": "fingerprint-suite-v2",
+            "suite_id": "fingerprint-suite-v3",
             "target_label": "suspect-score",
             "claimed_model": "model-a",
             "answer_coverage_ratio": 1.0,
@@ -324,7 +324,7 @@ def test_comparator_scores_capability_similarity_when_probe_and_profile_exist() 
     profile = ProfileArtifact.model_validate(
         {
             "model_id": "glm-5",
-            "suite_id": "fingerprint-suite-v2",
+            "suite_id": "fingerprint-suite-v3",
             "sample_count": 2,
             "answer_coverage_ratio": 1.0,
             "reasoning_coverage_ratio": 0.0,
@@ -351,7 +351,7 @@ def test_comparator_scores_capability_similarity_when_probe_and_profile_exist() 
     target = RunArtifact.model_validate(
         {
             "run_id": "suspect-capability",
-            "suite_id": "fingerprint-suite-v2",
+            "suite_id": "fingerprint-suite-v3",
             "target_label": "suspect-capability",
             "claimed_model": "glm-5",
             "answer_coverage_ratio": 1.0,

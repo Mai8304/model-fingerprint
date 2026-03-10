@@ -1,5 +1,8 @@
 # Runtime Progress P2 Live Runner and Suite Wiring
 
+> Implementation update (2026-03-10):
+> The shipped runtime uses a unified `10s` in-flight check interval for both `thinking` and `non-thinking` endpoints and does not abort at a `30s/60s` no-data checkpoint. The request stays alive until completion or the `120s` total deadline.
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Rework prompt execution so `LiveRunner` monitors one request per prompt-level attempt, applies no-data checkpoints and progress polling, and always lets the suite continue after prompt failure.

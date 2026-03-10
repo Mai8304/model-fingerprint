@@ -35,10 +35,31 @@ class HttpProbeResponse:
     latency_ms: int
 
 
-def probe_capabilities(*, base_url: str, api_key: str, model: str) -> dict[str, object]:
-    thinking = probe_thinking(base_url=base_url, api_key=api_key, model=model)
-    tools = probe_tools(base_url=base_url, api_key=api_key, model=model)
-    streaming = probe_streaming(base_url=base_url, api_key=api_key, model=model)
+def probe_capabilities(
+    *,
+    base_url: str,
+    api_key: str,
+    model: str,
+    chat_body_overrides: dict[str, object] | None = None,
+) -> dict[str, object]:
+    thinking = probe_thinking(
+        base_url=base_url,
+        api_key=api_key,
+        model=model,
+        chat_body_overrides=chat_body_overrides,
+    )
+    tools = probe_tools(
+        base_url=base_url,
+        api_key=api_key,
+        model=model,
+        chat_body_overrides=chat_body_overrides,
+    )
+    streaming = probe_streaming(
+        base_url=base_url,
+        api_key=api_key,
+        model=model,
+        chat_body_overrides=chat_body_overrides,
+    )
     image = probe_image(base_url=base_url, api_key=api_key, model=model)
     outcomes = [thinking, tools, streaming, image]
     coverage_ratio = sum(
@@ -59,15 +80,24 @@ def probe_capabilities(*, base_url: str, api_key: str, model: str) -> dict[str, 
     }
 
 
-def probe_thinking(*, base_url: str, api_key: str, model: str) -> CapabilityProbeOutcome:
+def probe_thinking(
+    *,
+    base_url: str,
+    api_key: str,
+    model: str,
+    chat_body_overrides: dict[str, object] | None = None,
+) -> CapabilityProbeOutcome:
+    body = {
+        "model": model,
+        "messages": [{"role": "user", "content": "只返回 ok"}],
+        "max_tokens": 32,
+    }
+    if chat_body_overrides:
+        _merge_body(body, chat_body_overrides)
     response, failure = _post_json(
         url=_chat_completions_url(base_url),
         headers=_default_headers(base_url, api_key),
-        body={
-            "model": model,
-            "messages": [{"role": "user", "content": "只返回 ok"}],
-            "max_tokens": 32,
-        },
+        body=body,
     )
     if failure is not None:
         return _with_capability(failure, "thinking")
@@ -77,38 +107,47 @@ def probe_thinking(*, base_url: str, api_key: str, model: str) -> CapabilityProb
     return _with_transport(outcome, response)
 
 
-def probe_tools(*, base_url: str, api_key: str, model: str) -> CapabilityProbeOutcome:
+def probe_tools(
+    *,
+    base_url: str,
+    api_key: str,
+    model: str,
+    chat_body_overrides: dict[str, object] | None = None,
+) -> CapabilityProbeOutcome:
+    body = {
+        "model": model,
+        "messages": [
+            {
+                "role": "user",
+                "content": "调用 ping 工具，不要输出自然语言。",
+            }
+        ],
+        "max_tokens": 64,
+        "tools": [
+            {
+                "type": "function",
+                "function": {
+                    "name": "ping",
+                    "description": "Return pong.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": False,
+                    },
+                },
+            }
+        ],
+        "tool_choice": {
+            "type": "function",
+            "function": {"name": "ping"},
+        },
+    }
+    if chat_body_overrides:
+        _merge_body(body, chat_body_overrides)
     response, failure = _post_json(
         url=_chat_completions_url(base_url),
         headers=_default_headers(base_url, api_key),
-        body={
-            "model": model,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": "调用 ping 工具，不要输出自然语言。",
-                }
-            ],
-            "max_tokens": 64,
-            "tools": [
-                {
-                    "type": "function",
-                    "function": {
-                        "name": "ping",
-                        "description": "Return pong.",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {},
-                            "additionalProperties": False,
-                        },
-                    },
-                }
-            ],
-            "tool_choice": {
-                "type": "function",
-                "function": {"name": "ping"},
-            },
-        },
+        body=body,
     )
     if failure is not None:
         return _with_capability(failure, "tools")
@@ -118,16 +157,25 @@ def probe_tools(*, base_url: str, api_key: str, model: str) -> CapabilityProbeOu
     return _with_transport(outcome, response)
 
 
-def probe_streaming(*, base_url: str, api_key: str, model: str) -> CapabilityProbeOutcome:
+def probe_streaming(
+    *,
+    base_url: str,
+    api_key: str,
+    model: str,
+    chat_body_overrides: dict[str, object] | None = None,
+) -> CapabilityProbeOutcome:
+    body = {
+        "model": model,
+        "messages": [{"role": "user", "content": "只返回 ok"}],
+        "max_tokens": 16,
+        "stream": True,
+    }
+    if chat_body_overrides:
+        _merge_body(body, chat_body_overrides)
     response, failure = _post_json(
         url=_chat_completions_url(base_url),
         headers=_default_headers(base_url, api_key, accept="text/event-stream"),
-        body={
-            "model": model,
-            "messages": [{"role": "user", "content": "只返回 ok"}],
-            "max_tokens": 16,
-            "stream": True,
-        },
+        body=body,
     )
     if failure is not None:
         return _with_capability(failure, "streaming")
@@ -366,6 +414,17 @@ def _failure_outcome(
 
 def _json_payload(response: HttpProbeResponse) -> dict[str, object]:
     return cast(dict[str, object], json.loads(response.body.decode("utf-8")))
+
+
+def _merge_body(target: dict[str, object], updates: dict[str, object]) -> None:
+    for key, value in updates.items():
+        current = target.get(key)
+        if isinstance(current, dict) and isinstance(value, dict):
+            merged = dict(current)
+            _merge_body(merged, value)
+            target[key] = merged
+            continue
+        target[key] = value
 
 
 def _default_headers(

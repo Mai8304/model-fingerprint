@@ -235,7 +235,7 @@ def _perform_request(
         connection.connect()
         _raise_if_cancelled(cancel_event)
         if connection.sock is not None:
-            connection.sock.settimeout(min(read_timeout_seconds, 1.0))
+            connection.sock.settimeout(float(read_timeout_seconds))
         connection.request("POST", path, body=body_bytes, headers=request.headers)
         _raise_if_cancelled(cancel_event)
         response = connection.getresponse()
@@ -304,18 +304,18 @@ def _read_response_body(
         if remaining <= 0:
             raise TimeoutError("request timed out")
         if connection.sock is not None:
-            connection.sock.settimeout(min(remaining, 1.0))
+            connection.sock.settimeout(float(remaining))
         try:
             chunk = reader(65536) if callable(reader) else response.read(65536)
         except TimeoutError:
             if cancel_event is not None and cancel_event.is_set():
                 raise _RequestCancelled("request cancelled") from None
-            continue
+            raise TimeoutError("request timed out") from None
         except OSError as exc:
             if _is_idle_timeout_read_error(exc):
                 if cancel_event is not None and cancel_event.is_set():
                     raise _RequestCancelled("request cancelled") from None
-                continue
+                raise TimeoutError("request timed out") from None
             raise
         if not chunk:
             break

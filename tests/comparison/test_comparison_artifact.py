@@ -32,7 +32,7 @@ def build_run(
     return RunArtifact.model_validate(
         {
             "run_id": run_id,
-            "suite_id": "fingerprint-suite-v1",
+            "suite_id": "fingerprint-suite-v3",
             "target_label": target_label,
             "claimed_model": claimed_model,
             "answer_coverage_ratio": answer_coverage_ratio,
@@ -110,7 +110,7 @@ def build_run(
 def build_calibration() -> CalibrationArtifact:
     return CalibrationArtifact.model_validate(
         {
-            "suite_id": "fingerprint-suite-v1",
+            "suite_id": "fingerprint-suite-v3",
             "thresholds": {
                 "match": 0.82,
                 "suspicious": 0.71,

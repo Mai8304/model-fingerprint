@@ -397,27 +397,6 @@ class LiveRunner:
         handle: InFlightHttpRequest,
     ) -> tuple[HttpTerminalResult | None, HttpProgressSnapshot, str | None]:
         assert self._runtime_policy is not None
-        elapsed_checkpoint_seconds = 0
-
-        for checkpoint_seconds in self._runtime_policy.no_data_checkpoints_seconds:
-            wait_seconds = max(checkpoint_seconds - elapsed_checkpoint_seconds, 0)
-            terminal = handle.wait_until_terminal(float(wait_seconds))
-            snapshot = handle.snapshot()
-            if terminal is not None:
-                return terminal, snapshot, None
-            if snapshot.has_any_data:
-                return self._poll_inflight_progress(handle)
-            elapsed_checkpoint_seconds = checkpoint_seconds
-
-        self._cancel_inflight_request(handle)
-        return None, handle.snapshot(), "no_data_checkpoint_exceeded"
-
-    def _poll_inflight_progress(
-        self,
-        handle: InFlightHttpRequest,
-    ) -> tuple[HttpTerminalResult | None, HttpProgressSnapshot, str | None]:
-        assert self._runtime_policy is not None
-
         while True:
             snapshot = handle.snapshot()
             remaining_seconds = (

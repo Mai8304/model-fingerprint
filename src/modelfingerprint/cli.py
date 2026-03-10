@@ -25,14 +25,11 @@ from modelfingerprint.services.endpoint_profiles import (
 from modelfingerprint.services.feature_pipeline import PromptExecutionResult
 from modelfingerprint.services.profile_builder import build_profile
 from modelfingerprint.services.prompt_bank import (
-    FINGERPRINT_SUITE_ID,
-    QUICK_CHECK_SUITE_ID,
     PromptBankValidationError,
     load_candidate_prompts,
     load_suites,
     validate_release_suite_subsets,
     validate_suite_references,
-    validate_suite_subset,
 )
 from modelfingerprint.services.runtime_policy import resolve_runtime_policy
 from modelfingerprint.services.suite_runner import SuiteRunner
@@ -85,7 +82,6 @@ def validate_prompts(
         prompts = load_candidate_prompts(root / "prompt-bank" / "candidates")
         suites = load_suites(root / "prompt-bank" / "suites")
         validate_suite_references(prompts, suites)
-        validate_suite_subset(suites[FINGERPRINT_SUITE_ID], suites[QUICK_CHECK_SUITE_ID])
         validate_release_suite_subsets(suites)
     except (KeyError, PromptBankValidationError, FileNotFoundError) as exc:
         typer.echo(str(exc), err=True)
@@ -242,6 +238,7 @@ def run_suite(
             base_url=str(endpoint.base_url),
             api_key=api_key,
             model=endpoint.model,
+            chat_body_overrides=dict(endpoint.request_mapping.static_body),
         )
         runtime_policy = resolve_runtime_policy(
             capability_probe_payload=capability_probe_payload,

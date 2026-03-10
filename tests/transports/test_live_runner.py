@@ -216,22 +216,13 @@ def test_live_runner_switches_to_progress_polling_without_resending_prompt(
     handle = ScriptedHandle(
         [
             ScriptedStep(
-                timeout_seconds=30.0,
-                snapshot=HttpProgressSnapshot(
-                    bytes_received=0,
-                    has_any_data=False,
-                    elapsed_ms=30000,
-                    completed=False,
-                ),
-            ),
-            ScriptedStep(
-                timeout_seconds=30.0,
+                timeout_seconds=10.0,
                 snapshot=HttpProgressSnapshot(
                     bytes_received=192,
                     has_any_data=True,
-                    elapsed_ms=60000,
-                    first_byte_latency_ms=41000,
-                    last_progress_latency_ms=59000,
+                    elapsed_ms=10000,
+                    first_byte_latency_ms=6800,
+                    last_progress_latency_ms=9800,
                     completed=False,
                 ),
             ),
@@ -240,12 +231,12 @@ def test_live_runner_switches_to_progress_polling_without_resending_prompt(
                 snapshot=HttpProgressSnapshot(
                     bytes_received=384,
                     has_any_data=True,
-                    elapsed_ms=70000,
-                    first_byte_latency_ms=41000,
-                    last_progress_latency_ms=69000,
+                    elapsed_ms=20000,
+                    first_byte_latency_ms=6800,
+                    last_progress_latency_ms=19800,
                     completed=True,
                 ),
-                terminal=successful_terminal(latency_ms=70000),
+                terminal=successful_terminal(latency_ms=20000),
             ),
         ]
     )
@@ -266,11 +257,11 @@ def test_live_runner_switches_to_progress_polling_without_resending_prompt(
     assert len(client.calls) == 1
     assert client.calls[0]["body"]["max_tokens"] == 3000
     assert client.calls[0]["read_timeout_seconds"] == 120
-    assert handle.wait_calls == [30.0, 30.0, 10.0]
+    assert handle.wait_calls == [10.0, 10.0]
     assert len(result.attempts) == 1
     assert result.attempts[0].request_attempt_index == 1
     assert result.attempts[0].bytes_received == 384
-    assert result.attempts[0].first_byte_latency_ms == 41000
+    assert result.attempts[0].first_byte_latency_ms == 6800
     assert result.attempts[0].completed is True
     assert (trace_dir / "p003.request.json").exists()
     assert (trace_dir / "p003.response.json").exists()
@@ -279,15 +270,28 @@ def test_live_runner_switches_to_progress_polling_without_resending_prompt(
     assert request_trace["headers"]["Authorization"] == "Bearer ***REDACTED***"
 
 
-def test_live_runner_times_out_non_thinking_prompt_after_first_silent_checkpoint() -> None:
+def test_live_runner_keeps_single_request_alive_until_total_deadline() -> None:
+    progress_steps = [
+        ScriptedStep(
+            timeout_seconds=10.0,
+            snapshot=HttpProgressSnapshot(
+                bytes_received=0,
+                has_any_data=False,
+                elapsed_ms=elapsed_ms,
+                completed=False,
+            ),
+        )
+        for elapsed_ms in range(10000, 120000, 10000)
+    ]
     handle = ScriptedHandle(
-        [
+        progress_steps
+        + [
             ScriptedStep(
-                timeout_seconds=30.0,
+                timeout_seconds=10.0,
                 snapshot=HttpProgressSnapshot(
                     bytes_received=0,
                     has_any_data=False,
-                    elapsed_ms=30000,
+                    elapsed_ms=120000,
                     completed=False,
                 ),
             ),
@@ -296,7 +300,7 @@ def test_live_runner_times_out_non_thinking_prompt_after_first_silent_checkpoint
                 snapshot=HttpProgressSnapshot(
                     bytes_received=0,
                     has_any_data=False,
-                    elapsed_ms=30010,
+                    elapsed_ms=120001,
                     completed=False,
                     terminal_error_kind="cancelled",
                 ),
@@ -322,11 +326,11 @@ def test_live_runner_times_out_non_thinking_prompt_after_first_silent_checkpoint
 
     assert result.status == "timeout"
     assert len(client.calls) == 1
-    assert handle.wait_calls == [30.0, 2.0]
+    assert handle.wait_calls == [10.0] * 12 + [2.0]
     assert handle.cancelled is True
     assert result.error is not None
-    assert result.error.kind == "no_data_checkpoint_exceeded"
-    assert result.attempts[0].abort_reason == "no_data_checkpoint_exceeded"
+    assert result.error.kind == "total_deadline_exceeded"
+    assert result.attempts[0].abort_reason == "total_deadline_exceeded"
     assert result.attempts[0].completed is False
 
 
@@ -334,13 +338,13 @@ def test_live_runner_aborts_after_total_deadline_when_partial_response_never_fin
     handle = ScriptedHandle(
         [
             ScriptedStep(
-                timeout_seconds=30.0,
+                timeout_seconds=10.0,
                 snapshot=HttpProgressSnapshot(
                     bytes_received=128,
                     has_any_data=True,
-                    elapsed_ms=30000,
-                    first_byte_latency_ms=25000,
-                    last_progress_latency_ms=29000,
+                    elapsed_ms=10000,
+                    first_byte_latency_ms=6800,
+                    last_progress_latency_ms=9800,
                     completed=False,
                 ),
             ),
@@ -349,9 +353,9 @@ def test_live_runner_aborts_after_total_deadline_when_partial_response_never_fin
                 snapshot=HttpProgressSnapshot(
                     bytes_received=192,
                     has_any_data=True,
-                    elapsed_ms=40000,
-                    first_byte_latency_ms=25000,
-                    last_progress_latency_ms=39000,
+                    elapsed_ms=20000,
+                    first_byte_latency_ms=6800,
+                    last_progress_latency_ms=19800,
                     completed=False,
                 ),
             ),
@@ -399,7 +403,7 @@ def test_live_runner_aborts_after_total_deadline_when_partial_response_never_fin
 
     assert result.status == "timeout"
     assert len(client.calls) == 1
-    assert handle.wait_calls == [30.0, 10.0, 10.0, 2.0]
+    assert handle.wait_calls == [10.0, 10.0, 10.0, 2.0]
     assert handle.cancelled is True
     assert result.error is not None
     assert result.error.kind == "total_deadline_exceeded"
@@ -411,13 +415,13 @@ def test_feature_pipeline_preserves_progress_attempt_metadata(tmp_path: Path) ->
     handle = ScriptedHandle(
         [
             ScriptedStep(
-                timeout_seconds=30.0,
+                timeout_seconds=10.0,
                 snapshot=HttpProgressSnapshot(
                     bytes_received=96,
                     has_any_data=True,
-                    elapsed_ms=30000,
-                    first_byte_latency_ms=21000,
-                    last_progress_latency_ms=29000,
+                    elapsed_ms=10000,
+                    first_byte_latency_ms=6800,
+                    last_progress_latency_ms=9800,
                     completed=False,
                 ),
             ),
@@ -426,12 +430,12 @@ def test_feature_pipeline_preserves_progress_attempt_metadata(tmp_path: Path) ->
                 snapshot=HttpProgressSnapshot(
                     bytes_received=240,
                     has_any_data=True,
-                    elapsed_ms=40000,
-                    first_byte_latency_ms=21000,
-                    last_progress_latency_ms=39000,
+                    elapsed_ms=20000,
+                    first_byte_latency_ms=6800,
+                    last_progress_latency_ms=19800,
                     completed=True,
                 ),
-                terminal=successful_terminal(latency_ms=40000),
+                terminal=successful_terminal(latency_ms=20000),
             ),
         ]
     )
@@ -447,8 +451,8 @@ def test_feature_pipeline_preserves_progress_attempt_metadata(tmp_path: Path) ->
     execution = runner.execute(build_prompt())
 
     artifact = FeaturePipeline(build_default_registry(ROOT / "extractors")).build_run_artifact(
-        run_id="suspect-a.fingerprint-suite-v1",
-        suite_id="fingerprint-suite-v1",
+        run_id="suspect-a.fingerprint-suite-v3",
+        suite_id="fingerprint-suite-v3",
         target_label="suspect-a",
         claimed_model=None,
         executions=[execution],

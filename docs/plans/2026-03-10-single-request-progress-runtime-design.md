@@ -1,5 +1,18 @@
 # Single-Request Progress Runtime Design
 
+> Implementation update (2026-03-10):
+> The final shipped runtime supersedes the intermediate `30s/60s` no-data-checkpoint draft in this document.
+> The implemented behavior is:
+> - one HTTP request per prompt-level attempt
+> - no prompt resubmission because a checkpoint elapsed
+> - no short socket read timeout polling in the transport
+> - outer runtime checks the same in-flight request every `10s`
+> - prompt-level total deadline remains `120s`
+> - live content output cap remains `3000`
+> - capability probe still classifies `thinking` vs `non-thinking`, but request-monitoring cadence is unified to `10s` checks for both classes to preserve direct-HTTP timing characteristics
+>
+> Where this note conflicts with older `30s/60s` examples below, this note is the source of truth.
+
 **Problem**
 
 The repository now has a capability-aware runtime layer, but its execution semantics do not match the agreed product behavior for thinking endpoints.

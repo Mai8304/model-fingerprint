@@ -8,6 +8,7 @@ from typer.testing import CliRunner
 
 from modelfingerprint.cli import app
 from modelfingerprint.contracts.run import RunArtifact
+from modelfingerprint.services.feature_pipeline import PromptExecutionResult
 
 ROOT = Path(__file__).resolve().parents[2]
 runner = CliRunner()
@@ -63,50 +64,58 @@ def test_run_suite_command_uses_endpoint_profiles_and_preserves_failures(
     write_endpoint_profile(tmp_path)
     monkeypatch.setenv("MODEL_FINGERPRINT_API_KEY", "secret-key")
 
-    def fake_send(self, request, *, connect_timeout_seconds: int, read_timeout_seconds: int):
-        user_message = request.body["messages"][-1]["content"]
-        if "event sourcing" in user_message:
-            payload = {
-                "choices": [
-                    {
-                        "finish_reason": "stop",
-                        "message": {
-                            "content": "Use CRUD first. Event sourcing adds overhead.",
-                            "reasoning_content": "1. inspect the request\n2. answer briefly",
-                        },
-                    }
-                ],
-                "usage": {
-                    "prompt_tokens": 10,
-                    "completion_tokens": 5,
-                    "total_tokens": 21,
-                    "completion_tokens_details": {"reasoning_tokens": 6},
-                },
-            }
-        else:
-            payload = {
-                "choices": [
-                    {
-                        "finish_reason": "stop",
-                        "message": {
-                            "content": '@@ -1 +1 @@\n-print("old")\n+print("new")',
-                            "reasoning_content": "1. isolate the target line\n2. emit the diff",
-                        },
-                    }
-                ],
-                "usage": {
-                    "prompt_tokens": 10,
-                    "completion_tokens": 5,
-                    "total_tokens": 22,
-                    "completion_tokens_details": {"reasoning_tokens": 7},
-                },
-            }
-        return payload, 3210
+    class FakeLiveRunner:
+        def __init__(
+            self,
+            *,
+            endpoint,
+            api_key: str,
+            dialect,
+            trace_dir,
+            runtime_policy,
+            http_client=None,
+        ) -> None:
+            self.endpoint = endpoint
+            self.trace_dir = trace_dir
 
-    monkeypatch.setattr(
-        "modelfingerprint.transports.http_client.StandardHttpClient.send",
-        fake_send,
-    )
+        def execute(self, prompt) -> PromptExecutionResult:
+            payloads = {
+                "p021": (
+                    '{"task_result":{"owner":"Alice Wong","role":"Primary DBA","region":null,'
+                    '"change_window":"2026-03-21 02:00 UTC"},'
+                    '"evidence":{"owner":["e3"],"role":["e2"],"region":[],"change_window":["e5"]},'
+                    '"unknowns":{"region":"insufficient_evidence"},"violations":[]}'
+                ),
+                "p023": (
+                    '{"task_result":{"q1":{"status":"answer","value":"yes"},'
+                    '"q2":{"status":"unknown","value":null},'
+                    '"q3":{"status":"answer","value":"retry failed background jobs"},'
+                    '"q4":{"status":"conflict_unresolved","value":null}},'
+                    '"evidence":{"q1":["e1"],"q2":["e5"],"q3":["e1"],"q4":["e3","e4"]},'
+                    '"unknowns":{"q2":"missing_actor","q4":"conflicting_notes"},"violations":[]}'
+                ),
+                "p024": (
+                    '{"task_result":{"ticket_a":{"status":"closed","owner":"ops","priority":"p1"},'
+                    '"ticket_b":{"status":"open","owner":"db","priority":"p2"},'
+                    '"worker_x":{"status":"suspended","owner":"ml","priority":"p3"}},'
+                    '"evidence":{"derivation_codes":{"ticket_a":"r5","ticket_b":"r6","worker_x":"r10"},'
+                    '"defaults_used":["ticket_b.priority"]},"unknowns":{},"violations":[]}'
+                ),
+            }
+            self.trace_dir.mkdir(parents=True, exist_ok=True)
+            (self.trace_dir / f"{prompt.id}.request.json").write_text("{}", encoding="utf-8")
+            return PromptExecutionResult(
+                prompt=prompt,
+                raw_output=payloads[prompt.id],
+                usage={
+                    "input_tokens": 10,
+                    "output_tokens": 5,
+                    "reasoning_tokens": 6,
+                    "total_tokens": 21,
+                },
+            )
+
+    monkeypatch.setattr("modelfingerprint.cli.LiveRunner", FakeLiveRunner)
     monkeypatch.setattr(
         "modelfingerprint.cli.probe_capabilities",
         lambda **_: {
@@ -156,7 +165,7 @@ def test_run_suite_command_uses_endpoint_profiles_and_preserves_failures(
         app,
         [
             "run-suite",
-            "quick-check-v1",
+            "quick-check-v3",
             "--root",
             str(tmp_path),
             "--target-label",
@@ -172,7 +181,7 @@ def test_run_suite_command_uses_endpoint_profiles_and_preserves_failures(
 
     assert result.exit_code == 0
 
-    output_path = tmp_path / "runs" / "2026-03-09" / "suspect-a.quick-check-v1.json"
+    output_path = tmp_path / "runs" / "2026-03-09" / "suspect-a.quick-check-v3.json"
     artifact = RunArtifact.model_validate(json.loads(output_path.read_text(encoding="utf-8")))
 
     assert artifact.endpoint_profile_id == "siliconflow-openai-chat"
@@ -181,11 +190,11 @@ def test_run_suite_command_uses_endpoint_profiles_and_preserves_failures(
     assert artifact.capability_probe.capabilities["thinking"].status == "supported"
     assert artifact.trace_dir is not None
     assert artifact.protocol_compatibility is not None
-    assert artifact.protocol_compatibility.satisfied is False
+    assert artifact.protocol_compatibility.satisfied is True
     prompt_statuses = {prompt.prompt_id: prompt.status for prompt in artifact.prompts}
-    assert prompt_statuses["p003"] == "unsupported_capability"
-    assert prompt_statuses["p007"] == "unsupported_capability"
-    assert prompt_statuses["p009"] == "unsupported_capability"
+    assert prompt_statuses["p021"] == "completed"
+    assert prompt_statuses["p023"] == "completed"
+    assert prompt_statuses["p024"] == "completed"
     assert (
-        tmp_path / "traces" / "2026-03-09" / "suspect-a.quick-check-v1" / "p001.request.json"
+        tmp_path / "traces" / "2026-03-09" / "suspect-a.quick-check-v3" / "p021.request.json"
     ).exists()

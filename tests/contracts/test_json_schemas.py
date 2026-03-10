@@ -79,7 +79,7 @@ def test_exported_schema_files_exist(path: Path) -> None:
             "run",
             {
                 "run_id": "run-20260309-001",
-                "suite_id": "fingerprint-suite-v1",
+                "suite_id": "fingerprint-suite-v3",
                 "target_label": "suspect-a",
                 "prompt_count_total": 1,
                 "prompt_count_completed": 1,
@@ -173,7 +173,7 @@ def test_exported_schema_files_exist(path: Path) -> None:
             "profile",
             {
                 "model_id": "gpt-5.3",
-                "suite_id": "fingerprint-suite-v1",
+                "suite_id": "fingerprint-suite-v3",
                 "sample_count": 5,
                 "answer_coverage_ratio": 1.0,
                 "reasoning_coverage_ratio": 0.8,
@@ -197,7 +197,7 @@ def test_exported_schema_files_exist(path: Path) -> None:
             },
             {
                 "model_id": "gpt-5.3",
-                "suite_id": "fingerprint-suite-v1",
+                "suite_id": "fingerprint-suite-v3",
                 "sample_count": 5,
                 "prompts": [{"prompt_id": "p017", "weight": 0.8}],
             },
@@ -205,7 +205,7 @@ def test_exported_schema_files_exist(path: Path) -> None:
         (
             "calibration",
             {
-                "suite_id": "fingerprint-suite-v1",
+                "suite_id": "fingerprint-suite-v3",
                 "thresholds": {
                     "match": 0.82,
                     "suspicious": 0.71,
@@ -236,7 +236,7 @@ def test_exported_schema_files_exist(path: Path) -> None:
                 },
             },
             {
-                "suite_id": "fingerprint-suite-v1",
+                "suite_id": "fingerprint-suite-v3",
                 "thresholds": {
                     "match": 1.2,
                     "suspicious": 0.71,
@@ -271,11 +271,11 @@ def test_exported_schema_files_exist(path: Path) -> None:
             "comparison",
             {
                 "schema_version": "comparison.v1",
-                "suite_id": "fingerprint-suite-v1",
-                "run_id": "suspect-a.fingerprint-suite-v1",
+                "suite_id": "fingerprint-suite-v3",
+                "run_id": "suspect-a.fingerprint-suite-v3",
                 "target_label": "suspect-a",
                 "claimed_model": "gpt-5.3",
-                "calibration_id": "fingerprint-suite-v1",
+                "calibration_id": "fingerprint-suite-v3",
                 "summary": {
                     "top1_model": "gpt-5.3",
                     "top1_similarity": 0.93,
@@ -352,10 +352,10 @@ def test_exported_schema_files_exist(path: Path) -> None:
             },
             {
                 "schema_version": "comparison.v1",
-                "suite_id": "fingerprint-suite-v1",
-                "run_id": "suspect-a.fingerprint-suite-v1",
+                "suite_id": "fingerprint-suite-v3",
+                "run_id": "suspect-a.fingerprint-suite-v3",
                 "target_label": "suspect-a",
-                "calibration_id": "fingerprint-suite-v1",
+                "calibration_id": "fingerprint-suite-v3",
                 "summary": {
                     "top1_model": "gpt-5.3",
                     "top1_similarity": 1.4,

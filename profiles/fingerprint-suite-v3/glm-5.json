@@ -4,7 +4,7 @@
     "capabilities": {
       "image": {
         "distribution": {
-          "insufficient_evidence": 1.0
+          "unsupported": 1.0
         }
       },
       "streaming": {
@@ -23,7 +23,7 @@
         }
       }
     },
-    "coverage_ratio": 0.75
+    "coverage_ratio": 1.0
   },
   "model_id": "glm-5",
   "prompts": [
@@ -53,8 +53,8 @@
         },
         "reasoning.backtrack_markers": {
           "kind": "numeric",
-          "mad": 0.5,
-          "median": 0.5
+          "mad": 0.0,
+          "median": 0.0
         },
         "reasoning.hedge_density": {
           "kind": "numeric",
@@ -63,12 +63,12 @@
         },
         "reasoning.step_count": {
           "kind": "numeric",
-          "mad": 21.5,
-          "median": 111.5
+          "mad": 5.0,
+          "median": 98.0
         },
         "reasoning.uses_numbered_outline": {
           "kind": "boolean",
-          "p_true": 0.5
+          "p_true": 1.0
         },
         "score.abstention_compliance": {
           "kind": "numeric",
@@ -134,13 +134,13 @@
         },
         "transport.latency_bucket_ms": {
           "kind": "numeric",
-          "mad": 9000.0,
-          "median": 46000.0
+          "mad": 16000.0,
+          "median": 50000.0
         },
         "transport.reasoning_tokens": {
           "kind": "numeric",
-          "mad": 167.5,
-          "median": 1728.5
+          "mad": 26.0,
+          "median": 1582.0
         },
         "transport.reasoning_visible": {
           "kind": "boolean",
@@ -163,7 +163,7 @@
         "answer.excluded_count": {
           "kind": "numeric",
           "mad": 0.0,
-          "median": 5.0
+          "median": 4.0
         },
         "answer.found_count": {
           "kind": "numeric",
@@ -187,8 +187,8 @@
         },
         "reasoning.step_count": {
           "kind": "numeric",
-          "mad": 29.5,
-          "median": 111.5
+          "mad": 7.0,
+          "median": 158.0
         },
         "reasoning.uses_numbered_outline": {
           "kind": "boolean",
@@ -211,7 +211,7 @@
         "score.exclusion_accuracy": {
           "kind": "numeric",
           "mad": 0.0,
-          "median": 1.0
+          "median": 0.8
         },
         "score.order_accuracy": {
           "kind": "boolean",
@@ -219,8 +219,8 @@
         },
         "score.paragraph_accuracy": {
           "kind": "numeric",
-          "mad": 0.5,
-          "median": 0.5
+          "mad": 0.0,
+          "median": 0.0
         },
         "surface.constraint_retention": {
           "kind": "boolean",
@@ -267,13 +267,13 @@
         },
         "transport.latency_bucket_ms": {
           "kind": "numeric",
-          "mad": 6000.0,
-          "median": 42000.0
+          "mad": 12000.0,
+          "median": 45000.0
         },
         "transport.reasoning_tokens": {
           "kind": "numeric",
-          "mad": 371.5,
-          "median": 1802.5
+          "mad": 123.0,
+          "median": 2136.0
         },
         "transport.reasoning_visible": {
           "kind": "boolean",
@@ -311,7 +311,7 @@
         "answer.violation_count": {
           "kind": "numeric",
           "mad": 0.0,
-          "median": 1.0
+          "median": 0.0
         },
         "reasoning.backtrack_markers": {
           "kind": "numeric",
@@ -325,8 +325,8 @@
         },
         "reasoning.step_count": {
           "kind": "numeric",
-          "mad": 0.0,
-          "median": 156.0
+          "mad": 2.0,
+          "median": 105.0
         },
         "reasoning.uses_numbered_outline": {
           "kind": "boolean",
@@ -354,7 +354,7 @@
         },
         "score.violation_free": {
           "kind": "boolean",
-          "p_true": 0.0
+          "p_true": 0.6666666666666666
         },
         "surface.constraint_retention": {
           "kind": "boolean",
@@ -401,13 +401,13 @@
         },
         "transport.latency_bucket_ms": {
           "kind": "numeric",
-          "mad": 2000.0,
-          "median": 46000.0
+          "mad": 7000.0,
+          "median": 40000.0
         },
         "transport.reasoning_tokens": {
           "kind": "numeric",
-          "mad": 0.0,
-          "median": 1794.0
+          "mad": 285.0,
+          "median": 1437.0
         },
         "transport.reasoning_visible": {
           "kind": "boolean",
@@ -424,7 +424,7 @@
       "features": {
         "answer.default_count": {
           "kind": "numeric",
-          "mad": 0.0,
+          "mad": 1.0,
           "median": 3.0
         },
         "answer.derivation_count": {
@@ -454,8 +454,8 @@
         },
         "reasoning.step_count": {
           "kind": "numeric",
-          "mad": 4.5,
-          "median": 190.5
+          "mad": 25.0,
+          "median": 198.0
         },
         "reasoning.uses_numbered_outline": {
           "kind": "boolean",
@@ -525,13 +525,13 @@
         },
         "transport.latency_bucket_ms": {
           "kind": "numeric",
-          "mad": 4000.0,
-          "median": 71000.0
+          "mad": 1000.0,
+          "median": 82000.0
         },
         "transport.reasoning_tokens": {
           "kind": "numeric",
-          "mad": 42.0,
-          "median": 2655.0
+          "mad": 128.0,
+          "median": 2746.0
         },
         "transport.reasoning_visible": {
           "kind": "boolean",
@@ -583,8 +583,8 @@
         },
         "reasoning.step_count": {
           "kind": "numeric",
-          "mad": 0.0,
-          "median": 96.0
+          "mad": 20.0,
+          "median": 152.0
         },
         "reasoning.uses_numbered_outline": {
           "kind": "boolean",
@@ -608,7 +608,7 @@
         "score.rejection_accuracy": {
           "kind": "numeric",
           "mad": 0.0,
-          "median": 1.0
+          "median": 0.0
         },
         "score.violation_free": {
           "kind": "boolean",
@@ -659,13 +659,13 @@
         },
         "transport.latency_bucket_ms": {
           "kind": "numeric",
-          "mad": 500.0,
-          "median": 33500.0
+          "mad": 9000.0,
+          "median": 36000.0
         },
         "transport.reasoning_tokens": {
           "kind": "numeric",
-          "mad": 0.0,
-          "median": 1222.0
+          "mad": 50.0,
+          "median": 2152.0
         },
         "transport.reasoning_visible": {
           "kind": "boolean",
@@ -685,6 +685,6 @@
     "satisfied": true
   },
   "reasoning_coverage_ratio": 1.0,
-  "sample_count": 2,
+  "sample_count": 3,
   "suite_id": "fingerprint-suite-v3"
 }

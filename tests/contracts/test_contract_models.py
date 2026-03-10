@@ -106,7 +106,7 @@ def test_artifact_models_parse_valid_payloads() -> None:
     run = RunArtifact.model_validate(
         {
             "run_id": "run-20260309-001",
-            "suite_id": "fingerprint-suite-v1",
+            "suite_id": "fingerprint-suite-v3",
             "target_label": "suspect-a",
             "claimed_model": "gpt-5.3",
             "endpoint_profile_id": "openai-chat/deepseek",
@@ -176,7 +176,7 @@ def test_artifact_models_parse_valid_payloads() -> None:
     profile = ProfileArtifact.model_validate(
         {
             "model_id": "gpt-5.3",
-            "suite_id": "fingerprint-suite-v1",
+            "suite_id": "fingerprint-suite-v3",
             "sample_count": 5,
             "answer_coverage_ratio": 1.0,
             "reasoning_coverage_ratio": 0.8,
@@ -203,7 +203,7 @@ def test_artifact_models_parse_valid_payloads() -> None:
 
     calibration = CalibrationArtifact.model_validate(
         {
-            "suite_id": "fingerprint-suite-v1",
+            "suite_id": "fingerprint-suite-v3",
             "thresholds": {
                 "match": 0.82,
                 "suspicious": 0.71,
@@ -235,7 +235,7 @@ def test_artifact_models_parse_valid_payloads() -> None:
         }
     )
 
-    assert run.suite_id == "fingerprint-suite-v1"
+    assert run.suite_id == "fingerprint-suite-v3"
     assert run.prompts[0].completion.usage.reasoning_tokens == 24
     assert profile.prompts[0].features["answer.char_len"].kind == "numeric"
     assert calibration.thresholds.match == 0.82
@@ -245,7 +245,7 @@ def test_run_artifact_accepts_score_channel_features() -> None:
     run = RunArtifact.model_validate(
         {
             "run_id": "run-20260309-011",
-            "suite_id": "fingerprint-suite-v2",
+            "suite_id": "fingerprint-suite-v3",
             "target_label": "suspect-v2",
             "prompt_count_total": 1,
             "prompt_count_completed": 1,
@@ -274,7 +274,7 @@ def test_run_artifact_accepts_score_channel_features() -> None:
         }
     )
 
-    assert run.suite_id == "fingerprint-suite-v2"
+    assert run.suite_id == "fingerprint-suite-v3"
     assert run.prompts[0].features["score.value_accuracy"] == 1.0
 
 
@@ -282,7 +282,7 @@ def test_artifact_models_parse_capability_probe_sections() -> None:
     run = RunArtifact.model_validate(
         {
             "run_id": "run-20260310-capability",
-            "suite_id": "fingerprint-suite-v2",
+            "suite_id": "fingerprint-suite-v3",
             "target_label": "suspect-capability",
             "prompt_count_total": 1,
             "prompt_count_completed": 1,
@@ -333,7 +333,7 @@ def test_artifact_models_parse_capability_probe_sections() -> None:
     profile = ProfileArtifact.model_validate(
         {
             "model_id": "glm-5",
-            "suite_id": "fingerprint-suite-v2",
+            "suite_id": "fingerprint-suite-v3",
             "sample_count": 3,
             "answer_coverage_ratio": 1.0,
             "reasoning_coverage_ratio": 0.3,
@@ -412,7 +412,7 @@ def test_invalid_suite_id_and_missing_features_are_rejected() -> None:
         RunArtifact.model_validate(
             {
                 "run_id": "run-20260309-002",
-                "suite_id": "fingerprint-suite-v1",
+                "suite_id": "fingerprint-suite-v3",
                 "target_label": "suspect-a",
                 "prompt_count_total": 1,
                 "prompt_count_completed": 1,

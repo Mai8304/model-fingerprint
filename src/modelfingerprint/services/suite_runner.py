@@ -22,13 +22,10 @@ from modelfingerprint.services.endpoint_profiles import (
 )
 from modelfingerprint.services.feature_pipeline import FeaturePipeline, PromptExecutionResult
 from modelfingerprint.services.prompt_bank import (
-    FINGERPRINT_SUITE_ID,
-    QUICK_CHECK_SUITE_ID,
     load_candidate_prompts,
     load_suites,
     validate_release_suite_subsets,
     validate_suite_references,
-    validate_suite_subset,
 )
 from modelfingerprint.services.run_writer import RunWriter
 from modelfingerprint.settings import RepositoryPaths
@@ -68,7 +65,6 @@ class SuiteRunner:
         prompts = load_candidate_prompts(self._paths.prompt_bank_dir / "candidates")
         suites = load_suites(self._paths.prompt_bank_dir / "suites")
         validate_suite_references(prompts, suites)
-        validate_suite_subset(suites[FINGERPRINT_SUITE_ID], suites[QUICK_CHECK_SUITE_ID])
         validate_release_suite_subsets(suites)
         suite = suites[suite_id]
         executions: list[PromptExecutionResult] = []
