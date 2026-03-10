@@ -133,3 +133,24 @@ git push origin main
 - cancellation is deterministic
 - focused transport tests pass
 
+---
+
+## Completion Notes
+
+- Completed on 2026-03-10.
+- `StandardHttpClient` now exposes `start(...)` in addition to `send(...)`.
+- The new in-flight path is implemented with:
+  - a worker thread
+  - shared progress snapshots
+  - cooperative cancellation via event + connection close
+- `send(...)` now delegates through the same transport core so sync and in-flight paths share parsing/error behavior.
+- Progress data now includes:
+  - `bytes_received`
+  - `first_byte_latency_ms`
+  - `last_progress_latency_ms`
+  - `completed`
+  - `terminal_error_kind`
+- Verification used:
+  - `uv run pytest tests/transports/test_http_client.py tests/transports/test_protocol_invariants.py -q`
+  - `uv run ruff check src tests`
+  - `uv run mypy src`
