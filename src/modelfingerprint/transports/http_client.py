@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from http.client import HTTPConnection, HTTPSConnection
 from time import monotonic
-from typing import Protocol
+from typing import Any, Protocol
 from urllib.parse import urlsplit
 
 from modelfingerprint.dialects.base import HttpRequestSpec
@@ -67,7 +67,12 @@ class StandardHttpClient:
                 connection.sock.settimeout(read_timeout_seconds)
             connection.request("POST", path, body=body_bytes, headers=request.headers)
             response = connection.getresponse()
-            payload_bytes = response.read()
+            payload_bytes = _read_response_body(
+                response=response,
+                connection=connection,
+                read_timeout_seconds=read_timeout_seconds,
+                start_time=start,
+            )
         except TimeoutError as exc:
             raise HttpClientError(kind="timeout", message=str(exc) or "request timed out") from exc
         except OSError as exc:
@@ -99,6 +104,32 @@ class StandardHttpClient:
             )
 
         return dict(payload), latency_ms
+
+
+def _read_response_body(
+    *,
+    response: Any,
+    connection: HTTPConnection | HTTPSConnection,
+    read_timeout_seconds: int,
+    start_time: float,
+) -> bytes:
+    chunks: list[bytes] = []
+    reader = getattr(response, "read1", None)
+    while True:
+        elapsed = monotonic() - start_time
+        remaining = read_timeout_seconds - elapsed
+        if remaining <= 0:
+            raise TimeoutError("request timed out")
+        if connection.sock is not None:
+            connection.sock.settimeout(min(remaining, 1.0))
+        if callable(reader):
+            chunk = reader(65536)
+        else:
+            chunk = response.read(65536)
+        if not chunk:
+            break
+        chunks.append(chunk)
+    return b"".join(chunks)
 
 
 def _build_connection(
