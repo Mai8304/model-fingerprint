@@ -469,7 +469,10 @@ def _classify_completion(
                 retryable=False,
             ),
         )
-    if completion.finish_reason == "length":
+    if completion.finish_reason == "length" and not _can_accept_length_terminated_output(
+        prompt=prompt,
+        completion=completion,
+    ):
         return (
             "truncated",
             PromptExecutionError(
@@ -488,6 +491,22 @@ def _classify_completion(
             ),
         )
     return "completed", None
+
+
+def _can_accept_length_terminated_output(
+    *,
+    prompt: PromptDefinition,
+    completion: NormalizedCompletion,
+) -> bool:
+    if completion.answer_text.strip() == "":
+        return False
+    return prompt.output_contract.canonicalizer in {
+        "strict_json_v2",
+        "tolerant_json_v3",
+        "structured_extraction_v2",
+        "retrieval_v2",
+        "tagged_text_v2",
+    }
 
 
 def _is_retryable(error: HttpClientError, retryable_statuses: list[int]) -> bool:

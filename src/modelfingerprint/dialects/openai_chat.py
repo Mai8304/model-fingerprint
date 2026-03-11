@@ -1,12 +1,18 @@
 from __future__ import annotations
 
+import json
+import re
 from collections.abc import Mapping
 
+from modelfingerprint.canonicalizers._common import strip_markdown_fence
 from modelfingerprint.contracts.endpoint import EndpointProfile
 from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.contracts.run import NormalizedCompletion, UsageMetadata
 from modelfingerprint.dialects.base import HttpRequestSpec, resolve_path
 from modelfingerprint.http_defaults import DEFAULT_BROWSER_USER_AGENT
+
+FENCE_BLOCK_PATTERN = re.compile(r"```[a-zA-Z0-9_-]*\n?(.*?)```", re.DOTALL)
+COMMON_REASONING_FIELDS = ("reasoning_content", "reasoning", "thinking")
 
 
 class OpenAIChatDialectAdapter:
@@ -57,9 +63,15 @@ class OpenAIChatDialectAdapter:
         latency_ms: int | None = None,
         raw_response_path: str | None = None,
     ) -> NormalizedCompletion:
-        answer_text = str(resolve_path(payload, endpoint.response_mapping.answer_text_path) or "")
+        answer = resolve_path(payload, endpoint.response_mapping.answer_text_path)
+        answer_text = _coerce_optional_text(answer) or ""
+
         reasoning = resolve_path(payload, endpoint.response_mapping.reasoning_text_path)
-        reasoning_text = None if reasoning is None else str(reasoning)
+        reasoning_text = _coerce_optional_text(reasoning) or _infer_reasoning_text(payload)
+        if answer_text == "" and reasoning_text is not None:
+            recovered_answer = _recover_answer_from_reasoning(reasoning_text)
+            if recovered_answer is not None:
+                answer_text = recovered_answer
         usage_paths = endpoint.response_mapping.usage_paths
 
         return NormalizedCompletion(
@@ -98,6 +110,97 @@ def _as_optional_str(value: object | None) -> str | None:
     if value is None:
         return None
     return str(value)
+
+
+def _coerce_optional_text(value: object | None) -> str | None:
+    if value is None:
+        return None
+    if isinstance(value, str):
+        text = value.strip()
+        return text or None
+    if isinstance(value, Mapping):
+        text_value = value.get("text")
+        if isinstance(text_value, str):
+            text = text_value.strip()
+            return text or None
+        return None
+    if isinstance(value, list):
+        parts: list[str] = []
+        for item in value:
+            text = _coerce_optional_text(item)
+            if text is not None:
+                parts.append(text)
+        if parts:
+            return "\n".join(parts)
+        return None
+    return str(value)
+
+
+def _infer_reasoning_text(payload: Mapping[str, object]) -> str | None:
+    choices = payload.get("choices")
+    if not isinstance(choices, list) or not choices or not isinstance(choices[0], Mapping):
+        return None
+    message = choices[0].get("message")
+    if not isinstance(message, Mapping):
+        return None
+
+    for field in COMMON_REASONING_FIELDS:
+        reasoning_text = _coerce_optional_text(message.get(field))
+        if reasoning_text is not None:
+            return reasoning_text
+
+    details = message.get("reasoning_details")
+    if not isinstance(details, list):
+        return None
+    parts: list[str] = []
+    for item in details:
+        if not isinstance(item, Mapping):
+            continue
+        text = _coerce_optional_text(item.get("text"))
+        if text is not None:
+            parts.append(text)
+    if parts:
+        return "\n\n".join(parts)
+    return None
+
+
+def _recover_answer_from_reasoning(reasoning_text: str) -> str | None:
+    fenced_candidates = [
+        match.group(1).strip() for match in FENCE_BLOCK_PATTERN.finditer(reasoning_text)
+    ]
+    for candidate in reversed(fenced_candidates):
+        recovered = _validated_json_object(candidate)
+        if recovered is not None:
+            return recovered
+
+    unfenced_reasoning, _ = strip_markdown_fence(reasoning_text)
+    return _extract_last_json_object(unfenced_reasoning)
+
+
+def _extract_last_json_object(text: str) -> str | None:
+    decoder = json.JSONDecoder()
+    last_object: str | None = None
+    for index, char in enumerate(text):
+        if char != "{":
+            continue
+        try:
+            payload, end_index = decoder.raw_decode(text[index:])
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, Mapping):
+            last_object = text[index : index + end_index].strip()
+    return last_object
+
+
+def _validated_json_object(candidate: str) -> str | None:
+    stripped = candidate.strip()
+    try:
+        payload = json.loads(stripped)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(payload, Mapping):
+        return None
+    return stripped
 
 
 def _merge_mapping(target: dict[str, object], updates: Mapping[str, object]) -> None:

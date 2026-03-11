@@ -466,3 +466,66 @@ def test_feature_pipeline_preserves_progress_attempt_metadata(tmp_path: Path) ->
     assert artifact.prompts[0].attempts[0].read_timeout_seconds == 120
     assert artifact.prompts[0].attempts[0].request_attempt_index == 1
     assert artifact.prompts[0].attempts[0].bytes_received == 240
+
+
+def test_live_runner_accepts_structured_answer_recovered_from_reasoning() -> None:
+    handle = ScriptedHandle(
+        [
+            ScriptedStep(
+                timeout_seconds=30.0,
+                snapshot=HttpProgressSnapshot(
+                    bytes_received=160,
+                    has_any_data=True,
+                    elapsed_ms=30000,
+                    first_byte_latency_ms=22000,
+                    last_progress_latency_ms=29000,
+                    completed=True,
+                ),
+                terminal=HttpTerminalResult(
+                    payload={
+                        "choices": [
+                            {
+                                "finish_reason": "length",
+                                "message": {
+                                    "content": None,
+                                    "reasoning": (
+                                        "analysis\n```json\n"
+                                        '{"answer":"yes","confidence":"high"}\n'
+                                        "```\nextra tail"
+                                    ),
+                                },
+                            }
+                        ],
+                        "usage": {
+                            "prompt_tokens": 12,
+                            "completion_tokens": 18,
+                            "total_tokens": 54,
+                            "completion_tokens_details": {
+                                "reasoning_tokens": 24,
+                            },
+                        },
+                    },
+                    latency_ms=30000,
+                    error=None,
+                ),
+            ),
+        ]
+    )
+    client = ScriptedProgressHttpClient([handle])
+    runner = LiveRunner(
+        endpoint=build_endpoint(),
+        api_key="secret-key",
+        dialect=OpenAIChatDialectAdapter(),
+        http_client=client,
+        trace_dir=None,
+        runtime_policy=build_runtime_policy("supported"),
+    )
+
+    result = runner.execute(build_prompt())
+
+    assert result.status == "completed"
+    assert result.error is None
+    assert result.raw_output == '{"answer":"yes","confidence":"high"}'
+    assert result.completion is not None
+    assert result.completion.reasoning_visible is True
+    assert result.completion.finish_reason == "length"

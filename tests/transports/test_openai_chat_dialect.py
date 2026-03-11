@@ -215,3 +215,63 @@ def test_openai_chat_adapter_omits_non_required_fields_for_text_prompt() -> None
         "User-Agent",
         "X-Title",
     ]
+
+
+def test_openai_chat_adapter_recovers_answer_from_reasoning_when_content_is_null() -> None:
+    adapter = OpenAIChatDialectAdapter()
+    endpoint = EndpointProfile.model_validate(
+        {
+            **build_endpoint().model_dump(mode="json"),
+            "base_url": "https://openrouter.ai/api/v1",
+            "model": "z-ai/glm-5",
+            "capabilities": {
+                **build_endpoint().capabilities.model_dump(mode="json"),
+                "exposes_reasoning_text": False,
+            },
+            "response_mapping": {
+                "answer_text_path": "choices.0.message.content",
+                "finish_reason_path": "choices.0.finish_reason",
+                "usage_paths": {
+                    "prompt_tokens": "usage.prompt_tokens",
+                    "output_tokens": "usage.completion_tokens",
+                    "total_tokens": "usage.total_tokens",
+                    "reasoning_tokens": "usage.completion_tokens_details.reasoning_tokens",
+                },
+            },
+        }
+    )
+
+    completion = adapter.parse_response(
+        endpoint,
+        {
+            "choices": [
+                {
+                    "finish_reason": "length",
+                    "message": {
+                        "content": None,
+                        "reasoning": (
+                            "分析略。\n```json\n"
+                            '{"task_result":{"found_entities":["alpha"]},"evidence":{"paragraph_map":{"alpha":"p1"}},"unknowns":{},"violations":[]}\n'
+                            "```\n补充说明"
+                        ),
+                    },
+                }
+            ],
+            "usage": {
+                "prompt_tokens": 12,
+                "completion_tokens": 18,
+                "total_tokens": 54,
+                "completion_tokens_details": {
+                    "reasoning_tokens": 24,
+                },
+            },
+        },
+    )
+
+    assert completion.answer_text == (
+        '{"task_result":{"found_entities":["alpha"]},"evidence":{"paragraph_map":{"alpha":"p1"}},"unknowns":{},"violations":[]}'
+    )
+    assert completion.reasoning_visible is True
+    assert completion.reasoning_text is not None
+    assert "分析略" in completion.reasoning_text
+    assert completion.finish_reason == "length"
