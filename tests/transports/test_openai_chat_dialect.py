@@ -184,3 +184,34 @@ def test_openai_chat_adapter_adds_openrouter_headers_for_openrouter_base_url() -
 
     assert request.headers["HTTP-Referer"] == "https://codex.local"
     assert request.headers["X-Title"] == "Codex Model Fingerprint"
+
+
+def test_openai_chat_adapter_omits_non_required_fields_for_text_prompt() -> None:
+    adapter = OpenAIChatDialectAdapter()
+    prompt = build_prompt().model_copy(
+        update={
+            "generation": build_prompt().generation.model_copy(
+                update={"response_format": "text"}
+            )
+        }
+    )
+    endpoint = EndpointProfile.model_validate(
+        {
+            **build_endpoint().model_dump(mode="json"),
+            "base_url": "https://openrouter.ai/api/v1",
+            "model": "anthropic/claude-opus-4.6",
+        }
+    )
+
+    request = adapter.build_request(prompt, endpoint, api_key="test-key")
+
+    assert sorted(request.body) == ["max_tokens", "messages", "model", "temperature", "top_p"]
+    assert "response_format" not in request.body
+    assert sorted(request.headers) == [
+        "Accept",
+        "Authorization",
+        "Content-Type",
+        "HTTP-Referer",
+        "User-Agent",
+        "X-Title",
+    ]

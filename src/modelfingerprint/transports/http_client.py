@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import select
 import ssl
 import threading
 from collections.abc import Callable, Mapping
@@ -177,6 +178,15 @@ class _StandardInFlightHttpRequest:
             terminal = HttpTerminalResult(payload=payload, latency_ms=latency_ms, error=None)
         except HttpClientError as exc:
             terminal = HttpTerminalResult(payload=None, latency_ms=None, error=exc)
+        except Exception as exc:
+            terminal = HttpTerminalResult(
+                payload=None,
+                latency_ms=None,
+                error=HttpClientError(
+                    kind="transport_runtime_error",
+                    message=str(exc) or "unexpected transport runtime error",
+                ),
+            )
         with self._lock:
             self._terminal_result = terminal
             self._connection = None
@@ -234,11 +244,14 @@ def _perform_request(
         _raise_if_cancelled(cancel_event)
         connection.connect()
         _raise_if_cancelled(cancel_event)
-        if connection.sock is not None:
-            connection.sock.settimeout(min(read_timeout_seconds, 1.0))
         connection.request("POST", path, body=body_bytes, headers=request.headers)
         _raise_if_cancelled(cancel_event)
-        response = connection.getresponse()
+        response = _await_response_headers(
+            connection=connection,
+            read_timeout_seconds=read_timeout_seconds,
+            start_time=start,
+            cancel_event=cancel_event,
+        )
         payload_bytes = _read_response_body(
             response=response,
             connection=connection,
@@ -286,6 +299,43 @@ def _perform_request(
     return dict(payload), latency_ms
 
 
+def _await_response_headers(
+    *,
+    connection: HTTPConnection | HTTPSConnection,
+    read_timeout_seconds: int,
+    start_time: float,
+    cancel_event: threading.Event | None = None,
+) -> Any:
+    while True:
+        _raise_if_cancelled(cancel_event)
+        remaining = read_timeout_seconds - (monotonic() - start_time)
+        if remaining <= 0:
+            raise TimeoutError("request timed out")
+        sock = connection.sock
+        if sock is not None:
+            try:
+                readable, _, _ = select.select([sock], [], [], min(remaining, 1.0))
+            except OSError as exc:
+                if cancel_event is not None and cancel_event.is_set():
+                    raise _RequestCancelled("request cancelled") from exc
+                raise
+            if not readable:
+                continue
+            sock.settimeout(remaining)
+        try:
+            return connection.getresponse()
+        except TimeoutError:
+            if cancel_event is not None and cancel_event.is_set():
+                raise _RequestCancelled("request cancelled") from None
+            continue
+        except OSError as exc:
+            if _is_idle_timeout_read_error(exc):
+                if cancel_event is not None and cancel_event.is_set():
+                    raise _RequestCancelled("request cancelled") from None
+                continue
+            raise
+
+
 def _read_response_body(
     *,
     response: Any,
@@ -303,8 +353,17 @@ def _read_response_body(
         remaining = read_timeout_seconds - elapsed
         if remaining <= 0:
             raise TimeoutError("request timed out")
-        if connection.sock is not None:
-            connection.sock.settimeout(min(remaining, 1.0))
+        sock = connection.sock
+        if sock is not None:
+            try:
+                readable, _, _ = select.select([sock], [], [], min(remaining, 1.0))
+            except OSError as exc:
+                if cancel_event is not None and cancel_event.is_set():
+                    raise _RequestCancelled("request cancelled") from exc
+                raise
+            if not readable:
+                continue
+            sock.settimeout(remaining)
         try:
             chunk = reader(65536) if callable(reader) else response.read(65536)
         except TimeoutError:
@@ -334,7 +393,8 @@ def _raise_if_cancelled(cancel_event: threading.Event | None) -> None:
 
 
 def _is_idle_timeout_read_error(exc: OSError) -> bool:
-    return "timed out object" in str(exc).lower()
+    message = str(exc).lower()
+    return "timed out object" in message or "read operation timed out" in message
 
 
 def _build_connection(
