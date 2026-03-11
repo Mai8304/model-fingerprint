@@ -1,8 +1,0 @@
-name: context_retrieval_v1
-family: context_retrieval
-version: 1
-features:
-  - found_count
-  - excluded_count
-  - confusion_count
-  - paragraph_annotation_rate

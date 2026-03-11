@@ -19,14 +19,14 @@ def write_run(
     run_id: str,
     target_label: str,
     claimed_model: str,
-    p001_char_len: int,
-    p001_step_count: int,
-    p002_char_len: int,
+    p021_char_len: int,
+    p021_step_count: int,
+    p023_char_len: int,
 ) -> None:
     artifact = RunArtifact.model_validate(
         {
             "run_id": run_id,
-            "suite_id": "fingerprint-suite-v1",
+            "suite_id": "fingerprint-suite-v3",
             "target_label": target_label,
             "claimed_model": claimed_model,
             "answer_coverage_ratio": 1.0,
@@ -38,9 +38,9 @@ def write_run(
             },
             "prompts": [
                 {
-                    "prompt_id": "p001",
+                    "prompt_id": "p021",
                     "status": "completed",
-                    "raw_output": "sample-p001",
+                    "raw_output": "sample-p021",
                     "usage": {
                         "input_tokens": 10,
                         "output_tokens": 5,
@@ -48,16 +48,16 @@ def write_run(
                         "total_tokens": 15,
                     },
                     "features": {
-                        "answer.char_len": p001_char_len,
-                        "reasoning.step_count": p001_step_count,
+                        "answer.char_len": p021_char_len,
+                        "reasoning.step_count": p021_step_count,
                         "transport.reasoning_visible": True,
                         "surface.had_markdown_fence": False,
                     },
                 },
                 {
-                    "prompt_id": "p002",
+                    "prompt_id": "p023",
                     "status": "completed",
-                    "raw_output": "sample-p002",
+                    "raw_output": "sample-p023",
                     "usage": {
                         "input_tokens": 10,
                         "output_tokens": 5,
@@ -65,7 +65,7 @@ def write_run(
                         "total_tokens": 15,
                     },
                     "features": {
-                        "answer.char_len": p002_char_len,
+                        "answer.char_len": p023_char_len,
                         "transport.reasoning_visible": False,
                         "surface.had_markdown_fence": False,
                     },
@@ -79,7 +79,7 @@ def write_run(
     )
 
 
-def test_build_profile_calibrate_and_compare_commands_emit_v2_fields(tmp_path: Path) -> None:
+def test_build_profile_calibrate_and_compare_commands_emit_v3_fields(tmp_path: Path) -> None:
     shutil.copytree(ROOT / "prompt-bank", tmp_path / "prompt-bank")
 
     write_run(
@@ -87,36 +87,36 @@ def test_build_profile_calibrate_and_compare_commands_emit_v2_fields(tmp_path: P
         run_id="gpt-1",
         target_label="gpt-5.3",
         claimed_model="gpt-5.3",
-        p001_char_len=40,
-        p001_step_count=2,
-        p002_char_len=20,
+        p021_char_len=40,
+        p021_step_count=2,
+        p023_char_len=20,
     )
     write_run(
         tmp_path / "gpt-run2.json",
         run_id="gpt-2",
         target_label="gpt-5.3",
         claimed_model="gpt-5.3",
-        p001_char_len=42,
-        p001_step_count=2,
-        p002_char_len=22,
+        p021_char_len=42,
+        p021_step_count=2,
+        p023_char_len=22,
     )
     write_run(
         tmp_path / "claude-run1.json",
         run_id="claude-1",
         target_label="claude-ops-4.6",
         claimed_model="claude-ops-4.6",
-        p001_char_len=90,
-        p001_step_count=5,
-        p002_char_len=200,
+        p021_char_len=90,
+        p021_step_count=5,
+        p023_char_len=200,
     )
     write_run(
         tmp_path / "claude-run2.json",
         run_id="claude-2",
         target_label="claude-ops-4.6",
         claimed_model="claude-ops-4.6",
-        p001_char_len=88,
-        p001_step_count=4,
-        p002_char_len=198,
+        p021_char_len=88,
+        p021_step_count=4,
+        p023_char_len=198,
     )
 
     gpt_profile = runner.invoke(
@@ -158,9 +158,9 @@ def test_build_profile_calibrate_and_compare_commands_emit_v2_fields(tmp_path: P
             "--root",
             str(tmp_path),
             "--profile",
-            str(tmp_path / "profiles/fingerprint-suite-v1/gpt-5.3.json"),
+            str(tmp_path / "profiles/fingerprint-suite-v3/gpt-5.3.json"),
             "--profile",
-            str(tmp_path / "profiles/fingerprint-suite-v1/claude-ops-4.6.json"),
+            str(tmp_path / "profiles/fingerprint-suite-v3/claude-ops-4.6.json"),
             "--run",
             str(tmp_path / "gpt-run1.json"),
             "--run",
@@ -178,9 +178,9 @@ def test_build_profile_calibrate_and_compare_commands_emit_v2_fields(tmp_path: P
         run_id="suspect-a",
         target_label="suspect-a",
         claimed_model="gpt-5.3",
-        p001_char_len=41,
-        p001_step_count=2,
-        p002_char_len=199,
+        p021_char_len=41,
+        p021_step_count=2,
+        p023_char_len=199,
     )
 
     compare = runner.invoke(
@@ -190,11 +190,11 @@ def test_build_profile_calibrate_and_compare_commands_emit_v2_fields(tmp_path: P
             "--run",
             str(tmp_path / "suspect-run.json"),
             "--profile",
-            str(tmp_path / "profiles/fingerprint-suite-v1/gpt-5.3.json"),
+            str(tmp_path / "profiles/fingerprint-suite-v3/gpt-5.3.json"),
             "--profile",
-            str(tmp_path / "profiles/fingerprint-suite-v1/claude-ops-4.6.json"),
+            str(tmp_path / "profiles/fingerprint-suite-v3/claude-ops-4.6.json"),
             "--calibration",
-            str(tmp_path / "calibration/fingerprint-suite-v1.json"),
+            str(tmp_path / "calibration/fingerprint-suite-v3.json"),
             "--json",
         ],
     )
@@ -216,11 +216,11 @@ def test_build_profile_calibrate_and_compare_commands_emit_v2_fields(tmp_path: P
             "--run",
             str(tmp_path / "suspect-run.json"),
             "--profile",
-            str(tmp_path / "profiles/fingerprint-suite-v1/gpt-5.3.json"),
+            str(tmp_path / "profiles/fingerprint-suite-v3/gpt-5.3.json"),
             "--profile",
-            str(tmp_path / "profiles/fingerprint-suite-v1/claude-ops-4.6.json"),
+            str(tmp_path / "profiles/fingerprint-suite-v3/claude-ops-4.6.json"),
             "--calibration",
-            str(tmp_path / "calibration/fingerprint-suite-v1.json"),
+            str(tmp_path / "calibration/fingerprint-suite-v3.json"),
             "--artifact-json",
         ],
     )

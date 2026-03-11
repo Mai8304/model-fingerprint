@@ -26,7 +26,7 @@ def test_project_run_snapshot_derives_progress_from_prompt_state() -> None:
             fingerprint_model_id="glm-5",
         ),
         current_stage_id="prompt_execution",
-        current_stage_message="running p003 (3/3)",
+        current_stage_message="running p024 (3/3)",
         stages=[
             WebRunStage(
                 id="config_validation",
@@ -37,20 +37,20 @@ def test_project_run_snapshot_derives_progress_from_prompt_state() -> None:
             WebRunStage(
                 id="prompt_execution",
                 status="running",
-                message="running p003 (3/3)",
+                message="running p024 (3/3)",
                 started_at=datetime(2026, 3, 10, 6, 1, 0, tzinfo=UTC),
             ),
         ],
         prompts=[
-            WebRunPrompt(prompt_id="p001", status="completed", elapsed_seconds=56),
+            WebRunPrompt(prompt_id="p021", status="completed", elapsed_seconds=56),
             WebRunPrompt(
-                prompt_id="p002",
+                prompt_id="p023",
                 status="failed",
                 elapsed_seconds=60,
                 error_code="RESPONSE_TIMEOUT",
                 http_status=504,
             ),
-            WebRunPrompt(prompt_id="p003", status="running"),
+            WebRunPrompt(prompt_id="p024", status="running"),
         ],
         eta_seconds=360,
         failure=WebRunFailure(code="RESPONSE_TIMEOUT", message="upstream timed out"),
@@ -61,11 +61,11 @@ def test_project_run_snapshot_derives_progress_from_prompt_state() -> None:
     assert snapshot.progress.completed_prompts == 1
     assert snapshot.progress.failed_prompts == 1
     assert snapshot.progress.total_prompts == 3
-    assert snapshot.progress.current_prompt_id == "p003"
+    assert snapshot.progress.current_prompt_id == "p024"
     assert snapshot.progress.current_prompt_index == 3
     assert snapshot.progress.eta_seconds == 360
     assert snapshot.current_stage_id == "prompt_execution"
-    assert snapshot.current_stage_message == "running p003 (3/3)"
+    assert snapshot.current_stage_message == "running p024 (3/3)"
     assert snapshot.stages[1].status == "running"
     assert snapshot.prompts[1].error_code == "RESPONSE_TIMEOUT"
     assert snapshot.failure is not None

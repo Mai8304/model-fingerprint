@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from modelfingerprint.extractors._v2_helpers import object_mapping, string_list
+from modelfingerprint.extractors._shared_helpers import object_mapping, string_list
 
 
 def shared_task_result(payload: Mapping[str, object]) -> dict[str, object]:
@@ -27,5 +27,12 @@ def shared_violations(payload: Mapping[str, object]) -> list[str]:
     if isinstance(value, Mapping):
         if len(value) == 0:
             return []
-        raise TypeError("violations must be a list of strings")
+        return [_format_violation_entry(key, item) for key, item in value.items()]
     return string_list(value, field_name="violations")
+
+
+def _format_violation_entry(key: object, value: object) -> str:
+    key_text = str(key)
+    if value in (None, "", False):
+        return key_text
+    return f"{key_text}:{value}"

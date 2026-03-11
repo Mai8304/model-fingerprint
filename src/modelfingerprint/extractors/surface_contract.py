@@ -8,13 +8,8 @@ from modelfingerprint.canonicalizers._common import strip_markdown_fence
 from modelfingerprint.extractors.base import FeatureMap, SurfaceExtractorInput
 
 EXPECTED_FIELD_ORDER = {
-    "strict_json_v2": ["answer", "confidence"],
     "tolerant_json_v3": ["task_result", "evidence", "unknowns", "violations"],
-    "structured_extraction_v2": ["requested_fields", "extracted", "evidence", "hallucinated"],
-    "retrieval_v2": ["expected_needles", "found_needles"],
 }
-
-TAG_PATTERN = re.compile(r"<(?P<tag>status|reason)>(?P<value>.*?)</(?P=tag)>", re.DOTALL)
 
 
 def extract_surface_contract(surface_input: object) -> FeatureMap:
@@ -33,9 +28,6 @@ def extract_surface_contract(surface_input: object) -> FeatureMap:
             unfenced_output,
             EXPECTED_FIELD_ORDER[format_id],
         )
-    elif format_id == "tagged_text_v2":
-        has_extra_text = _has_extra_tagged_text(unfenced_output)
-        field_order_match = _tag_order_matches(unfenced_output, ["status", "reason"])
     else:
         has_extra_text = False
         field_order_match = True
@@ -72,15 +64,3 @@ def _json_field_order_matches(text: str, expected_keys: list[str]) -> bool:
     if not isinstance(payload, Mapping):
         return False
     return list(payload) == expected_keys
-
-
-def _has_extra_tagged_text(text: str) -> bool:
-    remainder = text
-    for match in TAG_PATTERN.finditer(text):
-        remainder = remainder.replace(match.group(0), "", 1)
-    return remainder.strip() != ""
-
-
-def _tag_order_matches(text: str, expected_tags: list[str]) -> bool:
-    tags = [match.group("tag") for match in TAG_PATTERN.finditer(text)]
-    return tags == expected_tags

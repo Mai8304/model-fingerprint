@@ -1,8 +1,0 @@
-name: structured_extraction_v1
-family: structured_extraction
-version: 1
-features:
-  - field_accuracy
-  - evidence_alignment
-  - hallucinated_fields
-  - missing_field_pattern

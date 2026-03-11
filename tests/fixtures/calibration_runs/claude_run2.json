@@ -1,11 +1,11 @@
 {
-  "run_id": "claude-ops-4.6.fingerprint-suite-v1.cal-002",
-  "suite_id": "fingerprint-suite-v1",
+  "run_id": "claude-ops-4.6.fingerprint-suite-v3.cal-002",
+  "suite_id": "fingerprint-suite-v3",
   "target_label": "claude-ops-4.6",
   "claimed_model": "claude-ops-4.6",
   "prompts": [
     {
-      "prompt_id": "p001",
+      "prompt_id": "p021",
       "raw_output": "claude sample 2",
       "usage": {
         "input_tokens": 10,

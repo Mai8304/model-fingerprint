@@ -1,11 +1,11 @@
 {
-  "run_id": "gpt-5.3.fingerprint-suite-v1.003",
-  "suite_id": "fingerprint-suite-v1",
+  "run_id": "gpt-5.3.fingerprint-suite-v3.003",
+  "suite_id": "fingerprint-suite-v3",
   "target_label": "gpt-5.3",
   "claimed_model": "gpt-5.3",
   "prompts": [
     {
-      "prompt_id": "p001",
+      "prompt_id": "p021",
       "raw_output": "sample 3",
       "usage": {
         "input_tokens": 10,

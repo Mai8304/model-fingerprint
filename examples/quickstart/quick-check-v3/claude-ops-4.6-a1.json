@@ -1,0 +1,29 @@
+{
+  "p021": {
+    "content": "{\"task_result\":{\"owner\":\"Kevin Lin\",\"role\":\"Primary DBA\",\"region\":\"APAC\",\"change_window\":\"Sunday\"},\"evidence\":{\"owner\":[\"e1\"],\"role\":[\"e2\"],\"region\":[\"e4\"],\"change_window\":[\"e1\"]},\"unknowns\":{},\"violations\":[]}",
+    "finish_reason": "stop",
+    "input_tokens": 10,
+    "output_tokens": 5,
+    "reasoning_content": "1. trust the draft sheet",
+    "reasoning_tokens": 10,
+    "total_tokens": 25
+  },
+  "p023": {
+    "content": "{\"task_result\":{\"q1\":{\"status\":\"answer\",\"value\":\"yes\"},\"q2\":{\"status\":\"answer\",\"value\":\"Priya\"},\"q3\":{\"status\":\"answer\",\"value\":\"retry failed background jobs\"},\"q4\":{\"status\":\"unknown\",\"value\":null}},\"evidence\":{\"q1\":[\"e1\"],\"q2\":[\"e5\"],\"q3\":[\"e1\"],\"q4\":[\"e4\"]},\"unknowns\":{\"q4\":\"missing\"},\"violations\":[]}",
+    "finish_reason": "stop",
+    "input_tokens": 10,
+    "output_tokens": 5,
+    "reasoning_content": "1. answer the actor from context",
+    "reasoning_tokens": 11,
+    "total_tokens": 26
+  },
+  "p024": {
+    "content": "{\"task_result\":{\"ticket_a\":{\"status\":\"closed\",\"owner\":\"ops\",\"priority\":\"p1\"},\"ticket_b\":{\"status\":\"open\",\"owner\":\"db\",\"priority\":\"p2\"},\"worker_x\":{\"status\":\"open\",\"owner\":\"ops\",\"priority\":\"p2\"}},\"evidence\":{\"derivation_codes\":{\"ticket_a\":\"r5\",\"ticket_b\":\"r6\",\"worker_x\":\"r8\"},\"defaults_used\":[\"ticket_b.priority\",\"worker_x.priority\"]},\"unknowns\":{},\"violations\":[]}",
+    "finish_reason": "stop",
+    "input_tokens": 10,
+    "output_tokens": 5,
+    "reasoning_content": "1. stop at suspend",
+    "reasoning_tokens": 9,
+    "total_tokens": 24
+  }
+}

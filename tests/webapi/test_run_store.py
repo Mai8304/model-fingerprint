@@ -24,7 +24,7 @@ def test_run_store_round_trips_and_marks_cancel_requested(tmp_path) -> None:
             model_name="gpt-4o-mini",
             fingerprint_model_id="glm-5",
         ),
-        prompt_ids=["p001", "p002", "p003"],
+        prompt_ids=["p021", "p023", "p024"],
     )
 
     assert created.run_status == "validating"
@@ -40,7 +40,7 @@ def test_run_store_round_trips_and_marks_cancel_requested(tmp_path) -> None:
         "comparison",
     ]
     assert created.stages[0].status == "running"
-    assert [prompt.prompt_id for prompt in created.prompts] == ["p001", "p002", "p003"]
+    assert [prompt.prompt_id for prompt in created.prompts] == ["p021", "p023", "p024"]
     assert all(prompt.status == "pending" for prompt in created.prompts)
 
     loaded = store.get("run_001")

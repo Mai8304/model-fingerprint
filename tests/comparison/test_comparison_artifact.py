@@ -13,26 +13,26 @@ def build_run(
     run_id: str,
     target_label: str,
     claimed_model: str | None,
-    p001_char_len: int,
-    p001_step_count: int | None,
-    p001_reasoning_visible: bool,
-    p002_char_len: int,
+    p021_char_len: int,
+    p021_step_count: int | None,
+    p021_reasoning_visible: bool,
+    p023_char_len: int,
     capability_status: str,
     answer_coverage_ratio: float = 1.0,
     reasoning_coverage_ratio: float = 1.0,
 ) -> RunArtifact:
     prompt1_features: dict[str, object] = {
-        "answer.char_len": p001_char_len,
-        "transport.reasoning_visible": p001_reasoning_visible,
+        "answer.char_len": p021_char_len,
+        "transport.reasoning_visible": p021_reasoning_visible,
         "surface.had_markdown_fence": False,
     }
-    if p001_step_count is not None:
-        prompt1_features["reasoning.step_count"] = p001_step_count
+    if p021_step_count is not None:
+        prompt1_features["reasoning.step_count"] = p021_step_count
 
     return RunArtifact.model_validate(
         {
             "run_id": run_id,
-            "suite_id": "fingerprint-suite-v1",
+            "suite_id": "fingerprint-suite-v3",
             "target_label": target_label,
             "claimed_model": claimed_model,
             "answer_coverage_ratio": answer_coverage_ratio,
@@ -61,35 +61,35 @@ def build_run(
             },
             "prompts": [
                 {
-                    "prompt_id": "p001",
+                    "prompt_id": "p021",
                     "status": "completed",
-                    "raw_output": "sample-p001",
+                    "raw_output": "sample-p021",
                     "usage": {
                         "input_tokens": 10,
                         "output_tokens": 5,
-                        "reasoning_tokens": 12 if p001_reasoning_visible else 0,
+                        "reasoning_tokens": 12 if p021_reasoning_visible else 0,
                         "total_tokens": 15,
                     },
                     "completion": {
-                        "answer_text": "sample-p001",
+                        "answer_text": "sample-p021",
                         "reasoning_text": "1. inspect\n2. answer"
-                        if p001_reasoning_visible
+                        if p021_reasoning_visible
                         else None,
-                        "reasoning_visible": p001_reasoning_visible,
+                        "reasoning_visible": p021_reasoning_visible,
                         "finish_reason": "stop",
                         "usage": {
                             "input_tokens": 10,
                             "output_tokens": 5,
-                            "reasoning_tokens": 12 if p001_reasoning_visible else 0,
+                            "reasoning_tokens": 12 if p021_reasoning_visible else 0,
                             "total_tokens": 15,
                         },
                     },
                     "features": prompt1_features,
                 },
                 {
-                    "prompt_id": "p002",
+                    "prompt_id": "p023",
                     "status": "completed",
-                    "raw_output": "sample-p002",
+                    "raw_output": "sample-p023",
                     "usage": {
                         "input_tokens": 10,
                         "output_tokens": 5,
@@ -97,7 +97,7 @@ def build_run(
                         "total_tokens": 15,
                     },
                     "features": {
-                        "answer.char_len": p002_char_len,
+                        "answer.char_len": p023_char_len,
                         "transport.reasoning_visible": False,
                         "surface.had_markdown_fence": False,
                     },
@@ -110,7 +110,7 @@ def build_run(
 def build_calibration() -> CalibrationArtifact:
     return CalibrationArtifact.model_validate(
         {
-            "suite_id": "fingerprint-suite-v1",
+            "suite_id": "fingerprint-suite-v3",
             "thresholds": {
                 "match": 0.82,
                 "suspicious": 0.71,
@@ -149,20 +149,20 @@ def build_profiles() -> list[ProfileArtifact]:
             run_id="gpt-1",
             target_label="gpt-5.3",
             claimed_model="gpt-5.3",
-            p001_char_len=40,
-            p001_step_count=2,
-            p001_reasoning_visible=True,
-            p002_char_len=20,
+            p021_char_len=40,
+            p021_step_count=2,
+            p021_reasoning_visible=True,
+            p023_char_len=20,
             capability_status="supported",
         ),
         build_run(
             run_id="gpt-2",
             target_label="gpt-5.3",
             claimed_model="gpt-5.3",
-            p001_char_len=42,
-            p001_step_count=2,
-            p001_reasoning_visible=True,
-            p002_char_len=22,
+            p021_char_len=42,
+            p021_step_count=2,
+            p021_reasoning_visible=True,
+            p023_char_len=22,
             capability_status="supported",
         ),
     ]
@@ -171,26 +171,26 @@ def build_profiles() -> list[ProfileArtifact]:
             run_id="claude-1",
             target_label="claude-ops-4.6",
             claimed_model="claude-ops-4.6",
-            p001_char_len=90,
-            p001_step_count=5,
-            p001_reasoning_visible=True,
-            p002_char_len=200,
+            p021_char_len=90,
+            p021_step_count=5,
+            p021_reasoning_visible=True,
+            p023_char_len=200,
             capability_status="accepted_but_ignored",
         ),
         build_run(
             run_id="claude-2",
             target_label="claude-ops-4.6",
             claimed_model="claude-ops-4.6",
-            p001_char_len=88,
-            p001_step_count=4,
-            p001_reasoning_visible=True,
-            p002_char_len=198,
+            p021_char_len=88,
+            p021_step_count=4,
+            p021_reasoning_visible=True,
+            p023_char_len=198,
             capability_status="accepted_but_ignored",
         ),
     ]
     return [
-        build_profile("gpt-5.3", gpt_runs, prompt_weights={"p001": 0.9, "p002": 0.1}),
-        build_profile("claude-ops-4.6", claude_runs, prompt_weights={"p001": 0.9, "p002": 0.1}),
+        build_profile("gpt-5.3", gpt_runs, prompt_weights={"p021": 0.9, "p023": 0.1}),
+        build_profile("claude-ops-4.6", claude_runs, prompt_weights={"p021": 0.9, "p023": 0.1}),
     ]
 
 
@@ -199,10 +199,10 @@ def test_build_comparison_artifact_emits_ranked_candidates_and_breakdowns() -> N
         run_id="suspect-a",
         target_label="suspect-a",
         claimed_model="gpt-5.3",
-        p001_char_len=41,
-        p001_step_count=2,
-        p001_reasoning_visible=True,
-        p002_char_len=199,
+        p021_char_len=41,
+        p021_step_count=2,
+        p021_reasoning_visible=True,
+        p023_char_len=199,
         capability_status="supported",
     )
 
@@ -219,10 +219,10 @@ def test_build_comparison_artifact_emits_ranked_candidates_and_breakdowns() -> N
     assert len(artifact.candidates) == 2
     assert artifact.candidates[0].model_id == "gpt-5.3"
     assert (
-        artifact.candidates[0].prompt_scores["p001"]
-        > artifact.candidates[1].prompt_scores["p001"]
+        artifact.candidates[0].prompt_scores["p021"]
+        > artifact.candidates[1].prompt_scores["p021"]
     )
-    assert artifact.prompt_breakdown[0].prompt_id == "p001"
+    assert artifact.prompt_breakdown[0].prompt_id == "p021"
     assert artifact.prompt_breakdown[0].status == "completed"
     assert artifact.prompt_breakdown[0].similarity is not None
     assert artifact.capability_breakdown[0].capability == "thinking"

@@ -6,7 +6,7 @@ from modelfingerprint.services.verdicts import decide_verdict
 
 CALIBRATION = CalibrationArtifact.model_validate(
     {
-        "suite_id": "fingerprint-suite-v1",
+        "suite_id": "fingerprint-suite-v3",
         "thresholds": {
             "match": 0.8,
             "suspicious": 0.6,

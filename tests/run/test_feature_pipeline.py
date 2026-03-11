@@ -16,7 +16,7 @@ from modelfingerprint.services.feature_pipeline import FeaturePipeline, PromptEx
 def build_prompt() -> PromptDefinition:
     return PromptDefinition.model_validate(
         {
-            "id": "p003",
+            "id": "p024",
             "name": "event_log_state_resolution",
             "family": "state_tracking",
             "intent": "measure state tracking and rule execution",
@@ -28,10 +28,10 @@ def build_prompt() -> PromptDefinition:
                 "response_format": "text",
                 "reasoning_mode": "capture_if_available",
             },
-            "output_contract": {"id": "strict_json_v2", "canonicalizer": "strict_json_v2"},
+            "output_contract": {"id": "tolerant_json_v3", "canonicalizer": "tolerant_json_v3"},
             "extractors": {
-                "answer": "state_tracking_v1",
-                "score": "state_tracking_score_v1",
+                "answer": "state_tracking_v3",
+                "score": "state_tracking_score_v3",
                 "reasoning": "reasoning_trace_v1",
                 "transport": "completion_metadata_v1",
             },
@@ -44,7 +44,7 @@ def build_prompt() -> PromptDefinition:
             },
             "required_capabilities": ["chat_completions"],
             "weight_hint": 0.9,
-            "tags": ["state", "rules", "v2"],
+            "tags": ["state", "rules", "v3"],
             "risk_level": "low",
         }
     )
@@ -53,19 +53,19 @@ def build_prompt() -> PromptDefinition:
 def build_registry() -> ExtractorRegistry:
     return ExtractorRegistry(
         descriptors={
-            "state_tracking_v1": ExtractorDescriptor.model_validate(
+            "state_tracking_v3": ExtractorDescriptor.model_validate(
                 {
-                    "name": "state_tracking_v1",
+                    "name": "state_tracking_v3",
                     "family": "state_tracking",
-                    "version": 1,
+                    "version": 3,
                     "features": ["resolved_object_count", "default_used"],
                 }
             ),
-            "state_tracking_score_v1": ExtractorDescriptor.model_validate(
+            "state_tracking_score_v3": ExtractorDescriptor.model_validate(
                 {
-                    "name": "state_tracking_score_v1",
+                    "name": "state_tracking_score_v3",
                     "family": "state_tracking",
-                    "version": 1,
+                    "version": 3,
                     "features": ["state_accuracy", "owner_accuracy"],
                 }
             ),
@@ -99,7 +99,7 @@ def build_registry() -> ExtractorRegistry:
             ),
         },
         handlers={
-            "state_tracking_v1": lambda canonical_output: {
+            "state_tracking_v3": lambda canonical_output: {
                 "resolved_object_count": len(canonical_output.payload["task_result"]),
                 "default_used": "defaults_used" in canonical_output.payload,
             },
@@ -116,7 +116,7 @@ def build_registry() -> ExtractorRegistry:
             },
         },
         score_handlers={
-            "state_tracking_score_v1": lambda prompt, canonical_output: {
+            "state_tracking_score_v3": lambda prompt, canonical_output: {
                 "state_accuracy": 1.0
                 if canonical_output.payload["task_result"]["ticket_a"]["status"]
                 == prompt.evaluation.reference["expected_final_state"]["ticket_a"]["status"]
@@ -136,9 +136,9 @@ def test_feature_pipeline_extracts_multi_channel_features_and_preserves_events()
         registry=registry,
         canonicalizers=CanonicalizerRegistry(
             {
-                "strict_json_v2": lambda raw_output: (
+                "tolerant_json_v3": lambda raw_output: (
                     CanonicalizedOutput(
-                        format_id="strict_json_v2",
+                        format_id="tolerant_json_v3",
                         payload={
                             "task_result": {
                                 "ticket_a": {
@@ -155,8 +155,8 @@ def test_feature_pipeline_extracts_multi_channel_features_and_preserves_events()
     )
 
     artifact = pipeline.build_run_artifact(
-        run_id="suspect-a.fingerprint-suite-v1",
-        suite_id="fingerprint-suite-v1",
+        run_id="suspect-a.fingerprint-suite-v3",
+        suite_id="fingerprint-suite-v3",
         target_label="suspect-a",
         claimed_model=None,
         executions=[

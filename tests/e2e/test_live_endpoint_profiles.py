@@ -79,7 +79,7 @@ retry_policy:
     )
 
 
-def test_run_suite_command_uses_endpoint_profiles_and_preserves_failures(
+def test_run_suite_command_uses_endpoint_profiles_and_records_capability_probe(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
@@ -90,14 +90,20 @@ def test_run_suite_command_uses_endpoint_profiles_and_preserves_failures(
 
     def fake_payload_for_request(request):
         user_message = request.body["messages"][-1]["content"]
-        if "event sourcing" in user_message:
+        if "ticket_a" in user_message:
             return {
                 "choices": [
                     {
                         "finish_reason": "stop",
                         "message": {
-                            "content": "Use CRUD first. Event sourcing adds overhead.",
-                            "reasoning_content": "1. inspect the request\n2. answer briefly",
+                            "content": (
+                                '{"task_result":{"ticket_a":{"status":"closed","owner":"ops","priority":"p1"},'
+                                '"ticket_b":{"status":"open","owner":"db","priority":"p2"},'
+                                '"worker_x":{"status":"suspended","owner":"ml","priority":"p3"}},'
+                                '"evidence":{"derivation_codes":{"ticket_a":"r5","ticket_b":"r6","worker_x":"r10"},'
+                                '"defaults_used":["ticket_b.priority"]},"unknowns":{},"violations":[]}'
+                            ),
+                            "reasoning_content": "1. apply close and reopen rules\n2. preserve owner on suspend",
                         },
                     }
                 ],
@@ -108,13 +114,43 @@ def test_run_suite_command_uses_endpoint_profiles_and_preserves_failures(
                     "completion_tokens_details": {"reasoning_tokens": 6},
                 },
             }
+        if "q1" in user_message:
+            return {
+                "choices": [
+                    {
+                        "finish_reason": "stop",
+                        "message": {
+                            "content": (
+                                '{"task_result":{"q1":{"status":"answer","value":"yes"},'
+                                '"q2":{"status":"unknown","value":null},'
+                                '"q3":{"status":"answer","value":"retry failed background jobs"},'
+                                '"q4":{"status":"conflict_unresolved","value":null}},'
+                                '"evidence":{"q1":["e1"],"q2":["e5"],"q3":["e1"],"q4":["e3","e4"]},'
+                                '"unknowns":{"q2":"missing_actor","q4":"conflicting_notes"},"violations":[]}'
+                            ),
+                            "reasoning_content": "1. separate answers from unknowns\n2. keep q4 unresolved",
+                        },
+                    }
+                ],
+                "usage": {
+                    "prompt_tokens": 10,
+                    "completion_tokens": 5,
+                    "total_tokens": 22,
+                    "completion_tokens_details": {"reasoning_tokens": 7},
+                },
+            }
         return {
             "choices": [
                 {
                     "finish_reason": "stop",
                     "message": {
-                        "content": '@@ -1 +1 @@\n-print("old")\n+print("new")',
-                        "reasoning_content": "1. isolate the target line\n2. emit the diff",
+                        "content": (
+                            '{"task_result":{"owner":"Alice Wong","role":"Primary DBA","region":null,'
+                            '"change_window":"2026-03-21 02:00 UTC"},'
+                            '"evidence":{"owner":["e3"],"role":["e2"],"region":[],"change_window":["e5"]},'
+                            '"unknowns":{"region":"missing"},"violations":[]}'
+                        ),
+                        "reasoning_content": "1. prefer approved facts\n2. keep region unknown",
                     },
                 }
             ],
@@ -182,7 +218,7 @@ def test_run_suite_command_uses_endpoint_profiles_and_preserves_failures(
         app,
         [
             "run-suite",
-            "quick-check-v1",
+            "quick-check-v3",
             "--root",
             str(tmp_path),
             "--target-label",
@@ -198,7 +234,7 @@ def test_run_suite_command_uses_endpoint_profiles_and_preserves_failures(
 
     assert result.exit_code == 0
 
-    output_path = tmp_path / "runs" / "2026-03-09" / "suspect-a.quick-check-v1.json"
+    output_path = tmp_path / "runs" / "2026-03-09" / "suspect-a.quick-check-v3.json"
     artifact = RunArtifact.model_validate(json.loads(output_path.read_text(encoding="utf-8")))
 
     assert artifact.endpoint_profile_id == "siliconflow-openai-chat"
@@ -207,11 +243,9 @@ def test_run_suite_command_uses_endpoint_profiles_and_preserves_failures(
     assert artifact.capability_probe.capabilities["thinking"].status == "supported"
     assert artifact.trace_dir is not None
     assert artifact.protocol_compatibility is not None
-    assert artifact.protocol_compatibility.satisfied is False
-    prompt_statuses = {prompt.prompt_id: prompt.status for prompt in artifact.prompts}
-    assert prompt_statuses["p003"] == "unsupported_capability"
-    assert prompt_statuses["p007"] == "unsupported_capability"
-    assert prompt_statuses["p009"] == "unsupported_capability"
+    assert artifact.protocol_compatibility.satisfied is True
+    assert artifact.prompt_count_completed == 3
+    assert all(prompt.status == "completed" for prompt in artifact.prompts)
     assert (
-        tmp_path / "traces" / "2026-03-09" / "suspect-a.quick-check-v1" / "p001.request.json"
+        tmp_path / "traces" / "2026-03-09" / "suspect-a.quick-check-v3" / "p021.request.json"
     ).exists()

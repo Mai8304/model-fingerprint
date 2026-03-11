@@ -18,109 +18,6 @@ ROOT = Path(__file__).resolve().parents[2]
 runner = CliRunner()
 
 
-def write_fixture_responses(path: Path) -> None:
-    path.write_text(
-        json.dumps(
-            {
-                "p001": {
-                    "content": "Use CRUD first. Event sourcing adds overhead.",
-                    "reasoning_content": "1. evaluate scope\n2. answer briefly",
-                    "input_tokens": 10,
-                    "output_tokens": 5,
-                    "reasoning_tokens": 8,
-                    "total_tokens": 23,
-                    "finish_reason": "stop",
-                },
-                "p003": {
-                    "content": '{"answer":"yes","confidence":"high"}',
-                    "reasoning_content": "1. inspect the schema\n2. return strict json",
-                    "input_tokens": 10,
-                    "output_tokens": 5,
-                    "reasoning_tokens": 12,
-                    "total_tokens": 27,
-                    "finish_reason": "stop",
-                },
-                "p005": {
-                    "content": '@@ -1 +1 @@\n-print("old")\n+print("new")',
-                    "reasoning_content": "1. isolate the target line\n2. emit diff only",
-                    "input_tokens": 10,
-                    "output_tokens": 5,
-                    "reasoning_tokens": 6,
-                    "total_tokens": 21,
-                    "finish_reason": "stop",
-                },
-                "p007": {
-                    "content": (
-                        '{"requested_fields":["name","role"],"extracted":{"name":"Alice","role":"admin"},'
-                        '"evidence":{"name":["e1"],"role":["e1"]},"hallucinated":[]}'
-                    ),
-                    "reasoning_content": "1. inspect evidence ids\n2. fill requested fields only",
-                    "input_tokens": 10,
-                    "output_tokens": 5,
-                    "reasoning_tokens": 10,
-                    "total_tokens": 25,
-                    "finish_reason": "stop",
-                },
-                "p009": {
-                    "content": (
-                        '{"expected_needles":["alpha","beta","gamma"],'
-                        '"found_needles":["alpha","beta","gamma"]}'
-                    ),
-                    "reasoning_content": "1. scan the requested entities\n2. preserve order",
-                    "input_tokens": 10,
-                    "output_tokens": 5,
-                    "reasoning_tokens": 9,
-                    "total_tokens": 24,
-                    "finish_reason": "stop",
-                },
-            },
-            indent=2,
-            sort_keys=True,
-        ),
-        encoding="utf-8",
-    )
-
-
-def test_run_suite_command_executes_fixture_mode_and_writes_v2_run(tmp_path: Path) -> None:
-    shutil.copytree(ROOT / "prompt-bank", tmp_path / "prompt-bank")
-    shutil.copytree(ROOT / "extractors", tmp_path / "extractors")
-    fixture_path = tmp_path / "responses.json"
-    write_fixture_responses(fixture_path)
-
-    result = runner.invoke(
-        app,
-        [
-            "run-suite",
-            "quick-check-v1",
-            "--root",
-            str(tmp_path),
-            "--target-label",
-            "suspect-a",
-            "--claimed-model",
-            "gpt-5.3",
-            "--fixture-responses",
-            str(fixture_path),
-            "--run-date",
-            "2026-03-09",
-        ],
-    )
-
-    assert result.exit_code == 0
-
-    output_path = tmp_path / "runs" / "2026-03-09" / "suspect-a.quick-check-v1.json"
-    artifact = RunArtifact.model_validate(json.loads(output_path.read_text(encoding="utf-8")))
-
-    assert artifact.suite_id == "quick-check-v1"
-    assert artifact.prompt_count_total == 5
-    assert artifact.prompt_count_completed == 5
-    assert artifact.answer_coverage_ratio == 1.0
-    assert artifact.reasoning_coverage_ratio == 1.0
-    assert artifact.capability_probe is None
-    assert artifact.protocol_compatibility is not None
-    assert artifact.protocol_compatibility.satisfied is True
-    assert all(prompt.completion is not None for prompt in artifact.prompts)
-
-
 def write_v3_fixture_responses(path: Path) -> None:
     path.write_text(
         json.dumps(
@@ -231,18 +128,23 @@ class FlakyTransport:
 
     def execute(self, prompt) -> PromptExecutionResult:
         self.called_prompt_ids.append(prompt.id)
-        if prompt.id == "p001":
+        if prompt.id == "p021":
             raise RuntimeError("socket exploded")
         payloads = {
-            "p003": '{"answer":"yes","confidence":"high"}',
-            "p005": '@@ -1 +1 @@\n-print("old")\n+print("new")',
-            "p007": (
-                '{"requested_fields":["name","role"],"extracted":{"name":"Alice","role":"admin"},'
-                '"evidence":{"name":["e1"],"role":["e1"]},"hallucinated":[]}'
+            "p023": (
+                '{"task_result":{"q1":{"status":"answer","value":"yes"},'
+                '"q2":{"status":"unknown","value":null},'
+                '"q3":{"status":"answer","value":"retry failed background jobs"},'
+                '"q4":{"status":"conflict_unresolved","value":null}},'
+                '"evidence":{"q1":["e1"],"q2":["e5"],"q3":["e1"],"q4":["e3","e4"]},'
+                '"unknowns":{"q2":"missing_actor","q4":"conflicting_notes"},"violations":[]}'
             ),
-            "p009": (
-                '{"expected_needles":["alpha","beta","gamma"],'
-                '"found_needles":["alpha","beta","gamma"]}'
+            "p024": (
+                '{"task_result":{"ticket_a":{"status":"closed","owner":"ops","priority":"p1"},'
+                '"ticket_b":{"status":"open","owner":"db","priority":"p2"},'
+                '"worker_x":{"status":"suspended","owner":"ml","priority":"p3"}},'
+                '"evidence":{"derivation_codes":{"ticket_a":"r5","ticket_b":"r6","worker_x":"r10"},'
+                '"defaults_used":["ticket_b.priority"]},"unknowns":{},"violations":[]}'
             ),
         }
         return PromptExecutionResult(
@@ -263,21 +165,19 @@ def test_suite_runner_keeps_running_when_one_prompt_transport_raises(tmp_path: P
     runner_instance = SuiteRunner(paths=RepositoryPaths(root=tmp_path), transport=transport)
 
     output_path = runner_instance.run_suite(
-        suite_id="quick-check-v1",
+        suite_id="quick-check-v3",
         target_label="suspect-b",
         claimed_model=None,
     )
 
     artifact = RunArtifact.model_validate(json.loads(output_path.read_text(encoding="utf-8")))
 
-    assert transport.called_prompt_ids == ["p001", "p003", "p005", "p007", "p009"]
+    assert transport.called_prompt_ids == ["p021", "p023", "p024"]
     prompt_statuses = {prompt.prompt_id: prompt.status for prompt in artifact.prompts}
-    assert prompt_statuses["p001"] == "transport_error"
-    assert prompt_statuses["p003"] == "completed"
-    assert prompt_statuses["p005"] == "completed"
-    assert prompt_statuses["p007"] == "completed"
-    assert prompt_statuses["p009"] == "completed"
-    first_prompt = next(prompt for prompt in artifact.prompts if prompt.prompt_id == "p001")
+    assert prompt_statuses["p021"] == "transport_error"
+    assert prompt_statuses["p023"] == "completed"
+    assert prompt_statuses["p024"] == "completed"
+    first_prompt = next(prompt for prompt in artifact.prompts if prompt.prompt_id == "p021")
     assert first_prompt.error == PromptExecutionError(
         kind="unexpected_transport_runtime_error",
         message="socket exploded",

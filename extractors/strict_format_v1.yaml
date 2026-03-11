@@ -1,8 +1,0 @@
-name: strict_format_v1
-family: strict_format
-version: 1
-features:
-  - valid_format
-  - has_extra_text
-  - field_order_match
-  - constraint_retention

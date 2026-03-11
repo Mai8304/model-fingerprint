@@ -500,13 +500,7 @@ def _can_accept_length_terminated_output(
 ) -> bool:
     if completion.answer_text.strip() == "":
         return False
-    return prompt.output_contract.canonicalizer in {
-        "strict_json_v2",
-        "tolerant_json_v3",
-        "structured_extraction_v2",
-        "retrieval_v2",
-        "tagged_text_v2",
-    }
+    return prompt.output_contract.canonicalizer == "tolerant_json_v3"
 
 
 def _is_retryable(error: HttpClientError, retryable_statuses: list[int]) -> bool:

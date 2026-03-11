@@ -1,31 +1,20 @@
 from __future__ import annotations
 
-import json
-import shutil
-from datetime import date
-from pathlib import Path
-
 from modelfingerprint.contracts.endpoint import EndpointProfile
 from modelfingerprint.contracts.prompt import PromptDefinition
-from modelfingerprint.contracts.run import RunArtifact, UsageMetadata
 from modelfingerprint.dialects.openai_chat import OpenAIChatDialectAdapter
-from modelfingerprint.services.feature_pipeline import PromptExecutionResult
 from modelfingerprint.services.runtime_policy import resolve_runtime_policy
-from modelfingerprint.services.suite_runner import SuiteRunner
-from modelfingerprint.settings import RepositoryPaths
 from modelfingerprint.transports.http_client import HttpProgressSnapshot, HttpTerminalResult
 from modelfingerprint.transports.live_runner import LiveRunner
-
-ROOT = Path(__file__).resolve().parents[2]
 
 
 def build_prompt() -> PromptDefinition:
     return PromptDefinition.model_validate(
         {
-            "id": "p003",
-            "name": "fixed_json_triage",
-            "family": "strict_format",
-            "intent": "detect strict JSON obedience",
+            "id": "p021",
+            "name": "grounded_identity_resolution",
+            "family": "evidence_grounding",
+            "intent": "verify protocol invariants for grounded JSON prompts",
             "messages": [
                 {
                     "role": "system",
@@ -34,8 +23,7 @@ def build_prompt() -> PromptDefinition:
                 {
                     "role": "user",
                     "content": (
-                        'Reply with JSON only using fields "answer" and "confidence" '
-                        "in that order."
+                        "Reply with a JSON object containing task_result, evidence, unknowns, and violations."
                     ),
                 },
             ],
@@ -46,15 +34,15 @@ def build_prompt() -> PromptDefinition:
                 "response_format": "json_object",
                 "reasoning_mode": "capture_if_available",
             },
-            "output_contract": {"id": "strict_json_v2", "canonicalizer": "strict_json_v2"},
+            "output_contract": {"id": "tolerant_json_v3", "canonicalizer": "tolerant_json_v3"},
             "extractors": {
-                "answer": "strict_format_v1",
+                "answer": "evidence_grounding_v3",
                 "reasoning": "reasoning_trace_v1",
                 "transport": "completion_metadata_v1",
             },
             "required_capabilities": ["chat_completions", "json_object_response"],
             "weight_hint": 0.9,
-            "tags": ["format", "json"],
+            "tags": ["grounding", "json"],
             "risk_level": "low",
         }
     )
@@ -110,35 +98,6 @@ def build_endpoint(
             },
         }
     )
-
-
-class RecordingTransport:
-    def __init__(self, endpoint: EndpointProfile) -> None:
-        self.endpoint = endpoint
-        self.called_prompt_ids: list[str] = []
-
-    def execute(self, prompt: PromptDefinition) -> PromptExecutionResult:
-        payloads = {
-            "p001": "Use CRUD first. Event sourcing adds overhead.",
-            "p003": '{"answer":"yes","confidence":"high"}',
-            "p005": '@@ -1 +1 @@\n-print("old")\n+print("new")',
-            "p007": (
-                '{"requested_fields":["name","role"],"extracted":{"name":"Alice","role":"admin"},'
-                '"evidence":["e1"],"hallucinated":[]}'
-            ),
-            "p009": (
-                '{"expected_needles":["alpha","beta","gamma"],'
-                '"found_needles":["alpha","beta","gamma"]}'
-            ),
-        }
-        self.called_prompt_ids.append(prompt.id)
-        return PromptExecutionResult(
-            prompt=prompt,
-            raw_output=payloads[prompt.id],
-            usage=UsageMetadata(input_tokens=10, output_tokens=5, total_tokens=15),
-        )
-
-
 class RecordingHttpClient:
     def __init__(self) -> None:
         self.calls: list[dict[str, object]] = []
@@ -174,8 +133,11 @@ class RecordingHttpClient:
                             {
                                 "finish_reason": "stop",
                                 "message": {
-                                    "content": '{"answer":"yes","confidence":"high"}',
-                                    "reasoning_content": "1. comply with the fixed protocol",
+                                    "content": (
+                                        '{"task_result":{"owner":"Alice Wong"},'
+                                        '"evidence":{"owner":["e1"]},"unknowns":{},"violations":[]}'
+                                    ),
+                                    "reasoning_content": "1. comply with the grounded protocol",
                                 },
                             }
                         ],
@@ -194,39 +156,6 @@ class RecordingHttpClient:
                 return None
 
         return ImmediateHandle()
-
-
-def test_suite_runner_marks_unsupported_capabilities_without_silent_adaptation(
-    tmp_path: Path,
-) -> None:
-    shutil.copytree(ROOT / "prompt-bank", tmp_path / "prompt-bank")
-    shutil.copytree(ROOT / "extractors", tmp_path / "extractors")
-
-    transport = RecordingTransport(
-        build_endpoint(
-            supports_json_object_response=False,
-            output_token_cap_field="max_tokens",
-        )
-    )
-    runner = SuiteRunner(
-        paths=RepositoryPaths(root=tmp_path),
-        transport=transport,
-    )
-
-    output_path = runner.run_suite(
-        suite_id="quick-check-v1",
-        target_label="suspect-a",
-        claimed_model=None,
-        run_date=date(2026, 3, 9),
-    )
-
-    artifact = RunArtifact.model_validate(json.loads(output_path.read_text(encoding="utf-8")))
-
-    assert transport.called_prompt_ids == ["p001", "p005"]
-    prompt_statuses = {prompt.prompt_id: prompt.status for prompt in artifact.prompts}
-    assert prompt_statuses["p003"] == "unsupported_capability"
-    assert prompt_statuses["p007"] == "unsupported_capability"
-    assert prompt_statuses["p009"] == "unsupported_capability"
 
 
 def test_live_runner_preserves_messages_and_output_token_cap_field_exactly() -> None:

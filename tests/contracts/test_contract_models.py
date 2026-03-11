@@ -11,9 +11,9 @@ from modelfingerprint.contracts.run import RunArtifact
 
 def test_prompt_definition_parses_valid_payload() -> None:
     payload = {
-        "id": "p017",
+        "id": "p021",
         "name": "concise_architecture_tradeoff",
-        "family": "style_brief",
+        "family": "evidence_grounding",
         "intent": "distinguish compact trade-off framing",
         "messages": [
             {
@@ -28,9 +28,9 @@ def test_prompt_definition_parses_valid_payload() -> None:
             "response_format": "text",
             "reasoning_mode": "capture_if_available",
         },
-        "output_contract": {"id": "plain_text_v2", "canonicalizer": "plain_text_v2"},
+        "output_contract": {"id": "tolerant_json_v3", "canonicalizer": "tolerant_json_v3"},
         "extractors": {
-            "answer": "style_brief_v1",
+            "answer": "evidence_grounding_v3",
             "reasoning": "reasoning_trace_v1",
             "transport": "completion_metadata_v1",
         },
@@ -42,15 +42,15 @@ def test_prompt_definition_parses_valid_payload() -> None:
 
     prompt = PromptDefinition.model_validate(payload)
 
-    assert prompt.id == "p017"
-    assert prompt.family == "style_brief"
+    assert prompt.id == "p021"
+    assert prompt.family == "evidence_grounding"
     assert prompt.generation.max_output_tokens == 120
-    assert prompt.extractors.answer == "style_brief_v1"
+    assert prompt.extractors.answer == "evidence_grounding_v3"
 
 
-def test_v2_prompt_definition_supports_evaluation_and_score_extractor() -> None:
+def test_prompt_definition_supports_evaluation_and_score_extractor() -> None:
     payload = {
-        "id": "p011",
+        "id": "p024",
         "name": "evidence_bound_identity_resolution",
         "family": "evidence_grounding",
         "intent": "measure grounded extraction with explicit abstention",
@@ -71,16 +71,16 @@ def test_v2_prompt_definition_supports_evaluation_and_score_extractor() -> None:
             "response_format": "text",
             "reasoning_mode": "capture_if_available",
         },
-        "output_contract": {"id": "strict_json_v2", "canonicalizer": "strict_json_v2"},
+        "output_contract": {"id": "tolerant_json_v3", "canonicalizer": "tolerant_json_v3"},
         "extractors": {
-            "answer": "evidence_grounding_v1",
-            "score": "evidence_grounding_score_v1",
+            "answer": "evidence_grounding_v3",
+            "score": "evidence_grounding_score_v3",
             "reasoning": "reasoning_trace_v1",
             "transport": "completion_metadata_v1",
         },
         "evaluation": {
             "reference": {
-                "expected_values": {
+                "expected_task_result": {
                     "owner": "Alice Wong",
                     "role": "Primary DBA",
                     "region": None,
@@ -89,24 +89,24 @@ def test_v2_prompt_definition_supports_evaluation_and_score_extractor() -> None:
         },
         "required_capabilities": ["chat_completions"],
         "weight_hint": 0.95,
-        "tags": ["evidence", "abstain", "v2"],
+        "tags": ["evidence", "abstain", "v3"],
         "risk_level": "low",
     }
 
     prompt = PromptDefinition.model_validate(payload)
 
-    assert prompt.id == "p011"
+    assert prompt.id == "p024"
     assert prompt.family == "evidence_grounding"
-    assert prompt.extractors.score == "evidence_grounding_score_v1"
+    assert prompt.extractors.score == "evidence_grounding_score_v3"
     assert prompt.evaluation is not None
-    assert prompt.evaluation.reference["expected_values"]["owner"] == "Alice Wong"
+    assert prompt.evaluation.reference["expected_task_result"]["owner"] == "Alice Wong"
 
 
 def test_artifact_models_parse_valid_payloads() -> None:
     run = RunArtifact.model_validate(
         {
             "run_id": "run-20260309-001",
-            "suite_id": "fingerprint-suite-v1",
+            "suite_id": "fingerprint-suite-v3",
             "target_label": "suspect-a",
             "claimed_model": "gpt-5.3",
             "endpoint_profile_id": "openai-chat/deepseek",
@@ -122,7 +122,7 @@ def test_artifact_models_parse_valid_payloads() -> None:
             },
             "prompts": [
                 {
-                    "prompt_id": "p017",
+                    "prompt_id": "p021",
                     "status": "completed",
                     "request_snapshot": {
                         "messages": [{"role": "user", "content": "短答复"}],
@@ -141,7 +141,7 @@ def test_artifact_models_parse_valid_payloads() -> None:
                         "finish_reason": "stop",
                         "latency_ms": 1000,
                         "raw_response_path": (
-                            "traces/2026-03-09/run-20260309-001/p017.response.json"
+                            "traces/2026-03-09/run-20260309-001/p021.response.json"
                         ),
                         "usage": {
                             "input_tokens": 12,
@@ -151,8 +151,13 @@ def test_artifact_models_parse_valid_payloads() -> None:
                         },
                     },
                     "canonical_output": {
-                        "format_id": "plain_text_v2",
-                        "payload": {"text": "短答复"},
+                        "format_id": "tolerant_json_v3",
+                        "payload": {
+                            "task_result": {"owner": "Alice Wong"},
+                            "evidence": {"owner": ["e1"]},
+                            "unknowns": {},
+                            "violations": [],
+                        },
                     },
                     "canonicalization_events": [
                         {"code": "normalized_whitespace", "message": "collapsed repeated spaces"}
@@ -176,7 +181,7 @@ def test_artifact_models_parse_valid_payloads() -> None:
     profile = ProfileArtifact.model_validate(
         {
             "model_id": "gpt-5.3",
-            "suite_id": "fingerprint-suite-v1",
+            "suite_id": "fingerprint-suite-v3",
             "sample_count": 5,
             "answer_coverage_ratio": 1.0,
             "reasoning_coverage_ratio": 0.8,
@@ -187,7 +192,7 @@ def test_artifact_models_parse_valid_payloads() -> None:
             },
             "prompts": [
                 {
-                    "prompt_id": "p017",
+                    "prompt_id": "p021",
                     "weight": 0.8,
                     "answer_coverage_ratio": 1.0,
                     "reasoning_coverage_ratio": 0.8,
@@ -203,7 +208,7 @@ def test_artifact_models_parse_valid_payloads() -> None:
 
     calibration = CalibrationArtifact.model_validate(
         {
-            "suite_id": "fingerprint-suite-v1",
+            "suite_id": "fingerprint-suite-v3",
             "thresholds": {
                 "match": 0.82,
                 "suspicious": 0.71,
@@ -235,7 +240,7 @@ def test_artifact_models_parse_valid_payloads() -> None:
         }
     )
 
-    assert run.suite_id == "fingerprint-suite-v1"
+    assert run.suite_id == "fingerprint-suite-v3"
     assert run.prompts[0].completion.usage.reasoning_tokens == 24
     assert profile.prompts[0].features["answer.char_len"].kind == "numeric"
     assert calibration.thresholds.match == 0.82
@@ -245,8 +250,8 @@ def test_run_artifact_accepts_score_channel_features() -> None:
     run = RunArtifact.model_validate(
         {
             "run_id": "run-20260309-011",
-            "suite_id": "fingerprint-suite-v2",
-            "target_label": "suspect-v2",
+            "suite_id": "fingerprint-suite-v3",
+            "target_label": "suspect-state",
             "prompt_count_total": 1,
             "prompt_count_completed": 1,
             "prompt_count_scoreable": 1,
@@ -254,7 +259,7 @@ def test_run_artifact_accepts_score_channel_features() -> None:
             "reasoning_coverage_ratio": 0.0,
             "prompts": [
                 {
-                    "prompt_id": "p011",
+                    "prompt_id": "p024",
                     "status": "completed",
                     "raw_output": "{\"task_result\": {}}",
                     "usage": {
@@ -274,7 +279,7 @@ def test_run_artifact_accepts_score_channel_features() -> None:
         }
     )
 
-    assert run.suite_id == "fingerprint-suite-v2"
+    assert run.suite_id == "fingerprint-suite-v3"
     assert run.prompts[0].features["score.value_accuracy"] == 1.0
 
 
@@ -282,7 +287,7 @@ def test_artifact_models_parse_capability_probe_sections() -> None:
     run = RunArtifact.model_validate(
         {
             "run_id": "run-20260310-capability",
-            "suite_id": "fingerprint-suite-v2",
+            "suite_id": "fingerprint-suite-v3",
             "target_label": "suspect-capability",
             "prompt_count_total": 1,
             "prompt_count_completed": 1,
@@ -312,7 +317,7 @@ def test_artifact_models_parse_capability_probe_sections() -> None:
             },
             "prompts": [
                 {
-                    "prompt_id": "p011",
+                    "prompt_id": "p024",
                     "status": "completed",
                     "raw_output": "{\"task_result\": {}}",
                     "usage": {
@@ -333,7 +338,7 @@ def test_artifact_models_parse_capability_probe_sections() -> None:
     profile = ProfileArtifact.model_validate(
         {
             "model_id": "glm-5",
-            "suite_id": "fingerprint-suite-v2",
+            "suite_id": "fingerprint-suite-v3",
             "sample_count": 3,
             "answer_coverage_ratio": 1.0,
             "reasoning_coverage_ratio": 0.3,
@@ -355,7 +360,7 @@ def test_artifact_models_parse_capability_probe_sections() -> None:
                 },
             "prompts": [
                 {
-                    "prompt_id": "p011",
+                    "prompt_id": "p024",
                     "weight": 1.0,
                     "features": {
                         "score.value_accuracy": {"kind": "numeric", "median": 1.0, "mad": 0.1},
@@ -375,7 +380,7 @@ def test_invalid_prompt_family_is_rejected() -> None:
     with pytest.raises(ValidationError):
         PromptDefinition.model_validate(
             {
-                "id": "p017",
+                "id": "p021",
                 "name": "invalid_family_prompt",
                 "family": "creative_mode",
                 "intent": "invalid",
@@ -387,8 +392,8 @@ def test_invalid_prompt_family_is_rejected() -> None:
                     "response_format": "text",
                     "reasoning_mode": "ignore",
                 },
-                "output_contract": {"id": "plain_text_v2", "canonicalizer": "plain_text_v2"},
-                "extractors": {"answer": "style_brief_v1"},
+                "output_contract": {"id": "tolerant_json_v3", "canonicalizer": "tolerant_json_v3"},
+                "extractors": {"answer": "evidence_grounding_v3"},
                 "required_capabilities": ["chat_completions"],
                 "weight_hint": 0.5,
                 "tags": [],
@@ -412,7 +417,7 @@ def test_invalid_suite_id_and_missing_features_are_rejected() -> None:
         RunArtifact.model_validate(
             {
                 "run_id": "run-20260309-002",
-                "suite_id": "fingerprint-suite-v1",
+                "suite_id": "fingerprint-suite-v3",
                 "target_label": "suspect-a",
                 "prompt_count_total": 1,
                 "prompt_count_completed": 1,
@@ -426,7 +431,7 @@ def test_invalid_suite_id_and_missing_features_are_rejected() -> None:
                 },
                 "prompts": [
                     {
-                        "prompt_id": "p017",
+                        "prompt_id": "p021",
                         "status": "completed",
                         "raw_output": "短答复",
                         "usage": {

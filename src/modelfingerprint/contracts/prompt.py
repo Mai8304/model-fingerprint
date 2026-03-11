@@ -65,12 +65,12 @@ class PromptDefinition(ContractModel):
 
     @property
     def extractor(self) -> ExtractorId:
-        """Compatibility bridge during the v2 migration."""
+        """Backwards-compatible accessor for the primary answer extractor."""
         return self.extractors.answer
 
     @property
     def template(self) -> str:
-        """Compatibility bridge during the v2 migration."""
+        """Backwards-compatible accessor for rendering legacy prompt text."""
         return "\n\n".join(message.content for message in self.messages)
 
 

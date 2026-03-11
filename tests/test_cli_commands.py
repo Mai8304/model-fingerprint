@@ -59,26 +59,26 @@ retry_policy:
 
     result = runner.invoke(app, ["validate-prompts", "--root", str(ROOT)])
     assert result.exit_code == 0
-    assert "validated 25 prompt definitions and 6 suites" in result.stdout
+    assert "validated 5 prompt definitions and 2 suites" in result.stdout
 
     endpoint_result = runner.invoke(app, ["validate-endpoints", "--root", str(tmp_path)])
     assert endpoint_result.exit_code == 0
     assert "validated 1 endpoint profiles" in endpoint_result.stdout
 
-    suite = runner.invoke(app, ["show-suite", "quick-check-v1", "--root", str(ROOT)])
+    suite = runner.invoke(app, ["show-suite", "quick-check-v3", "--root", str(ROOT)])
     assert suite.exit_code == 0
-    assert "quick-check-v1" in suite.stdout
-    assert "p009" in suite.stdout
+    assert "quick-check-v3" in suite.stdout
+    assert "p024" in suite.stdout
 
 
-def test_show_run_and_show_profile_commands_print_v2_coverage_fields(tmp_path: Path) -> None:
+def test_show_run_and_show_profile_commands_print_coverage_fields(tmp_path: Path) -> None:
     run_path = tmp_path / "sample-run.json"
     run_path.write_text(
         json.dumps(
             RunArtifact.model_validate(
                 {
-                    "run_id": "suspect-a.fingerprint-suite-v1",
-                    "suite_id": "fingerprint-suite-v1",
+                    "run_id": "suspect-a.fingerprint-suite-v3",
+                    "suite_id": "fingerprint-suite-v3",
                     "target_label": "suspect-a",
                     "claimed_model": "gpt-5.3",
                     "endpoint_profile_id": "siliconflow-openai-chat",
@@ -112,7 +112,7 @@ def test_show_run_and_show_profile_commands_print_v2_coverage_fields(tmp_path: P
                     },
                     "prompts": [
                         {
-                            "prompt_id": "p001",
+                            "prompt_id": "p021",
                             "status": "completed",
                             "raw_output": "sample output",
                             "usage": {
@@ -153,7 +153,7 @@ def test_show_run_and_show_profile_commands_print_v2_coverage_fields(tmp_path: P
             ProfileArtifact.model_validate(
                 {
                     "model_id": "gpt-5.3",
-                    "suite_id": "fingerprint-suite-v1",
+                    "suite_id": "fingerprint-suite-v3",
                     "sample_count": 2,
                     "answer_coverage_ratio": 1.0,
                     "reasoning_coverage_ratio": 0.5,
@@ -169,7 +169,7 @@ def test_show_run_and_show_profile_commands_print_v2_coverage_fields(tmp_path: P
                     },
                     "prompts": [
                         {
-                            "prompt_id": "p001",
+                            "prompt_id": "p021",
                             "weight": 0.8,
                             "answer_coverage_ratio": 1.0,
                             "reasoning_coverage_ratio": 0.5,
@@ -214,7 +214,7 @@ def test_show_run_and_show_profile_commands_print_v2_coverage_fields(tmp_path: P
     assert show_profile.exit_code == 0
     assert "reasoning_coverage_ratio: 0.5000" in show_profile.stdout
     assert "capability_coverage_ratio: 0.7500" in show_profile.stdout
-    assert "prompt_weights: p001=0.8000" in show_profile.stdout
+    assert "prompt_weights: p021=0.8000" in show_profile.stdout
 
 
 @pytest.mark.usefixtures("monkeypatch")
@@ -299,16 +299,26 @@ retry_policy:
 
         def execute(self, prompt) -> PromptExecutionResult:
             payloads = {
-                "p001": "Use CRUD first. Event sourcing adds overhead.",
-                "p003": '{"answer":"yes","confidence":"high"}',
-                "p005": '@@ -1 +1 @@\n-print("old")\n+print("new")',
-                "p007": (
-                    '{"requested_fields":["name","role"],"extracted":{"name":"Alice","role":"admin"},'
-                    '"evidence":{"name":["e1"],"role":["e1"]},"hallucinated":[]}'
+                "p021": (
+                    '{"task_result":{"owner":"Alice Wong","role":"Primary DBA","region":null,'
+                    '"change_window":"2026-03-21 02:00 UTC"},'
+                    '"evidence":{"owner":["e3"],"role":["e2"],"region":[],"change_window":["e5"]},'
+                    '"unknowns":{"region":"missing"},"violations":[]}'
                 ),
-                "p009": (
-                    '{"expected_needles":["alpha","beta","gamma"],'
-                    '"found_needles":["alpha","beta","gamma"]}'
+                "p023": (
+                    '{"task_result":{"q1":{"status":"answer","value":"yes"},'
+                    '"q2":{"status":"unknown","value":null},'
+                    '"q3":{"status":"answer","value":"retry failed background jobs"},'
+                    '"q4":{"status":"conflict_unresolved","value":null}},'
+                    '"evidence":{"q1":["e1"],"q2":["e5"],"q3":["e1"],"q4":["e3","e4"]},'
+                    '"unknowns":{"q2":"missing_actor","q4":"conflicting_notes"},"violations":[]}'
+                ),
+                "p024": (
+                    '{"task_result":{"ticket_a":{"status":"closed","owner":"ops","priority":"p1"},'
+                    '"ticket_b":{"status":"open","owner":"db","priority":"p2"},'
+                    '"worker_x":{"status":"suspended","owner":"ml","priority":"p3"}},'
+                    '"evidence":{"derivation_codes":{"ticket_a":"r5","ticket_b":"r6","worker_x":"r10"},'
+                    '"defaults_used":["ticket_b.priority"]},"unknowns":{},"violations":[]}'
                 ),
             }
             return PromptExecutionResult(
@@ -329,7 +339,7 @@ retry_policy:
         app,
         [
             "run-suite",
-            "quick-check-v1",
+            "quick-check-v3",
             "--root",
             str(tmp_path),
             "--target-label",
@@ -342,7 +352,7 @@ retry_policy:
     )
 
     assert result.exit_code == 0
-    output_path = tmp_path / "runs" / "2026-03-10" / "live-suspect.quick-check-v1.json"
+    output_path = tmp_path / "runs" / "2026-03-10" / "live-suspect.quick-check-v3.json"
     artifact = RunArtifact.model_validate(json.loads(output_path.read_text(encoding="utf-8")))
     assert captured["runtime_policy"] is not None
     assert artifact.runtime_policy is not None
@@ -399,16 +409,26 @@ def test_run_suite_direct_live_mode_builds_ad_hoc_endpoint_and_serializes_it(
 
         def execute(self, prompt) -> PromptExecutionResult:
             payloads = {
-                "p001": "Use CRUD first. Event sourcing adds overhead.",
-                "p003": '{"answer":"yes","confidence":"high"}',
-                "p005": '@@ -1 +1 @@\n-print("old")\n+print("new")',
-                "p007": (
-                    '{"requested_fields":["name","role"],"extracted":{"name":"Alice","role":"admin"},'
-                    '"evidence":{"name":["e1"],"role":["e1"]},"hallucinated":[]}'
+                "p021": (
+                    '{"task_result":{"owner":"Alice Wong","role":"Primary DBA","region":null,'
+                    '"change_window":"2026-03-21 02:00 UTC"},'
+                    '"evidence":{"owner":["e3"],"role":["e2"],"region":[],"change_window":["e5"]},'
+                    '"unknowns":{"region":"missing"},"violations":[]}'
                 ),
-                "p009": (
-                    '{"expected_needles":["alpha","beta","gamma"],'
-                    '"found_needles":["alpha","beta","gamma"]}'
+                "p023": (
+                    '{"task_result":{"q1":{"status":"answer","value":"yes"},'
+                    '"q2":{"status":"unknown","value":null},'
+                    '"q3":{"status":"answer","value":"retry failed background jobs"},'
+                    '"q4":{"status":"conflict_unresolved","value":null}},'
+                    '"evidence":{"q1":["e1"],"q2":["e5"],"q3":["e1"],"q4":["e3","e4"]},'
+                    '"unknowns":{"q2":"missing_actor","q4":"conflicting_notes"},"violations":[]}'
+                ),
+                "p024": (
+                    '{"task_result":{"ticket_a":{"status":"closed","owner":"ops","priority":"p1"},'
+                    '"ticket_b":{"status":"open","owner":"db","priority":"p2"},'
+                    '"worker_x":{"status":"suspended","owner":"ml","priority":"p3"}},'
+                    '"evidence":{"derivation_codes":{"ticket_a":"r5","ticket_b":"r6","worker_x":"r10"},'
+                    '"defaults_used":["ticket_b.priority"]},"unknowns":{},"violations":[]}'
                 ),
             }
             return PromptExecutionResult(
@@ -429,7 +449,7 @@ def test_run_suite_direct_live_mode_builds_ad_hoc_endpoint_and_serializes_it(
         app,
         [
             "run-suite",
-            "quick-check-v1",
+            "quick-check-v3",
             "--root",
             str(tmp_path),
             "--target-label",
@@ -446,7 +466,7 @@ def test_run_suite_direct_live_mode_builds_ad_hoc_endpoint_and_serializes_it(
     )
 
     assert result.exit_code == 0
-    output_path = tmp_path / "runs" / "2026-03-10" / "adhoc-suspect.quick-check-v1.json"
+    output_path = tmp_path / "runs" / "2026-03-10" / "adhoc-suspect.quick-check-v3.json"
     artifact = RunArtifact.model_validate(json.loads(output_path.read_text(encoding="utf-8")))
     endpoint = captured["endpoint"]
     assert captured["probe"] == {

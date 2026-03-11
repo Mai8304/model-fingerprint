@@ -9,10 +9,10 @@ from modelfingerprint.http_defaults import DEFAULT_BROWSER_USER_AGENT
 def build_prompt() -> PromptDefinition:
     return PromptDefinition.model_validate(
         {
-            "id": "p003",
-            "name": "fixed_json_triage",
-            "family": "strict_format",
-            "intent": "detect strict JSON obedience",
+            "id": "p021",
+            "name": "grounded_identity_resolution",
+            "family": "evidence_grounding",
+            "intent": "detect grounded JSON request/response mapping",
             "messages": [
                 {
                     "role": "system",
@@ -21,7 +21,7 @@ def build_prompt() -> PromptDefinition:
                 {
                     "role": "user",
                     "content": (
-                        'Reply with JSON only using fields "answer" and "confidence" in that order.'
+                        "Reply with a JSON object containing task_result, evidence, unknowns, and violations."
                     ),
                 },
             ],
@@ -32,15 +32,15 @@ def build_prompt() -> PromptDefinition:
                 "response_format": "json_object",
                 "reasoning_mode": "capture_if_available",
             },
-            "output_contract": {"id": "strict_json_v2", "canonicalizer": "strict_json_v2"},
+            "output_contract": {"id": "tolerant_json_v3", "canonicalizer": "tolerant_json_v3"},
             "extractors": {
-                "answer": "strict_format_v1",
+                "answer": "evidence_grounding_v3",
                 "reasoning": "reasoning_trace_v1",
                 "transport": "completion_metadata_v1",
             },
             "required_capabilities": ["chat_completions", "json_object_response"],
             "weight_hint": 0.9,
-            "tags": ["format", "json"],
+            "tags": ["grounding", "json"],
             "risk_level": "low",
         }
     )
@@ -144,8 +144,11 @@ def test_openai_chat_adapter_parses_reasoning_and_usage_fields() -> None:
                 {
                     "finish_reason": "stop",
                     "message": {
-                        "content": '{"answer":"yes","confidence":"high"}',
-                        "reasoning_content": "1. check the request\n2. answer in strict json",
+                        "content": (
+                            '{"task_result":{"owner":"Alice Wong"},'
+                            '"evidence":{"owner":["e1"]},"unknowns":{},"violations":[]}'
+                        ),
+                        "reasoning_content": "1. check the request\n2. answer in grounded json",
                     },
                 }
             ],
@@ -159,11 +162,14 @@ def test_openai_chat_adapter_parses_reasoning_and_usage_fields() -> None:
             },
         },
         latency_ms=18342,
-        raw_response_path="traces/2026-03-09/run-1/p003.response.json",
+        raw_response_path="traces/2026-03-09/run-1/p021.response.json",
     )
 
-    assert completion.answer_text == '{"answer":"yes","confidence":"high"}'
-    assert completion.reasoning_text == "1. check the request\n2. answer in strict json"
+    assert (
+        completion.answer_text
+        == '{"task_result":{"owner":"Alice Wong"},"evidence":{"owner":["e1"]},"unknowns":{},"violations":[]}'
+    )
+    assert completion.reasoning_text == "1. check the request\n2. answer in grounded json"
     assert completion.reasoning_visible is True
     assert completion.finish_reason == "stop"
     assert completion.latency_ms == 18342

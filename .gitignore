@@ -3,3 +3,10 @@
 __pycache__/
 *.py[cod]
 *.egg-info/
+docs/plans/
+docs/tasks/
+runs/
+traces/
+output/
+apps/output/
+.webapi/

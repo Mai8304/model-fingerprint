@@ -13,14 +13,14 @@ def build_run(
     *,
     run_id: str,
     model_id: str,
-    p001_char_len: int,
-    p001_step_count: int,
-    p002_char_len: int,
+    p021_char_len: int,
+    p021_step_count: int,
+    p023_char_len: int,
 ) -> RunArtifact:
     return RunArtifact.model_validate(
         {
             "run_id": run_id,
-            "suite_id": "fingerprint-suite-v1",
+            "suite_id": "fingerprint-suite-v3",
             "target_label": model_id,
             "claimed_model": model_id,
             "answer_coverage_ratio": 1.0,
@@ -32,9 +32,9 @@ def build_run(
             },
             "prompts": [
                 {
-                    "prompt_id": "p001",
+                    "prompt_id": "p021",
                     "status": "completed",
-                    "raw_output": "sample-p001",
+                    "raw_output": "sample-p021",
                     "usage": {
                         "input_tokens": 10,
                         "output_tokens": 5,
@@ -42,16 +42,16 @@ def build_run(
                         "total_tokens": 15,
                     },
                     "features": {
-                        "answer.char_len": p001_char_len,
-                        "reasoning.step_count": p001_step_count,
+                        "answer.char_len": p021_char_len,
+                        "reasoning.step_count": p021_step_count,
                         "transport.reasoning_visible": True,
                         "surface.had_markdown_fence": False,
                     },
                 },
                 {
-                    "prompt_id": "p002",
+                    "prompt_id": "p023",
                     "status": "completed",
-                    "raw_output": "sample-p002",
+                    "raw_output": "sample-p023",
                     "usage": {
                         "input_tokens": 10,
                         "output_tokens": 5,
@@ -59,7 +59,7 @@ def build_run(
                         "total_tokens": 15,
                     },
                     "features": {
-                        "answer.char_len": p002_char_len,
+                        "answer.char_len": p023_char_len,
                         "transport.reasoning_visible": True,
                         "surface.had_markdown_fence": False,
                     },
@@ -74,40 +74,40 @@ def test_calibrator_builds_similarity_and_coverage_thresholds(tmp_path: Path) ->
         build_run(
             run_id="gpt-1",
             model_id="gpt-5.3",
-            p001_char_len=40,
-            p001_step_count=2,
-            p002_char_len=20,
+            p021_char_len=40,
+            p021_step_count=2,
+            p023_char_len=20,
         ),
         build_run(
             run_id="gpt-2",
             model_id="gpt-5.3",
-            p001_char_len=42,
-            p001_step_count=2,
-            p002_char_len=22,
+            p021_char_len=42,
+            p021_step_count=2,
+            p023_char_len=22,
         ),
     ]
     claude_runs = [
         build_run(
             run_id="claude-1",
             model_id="claude-ops-4.6",
-            p001_char_len=90,
-            p001_step_count=5,
-            p002_char_len=200,
+            p021_char_len=90,
+            p021_step_count=5,
+            p023_char_len=200,
         ),
         build_run(
             run_id="claude-2",
             model_id="claude-ops-4.6",
-            p001_char_len=88,
-            p001_step_count=4,
-            p002_char_len=198,
+            p021_char_len=88,
+            p021_step_count=4,
+            p023_char_len=198,
         ),
     ]
     profiles = [
-        build_profile("gpt-5.3", gpt_runs, prompt_weights={"p001": 0.9, "p002": 0.1}),
+        build_profile("gpt-5.3", gpt_runs, prompt_weights={"p021": 0.9, "p023": 0.1}),
         build_profile(
             "claude-ops-4.6",
             claude_runs,
-            prompt_weights={"p001": 0.9, "p002": 0.1},
+            prompt_weights={"p021": 0.9, "p023": 0.1},
         ),
     ]
 
@@ -115,7 +115,7 @@ def test_calibrator_builds_similarity_and_coverage_thresholds(tmp_path: Path) ->
     artifact = calibrator.calibrate(gpt_runs + claude_runs, profiles)
     path = calibrator.write(artifact)
 
-    assert artifact.suite_id == "fingerprint-suite-v1"
+    assert artifact.suite_id == "fingerprint-suite-v3"
     assert artifact.same_model_stats.mean > artifact.cross_model_stats.mean
     assert (
         artifact.thresholds.match
@@ -130,5 +130,5 @@ def test_calibrator_builds_similarity_and_coverage_thresholds(tmp_path: Path) ->
         "required_capabilities": ["chat_completions", "visible_reasoning"],
         "issues": [],
     }
-    assert path == tmp_path / "calibration" / "fingerprint-suite-v1.json"
-    assert json.loads(path.read_text(encoding="utf-8"))["suite_id"] == "fingerprint-suite-v1"
+    assert path == tmp_path / "calibration" / "fingerprint-suite-v3.json"
+    assert json.loads(path.read_text(encoding="utf-8"))["suite_id"] == "fingerprint-suite-v3"

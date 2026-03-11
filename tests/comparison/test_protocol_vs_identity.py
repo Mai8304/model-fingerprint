@@ -28,7 +28,7 @@ def build_run(
     return RunArtifact.model_validate(
         {
             "run_id": run_id,
-            "suite_id": "fingerprint-suite-v1",
+            "suite_id": "fingerprint-suite-v3",
             "target_label": target_label,
             "claimed_model": model_id,
             "answer_coverage_ratio": 1.0,
@@ -41,7 +41,7 @@ def build_run(
             },
             "prompts": [
                 {
-                    "prompt_id": "p001",
+                    "prompt_id": "p021",
                     "status": "completed",
                     "raw_output": "sample",
                     "usage": {
@@ -60,7 +60,7 @@ def build_run(
 def build_calibration() -> CalibrationArtifact:
     return CalibrationArtifact.model_validate(
         {
-            "suite_id": "fingerprint-suite-v1",
+            "suite_id": "fingerprint-suite-v3",
             "thresholds": {
                 "match": 0.8,
                 "suspicious": 0.7,
@@ -114,7 +114,7 @@ def test_semantically_equivalent_shapes_remain_close_despite_surface_drift() -> 
                 reasoning_visible=True,
             ),
         ],
-        prompt_weights={"p001": 1.0},
+        prompt_weights={"p021": 1.0},
     )
     target = build_run(
         run_id="suspect-surface-drift",
@@ -153,7 +153,7 @@ def test_hidden_reasoning_flags_protocol_issue_without_forcing_identity_mismatch
                 reasoning_visible=True,
             ),
         ],
-        prompt_weights={"p001": 1.0},
+        prompt_weights={"p021": 1.0},
     )
     target = build_run(
         run_id="suspect-hidden-reasoning",
@@ -211,7 +211,7 @@ def test_capability_hard_mismatch_can_block_match_even_when_content_is_close() -
                 },
             ),
         ],
-        prompt_weights={"p001": 1.0},
+        prompt_weights={"p021": 1.0},
     )
     target = build_run(
         run_id="suspect-capability-mismatch",
@@ -261,7 +261,7 @@ def test_low_capability_coverage_becomes_insufficient_evidence() -> None:
                 },
             ),
         ],
-        prompt_weights={"p001": 1.0},
+        prompt_weights={"p021": 1.0},
     )
     target = build_run(
         run_id="suspect-low-capability-coverage",

@@ -7,13 +7,6 @@ from modelfingerprint.canonicalizers.base import (
     CanonicalizerHandler,
     CanonicalizerResult,
 )
-from modelfingerprint.canonicalizers.plain_text import canonicalize_plain_text
-from modelfingerprint.canonicalizers.retrieval import canonicalize_retrieval
-from modelfingerprint.canonicalizers.strict_json import canonicalize_strict_json
-from modelfingerprint.canonicalizers.structured_extraction import (
-    canonicalize_structured_extraction,
-)
-from modelfingerprint.canonicalizers.tagged_text import canonicalize_tagged_text
 from modelfingerprint.canonicalizers.tolerant_json import canonicalize_tolerant_json
 from modelfingerprint.contracts.prompt import PromptDefinition
 
@@ -39,11 +32,6 @@ class CanonicalizerRegistry:
 def build_default_registry() -> CanonicalizerRegistry:
     return CanonicalizerRegistry(
         {
-            "plain_text_v2": canonicalize_plain_text,
-            "strict_json_v2": canonicalize_strict_json,
             "tolerant_json_v3": canonicalize_tolerant_json,
-            "tagged_text_v2": canonicalize_tagged_text,
-            "structured_extraction_v2": canonicalize_structured_extraction,
-            "retrieval_v2": canonicalize_retrieval,
         }
     )

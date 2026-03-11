@@ -23,10 +23,10 @@ ROOT = Path(__file__).resolve().parents[2]
 def build_prompt() -> PromptDefinition:
     return PromptDefinition.model_validate(
         {
-            "id": "p003",
-            "name": "fixed_json_triage",
-            "family": "strict_format",
-            "intent": "detect strict JSON obedience",
+            "id": "p021",
+            "name": "grounded_identity_resolution",
+            "family": "evidence_grounding",
+            "intent": "detect grounded JSON execution",
             "messages": [
                 {
                     "role": "system",
@@ -35,8 +35,7 @@ def build_prompt() -> PromptDefinition:
                 {
                     "role": "user",
                     "content": (
-                        'Reply with JSON only using fields "answer" and "confidence" '
-                        "in that order."
+                        "Reply with a JSON object containing task_result, evidence, unknowns, and violations."
                     ),
                 },
             ],
@@ -47,15 +46,15 @@ def build_prompt() -> PromptDefinition:
                 "response_format": "json_object",
                 "reasoning_mode": "capture_if_available",
             },
-            "output_contract": {"id": "strict_json_v2", "canonicalizer": "strict_json_v2"},
+            "output_contract": {"id": "tolerant_json_v3", "canonicalizer": "tolerant_json_v3"},
             "extractors": {
-                "answer": "strict_format_v1",
+                "answer": "evidence_grounding_v3",
                 "reasoning": "reasoning_trace_v1",
                 "transport": "completion_metadata_v1",
             },
             "required_capabilities": ["chat_completions", "json_object_response"],
             "weight_hint": 0.9,
-            "tags": ["format", "json"],
+            "tags": ["grounding", "json"],
             "risk_level": "low",
         }
     )
@@ -181,8 +180,10 @@ class ScriptedProgressHttpClient:
 
 def successful_terminal(
     *,
-    answer_text: str = '{"answer":"yes","confidence":"high"}',
-    reasoning_text: str | None = "1. check the request\n2. answer in strict json",
+    answer_text: str = (
+        '{"task_result":{"owner":"Alice Wong"},"evidence":{"owner":["e1"]},"unknowns":{},"violations":[]}'
+    ),
+    reasoning_text: str | None = "1. check the request\n2. answer in grounded json",
     latency_ms: int = 42000,
 ) -> HttpTerminalResult:
     return HttpTerminalResult(
@@ -272,10 +273,10 @@ def test_live_runner_switches_to_progress_polling_without_resending_prompt(
     assert result.attempts[0].bytes_received == 384
     assert result.attempts[0].first_byte_latency_ms == 41000
     assert result.attempts[0].completed is True
-    assert (trace_dir / "p003.request.json").exists()
-    assert (trace_dir / "p003.response.json").exists()
+    assert (trace_dir / "p021.request.json").exists()
+    assert (trace_dir / "p021.response.json").exists()
 
-    request_trace = json.loads((trace_dir / "p003.request.json").read_text())
+    request_trace = json.loads((trace_dir / "p021.request.json").read_text())
     assert request_trace["headers"]["Authorization"] == "Bearer ***REDACTED***"
 
 
@@ -447,8 +448,8 @@ def test_feature_pipeline_preserves_progress_attempt_metadata(tmp_path: Path) ->
     execution = runner.execute(build_prompt())
 
     artifact = FeaturePipeline(build_default_registry(ROOT / "extractors")).build_run_artifact(
-        run_id="suspect-a.fingerprint-suite-v1",
-        suite_id="fingerprint-suite-v1",
+        run_id="suspect-a.fingerprint-suite-v3",
+        suite_id="fingerprint-suite-v3",
         target_label="suspect-a",
         claimed_model=None,
         executions=[execution],
@@ -490,7 +491,7 @@ def test_live_runner_accepts_structured_answer_recovered_from_reasoning() -> Non
                                     "content": None,
                                     "reasoning": (
                                         "analysis\n```json\n"
-                                        '{"answer":"yes","confidence":"high"}\n'
+                                        '{"task_result":{"owner":"Alice Wong"},"evidence":{"owner":["e1"]},"unknowns":{},"violations":[]}\n'
                                         "```\nextra tail"
                                     ),
                                 },
@@ -525,7 +526,10 @@ def test_live_runner_accepts_structured_answer_recovered_from_reasoning() -> Non
 
     assert result.status == "completed"
     assert result.error is None
-    assert result.raw_output == '{"answer":"yes","confidence":"high"}'
+    assert (
+        result.raw_output
+        == '{"task_result":{"owner":"Alice Wong"},"evidence":{"owner":["e1"]},"unknowns":{},"violations":[]}'
+    )
     assert result.completion is not None
     assert result.completion.reasoning_visible is True
     assert result.completion.finish_reason == "length"

@@ -26,9 +26,9 @@ def test_exported_schema_files_exist(path: Path) -> None:
         (
             "prompt",
             {
-                "id": "p017",
+                "id": "p021",
                 "name": "concise_architecture_tradeoff",
-                "family": "style_brief",
+                "family": "evidence_grounding",
                 "intent": "distinguish compact trade-off framing",
                 "messages": [
                     {
@@ -43,9 +43,9 @@ def test_exported_schema_files_exist(path: Path) -> None:
                     "response_format": "text",
                     "reasoning_mode": "capture_if_available",
                 },
-                "output_contract": {"id": "plain_text_v2", "canonicalizer": "plain_text_v2"},
+                "output_contract": {"id": "tolerant_json_v3", "canonicalizer": "tolerant_json_v3"},
                 "extractors": {
-                    "answer": "style_brief_v1",
+                    "answer": "evidence_grounding_v3",
                     "reasoning": "reasoning_trace_v1",
                     "transport": "completion_metadata_v1",
                 },
@@ -55,7 +55,7 @@ def test_exported_schema_files_exist(path: Path) -> None:
                 "risk_level": "low",
             },
             {
-                "id": "p017",
+                "id": "p021",
                 "name": "bad_prompt",
                 "family": "creative_mode",
                 "intent": "invalid family",
@@ -67,8 +67,8 @@ def test_exported_schema_files_exist(path: Path) -> None:
                     "response_format": "text",
                     "reasoning_mode": "ignore",
                 },
-                "output_contract": {"id": "plain_text_v2", "canonicalizer": "plain_text_v2"},
-                "extractors": {"answer": "style_brief_v1"},
+                "output_contract": {"id": "tolerant_json_v3", "canonicalizer": "tolerant_json_v3"},
+                "extractors": {"answer": "evidence_grounding_v3"},
                 "required_capabilities": ["chat_completions"],
                 "weight_hint": 0.8,
                 "tags": [],
@@ -79,7 +79,7 @@ def test_exported_schema_files_exist(path: Path) -> None:
             "run",
             {
                 "run_id": "run-20260309-001",
-                "suite_id": "fingerprint-suite-v1",
+                "suite_id": "fingerprint-suite-v3",
                 "target_label": "suspect-a",
                 "prompt_count_total": 1,
                 "prompt_count_completed": 1,
@@ -102,7 +102,7 @@ def test_exported_schema_files_exist(path: Path) -> None:
                 },
                 "prompts": [
                     {
-                        "prompt_id": "p017",
+                        "prompt_id": "p021",
                         "status": "completed",
                         "request_snapshot": {
                             "messages": [{"role": "user", "content": "短答复"}],
@@ -121,7 +121,7 @@ def test_exported_schema_files_exist(path: Path) -> None:
                             "finish_reason": "stop",
                             "latency_ms": 1000,
                             "raw_response_path": (
-                                "traces/2026-03-09/run-20260309-001/p017.response.json"
+                                "traces/2026-03-09/run-20260309-001/p021.response.json"
                             ),
                             "usage": {
                                 "input_tokens": 12,
@@ -131,8 +131,13 @@ def test_exported_schema_files_exist(path: Path) -> None:
                             },
                         },
                         "canonical_output": {
-                            "format_id": "plain_text_v2",
-                            "payload": {"text": "短答复"},
+                            "format_id": "tolerant_json_v3",
+                            "payload": {
+                                "task_result": {"owner": "Alice Wong"},
+                                "evidence": {"owner": ["e1"]},
+                                "unknowns": {},
+                                "violations": [],
+                            },
                         },
                         "canonicalization_events": [],
                         "raw_output": "短答复",
@@ -173,7 +178,7 @@ def test_exported_schema_files_exist(path: Path) -> None:
             "profile",
             {
                 "model_id": "gpt-5.3",
-                "suite_id": "fingerprint-suite-v1",
+                "suite_id": "fingerprint-suite-v3",
                 "sample_count": 5,
                 "answer_coverage_ratio": 1.0,
                 "reasoning_coverage_ratio": 0.8,
@@ -184,7 +189,7 @@ def test_exported_schema_files_exist(path: Path) -> None:
                 },
                 "prompts": [
                     {
-                        "prompt_id": "p017",
+                        "prompt_id": "p021",
                         "weight": 0.8,
                         "answer_coverage_ratio": 1.0,
                         "reasoning_coverage_ratio": 0.8,
@@ -197,15 +202,15 @@ def test_exported_schema_files_exist(path: Path) -> None:
             },
             {
                 "model_id": "gpt-5.3",
-                "suite_id": "fingerprint-suite-v1",
+                "suite_id": "fingerprint-suite-v3",
                 "sample_count": 5,
-                "prompts": [{"prompt_id": "p017", "weight": 0.8}],
+                "prompts": [{"prompt_id": "p021", "weight": 0.8}],
             },
         ),
         (
             "calibration",
             {
-                "suite_id": "fingerprint-suite-v1",
+                "suite_id": "fingerprint-suite-v3",
                 "thresholds": {
                     "match": 0.82,
                     "suspicious": 0.71,
@@ -236,7 +241,7 @@ def test_exported_schema_files_exist(path: Path) -> None:
                 },
             },
             {
-                "suite_id": "fingerprint-suite-v1",
+                "suite_id": "fingerprint-suite-v3",
                 "thresholds": {
                     "match": 1.2,
                     "suspicious": 0.71,
@@ -271,11 +276,11 @@ def test_exported_schema_files_exist(path: Path) -> None:
             "comparison",
             {
                 "schema_version": "comparison.v1",
-                "suite_id": "fingerprint-suite-v1",
-                "run_id": "suspect-a.fingerprint-suite-v1",
+                "suite_id": "fingerprint-suite-v3",
+                "run_id": "suspect-a.fingerprint-suite-v3",
                 "target_label": "suspect-a",
                 "claimed_model": "gpt-5.3",
-                "calibration_id": "fingerprint-suite-v1",
+                "calibration_id": "fingerprint-suite-v3",
                 "summary": {
                     "top1_model": "gpt-5.3",
                     "top1_similarity": 0.93,
@@ -320,12 +325,12 @@ def test_exported_schema_files_exist(path: Path) -> None:
                         "protocol_status": "compatible",
                         "protocol_issues": [],
                         "hard_mismatches": [],
-                        "prompt_scores": {"p001": 0.95},
+                        "prompt_scores": {"p021": 0.95},
                     }
                 ],
                 "prompt_breakdown": [
                     {
-                        "prompt_id": "p001",
+                        "prompt_id": "p021",
                         "status": "completed",
                         "similarity": 0.95,
                         "scoreable": True,
@@ -352,10 +357,10 @@ def test_exported_schema_files_exist(path: Path) -> None:
             },
             {
                 "schema_version": "comparison.v1",
-                "suite_id": "fingerprint-suite-v1",
-                "run_id": "suspect-a.fingerprint-suite-v1",
+                "suite_id": "fingerprint-suite-v3",
+                "run_id": "suspect-a.fingerprint-suite-v3",
                 "target_label": "suspect-a",
-                "calibration_id": "fingerprint-suite-v1",
+                "calibration_id": "fingerprint-suite-v3",
                 "summary": {
                     "top1_model": "gpt-5.3",
                     "top1_similarity": 1.4,

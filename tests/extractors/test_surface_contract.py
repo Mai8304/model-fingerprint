@@ -5,13 +5,13 @@ from modelfingerprint.extractors.base import SurfaceExtractorInput
 from modelfingerprint.extractors.surface_contract import extract_surface_contract
 
 
-def test_surface_contract_detects_clean_strict_json_contract_retention() -> None:
+def test_surface_contract_detects_clean_tolerant_json_contract_retention() -> None:
     features = extract_surface_contract(
         SurfaceExtractorInput(
-            raw_output='{"answer":"yes","confidence":"high"}',
+            raw_output='{"task_result":{},"evidence":{},"unknowns":{},"violations":[]}',
             canonical_output=CanonicalizedOutput(
-                format_id="strict_json_v2",
-                payload={"answer": "yes", "confidence": "high"},
+                format_id="tolerant_json_v3",
+                payload={"task_result": {}, "evidence": {}, "unknowns": {}, "violations": []},
             ),
         )
     )
@@ -30,10 +30,13 @@ def test_surface_contract_detects_clean_strict_json_contract_retention() -> None
 def test_surface_contract_detects_fences_extra_text_and_order_drift() -> None:
     features = extract_surface_contract(
         SurfaceExtractorInput(
-            raw_output='Here is the result:\n```json\n{"confidence":"high","answer":"yes"}\n```',
+            raw_output=(
+                'Here is the result:\n```json\n'
+                '{"evidence":{},"task_result":{},"unknowns":{},"violations":[]}\n```'
+            ),
             canonical_output=CanonicalizedOutput(
-                format_id="strict_json_v2",
-                payload={"answer": "yes", "confidence": "high"},
+                format_id="tolerant_json_v3",
+                payload={"task_result": {}, "evidence": {}, "unknowns": {}, "violations": []},
             ),
         )
     )

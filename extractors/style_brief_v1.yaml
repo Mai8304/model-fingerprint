@@ -1,8 +1,0 @@
-name: style_brief_v1
-family: style_brief
-version: 1
-features:
-  - char_len
-  - sentence_count
-  - uses_numbered_list
-  - directness_score

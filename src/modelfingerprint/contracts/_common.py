@@ -5,17 +5,13 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 PromptFamily = Literal[
-    "style_brief",
-    "strict_format",
-    "minimal_diff",
-    "structured_extraction",
-    "retrieval",
     "evidence_grounding",
     "context_retrieval",
     "abstention",
     "state_tracking",
     "representation_alignment",
 ]
+ExtractorFamily = PromptFamily | Literal["strict_format"]
 
 RiskLevel = Literal["low", "medium", "high"]
 MessageRole = Literal["system", "user", "assistant"]

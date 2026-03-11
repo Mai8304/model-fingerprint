@@ -1,8 +1,0 @@
-name: abstention_score_v1
-family: abstention
-version: 1
-features:
-  - answer_accuracy
-  - abstention_accuracy
-  - evidence_alignment
-  - violation_free

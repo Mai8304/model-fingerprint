@@ -19,7 +19,7 @@ def _write_profile(path: Path, model_id: str, suite_id: str) -> None:
                     "sample_count": 1,
                     "prompts": [
                         {
-                            "prompt_id": "p001",
+                            "prompt_id": "p021",
                             "weight": 1.0,
                             "features": {
                                 "answer.char_len": {
@@ -42,9 +42,9 @@ def _write_profile(path: Path, model_id: str, suite_id: str) -> None:
 
 def test_list_fingerprint_models_returns_stable_v3_registry(tmp_path: Path) -> None:
     _write_profile(
-        tmp_path / "profiles" / "fingerprint-suite-v2" / "gpt-4.1-mini.json",
+        tmp_path / "profiles" / "fingerprint-suite-v3" / "gpt-4.1-mini.json",
         model_id="gpt-4.1-mini",
-        suite_id="fingerprint-suite-v2",
+        suite_id="fingerprint-suite-v3",
     )
     _write_profile(
         tmp_path / "profiles" / "fingerprint-suite-v3" / "deepseek-chat.json",
@@ -69,6 +69,12 @@ def test_list_fingerprint_models_returns_stable_v3_registry(tmp_path: Path) -> N
         {
             "id": "glm-5",
             "label": "GLM-5",
+            "suite_id": "fingerprint-suite-v3",
+            "available": True,
+        },
+        {
+            "id": "gpt-4.1-mini",
+            "label": "GPT-4.1 Mini",
             "suite_id": "fingerprint-suite-v3",
             "available": True,
         },

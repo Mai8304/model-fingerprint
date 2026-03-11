@@ -6,29 +6,11 @@ import yaml
 
 from modelfingerprint.contracts.prompt import PromptDefinition, SuiteDefinition
 
-RESEARCH_SET_SUITE_ID = "research-set-v1"
-FINGERPRINT_SUITE_ID = "fingerprint-suite-v1"
-QUICK_CHECK_SUITE_ID = "quick-check-v1"
-FINGERPRINT_SUITE_V2_ID = "fingerprint-suite-v2"
-QUICK_CHECK_SUITE_V2_ID = "quick-check-v2"
+FINGERPRINT_SUITE_ID = "fingerprint-suite-v3"
+QUICK_CHECK_SUITE_ID = "quick-check-v3"
 
 KNOWN_EXTRACTOR_IDS = frozenset(
     {
-        "style_brief_v1",
-        "strict_format_v1",
-        "minimal_diff_v1",
-        "structured_extraction_v1",
-        "retrieval_v1",
-        "evidence_grounding_v1",
-        "context_retrieval_v1",
-        "abstention_v1",
-        "state_tracking_v1",
-        "representation_alignment_v1",
-        "evidence_grounding_score_v1",
-        "context_retrieval_score_v1",
-        "abstention_score_v1",
-        "state_tracking_score_v1",
-        "representation_alignment_score_v1",
         "evidence_grounding_v3",
         "context_retrieval_v3",
         "abstention_v3",
@@ -113,24 +95,13 @@ def validate_suite_references(
 
 
 def validate_release_suite_subsets(suites: dict[str, SuiteDefinition]) -> None:
-    fingerprint_suites = {
-        suite.id: suite
-        for suite in suites.values()
-        if suite.id.startswith("fingerprint-suite-v")
-    }
-    quick_check_suites = {
-        suite.id: suite
-        for suite in suites.values()
-        if suite.id.startswith("quick-check-v")
-    }
+    fingerprint_suite = suites.get(FINGERPRINT_SUITE_ID)
+    quick_check_suite = suites.get(QUICK_CHECK_SUITE_ID)
 
-    for fingerprint_id, fingerprint_suite in fingerprint_suites.items():
-        version = fingerprint_id.removeprefix("fingerprint-suite-v")
-        quick_id = f"quick-check-v{version}"
-        quick_suite = quick_check_suites.get(quick_id)
-        if quick_suite is None:
-            continue
-        validate_suite_subset(fingerprint_suite, quick_suite)
+    if fingerprint_suite is None or quick_check_suite is None:
+        raise PromptBankValidationError("released suite inventory must include v3 fingerprint and quick-check suites")
+
+    validate_suite_subset(fingerprint_suite, quick_check_suite)
 
 
 def _read_yaml(path: Path) -> dict[str, object]:

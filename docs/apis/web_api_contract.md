@@ -116,12 +116,12 @@ Fields:
     "completed_prompts": 2,
     "failed_prompts": 1,
     "total_prompts": 5,
-    "current_prompt_id": "p003",
+    "current_prompt_id": "p024",
     "eta_seconds": 360
   },
   "prompts": [
     {
-      "prompt_id": "p001",
+      "prompt_id": "p021",
       "status": "completed",
       "elapsed_seconds": 56,
       "summary_code": "STRUCTURE_PARSED",
@@ -413,7 +413,7 @@ Response `200`:
     "completed_prompts": 2,
     "failed_prompts": 1,
     "total_prompts": 5,
-    "current_prompt_id": "p003",
+    "current_prompt_id": "p024",
     "eta_seconds": 360
   },
   "prompts": [],

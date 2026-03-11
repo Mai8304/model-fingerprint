@@ -1,0 +1,29 @@
+{
+  "p021": {
+    "content": "结果如下：\n```json\n{\"result\":{\"owner\":\"Alice Wong\",\"role\":\"Primary DBA\",\"region\":null,\"change_window\":\"2026-03-21 02:00 UTC\"},\"evidence_map\":{\"owner\":[\"e3\"],\"role\":[\"e2\"],\"region\":[],\"change_window\":[\"e5\"]},\"unknown_fields\":{\"region\":\"missing\"},\"violations\":[]}\n```",
+    "finish_reason": "stop",
+    "input_tokens": 10,
+    "output_tokens": 5,
+    "reasoning_content": "1. prefer approved facts\n2. keep region unknown",
+    "reasoning_tokens": 14,
+    "total_tokens": 29
+  },
+  "p023": {
+    "content": "{\"task_result\":{\"q1\":{\"status\":\"answer\",\"value\":\"yes\"},\"q2\":{\"status\":\"unknown\",\"value\":null},\"q3\":{\"status\":\"answer\",\"value\":\"retry failed background jobs\"},\"q4\":{\"status\":\"conflict_unresolved\",\"value\":null}},\"evidence\":{\"q1\":[\"e1\"],\"q2\":[\"e5\"],\"q3\":[\"e1\"],\"q4\":[\"e3\",\"e4\"]},\"unknowns\":{\"q2\":\"missing_actor\",\"q4\":\"conflicting_notes\"},\"violations\":[]}",
+    "finish_reason": "stop",
+    "input_tokens": 10,
+    "output_tokens": 5,
+    "reasoning_content": "1. split answer vs unknown vs conflict",
+    "reasoning_tokens": 18,
+    "total_tokens": 33
+  },
+  "p024": {
+    "content": "{\"task_result\":{\"ticket_a\":{\"status\":\"closed\",\"owner\":\"ops\",\"priority\":\"p1\"},\"ticket_b\":{\"status\":\"open\",\"owner\":\"db\",\"priority\":\"p2\"},\"worker_x\":{\"status\":\"suspended\",\"owner\":\"ml\",\"priority\":\"p3\"}},\"evidence\":{\"derivation_codes\":{\"ticket_a\":\"r5\",\"ticket_b\":\"r6\",\"worker_x\":\"r10\"},\"defaults_used\":[\"ticket_b.priority\"]},\"unknowns\":{},\"violations\":[]}",
+    "finish_reason": "stop",
+    "input_tokens": 10,
+    "output_tokens": 5,
+    "reasoning_content": "1. apply rules in order\n2. preserve owner on suspend",
+    "reasoning_tokens": 16,
+    "total_tokens": 31
+  }
+}

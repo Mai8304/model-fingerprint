@@ -17,15 +17,15 @@ ROOT = Path(__file__).resolve().parents[2]
 def build_prompt(required_capabilities: list[str]) -> PromptDefinition:
     return PromptDefinition.model_validate(
         {
-            "id": "p003",
-            "name": "fixed_json_triage",
-            "family": "strict_format",
-            "intent": "detect strict JSON obedience",
+            "id": "p021",
+            "name": "grounded_identity_resolution",
+            "family": "evidence_grounding",
+            "intent": "detect endpoint capability compatibility for grounded extraction",
             "messages": [
                 {
                     "role": "user",
                     "content": (
-                        'Reply with JSON only using fields "answer" and "confidence" in that order.'
+                        "Reply with a JSON object containing task_result, evidence, unknowns, and violations."
                     ),
                 }
             ],
@@ -36,15 +36,15 @@ def build_prompt(required_capabilities: list[str]) -> PromptDefinition:
                 "response_format": "json_object",
                 "reasoning_mode": "capture_if_available",
             },
-            "output_contract": {"id": "strict_json_v2", "canonicalizer": "strict_json_v2"},
+            "output_contract": {"id": "tolerant_json_v3", "canonicalizer": "tolerant_json_v3"},
             "extractors": {
-                "answer": "strict_format_v1",
+                "answer": "evidence_grounding_v3",
                 "reasoning": "reasoning_trace_v1",
                 "transport": "completion_metadata_v1",
             },
             "required_capabilities": required_capabilities,
             "weight_hint": 0.9,
-            "tags": ["format", "json"],
+            "tags": ["grounding", "json"],
             "risk_level": "low",
         }
     )

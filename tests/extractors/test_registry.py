@@ -7,7 +7,7 @@ import pytest
 from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.contracts.run import CanonicalizedOutput
 from modelfingerprint.extractors.base import ExtractorDescriptor, ExtractorValidationError
-from modelfingerprint.extractors.registry import ExtractorRegistry
+from modelfingerprint.extractors.registry import ExtractorRegistry, build_default_registry
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 def build_prompt(extractor: str, score_extractor: str | None = None) -> PromptDefinition:
     return PromptDefinition.model_validate(
         {
-            "id": "p001",
+            "id": "p021",
             "name": "evidence_bound_identity_resolution",
             "family": "evidence_grounding",
             "intent": "measure grounded extraction with abstention support",
@@ -24,12 +24,12 @@ def build_prompt(extractor: str, score_extractor: str | None = None) -> PromptDe
                 "temperature": 0.0,
                 "top_p": 1.0,
                 "max_output_tokens": 64,
-                "response_format": "json_object",
+                "response_format": "text",
                 "reasoning_mode": "ignore",
             },
             "output_contract": {
-                "id": "strict_json_v2",
-                "canonicalizer": "strict_json_v2",
+                "id": "tolerant_json_v3",
+                "canonicalizer": "tolerant_json_v3",
             },
             "extractors": {
                 "answer": extractor,
@@ -37,7 +37,7 @@ def build_prompt(extractor: str, score_extractor: str | None = None) -> PromptDe
             },
             "evaluation": {
                 "reference": {
-                    "expected_values": {"owner": "Alice Wong"},
+                    "expected_task_result": {"owner": "Alice Wong"},
                 }
             },
             "required_capabilities": ["chat_completions", "json_object_response"],
@@ -51,12 +51,12 @@ def build_prompt(extractor: str, score_extractor: str | None = None) -> PromptDe
 def test_registry_resolves_extractor_from_prompt_definition() -> None:
     registry = ExtractorRegistry.from_directory(
         ROOT / "extractors",
-        handlers={"style_brief_v1": lambda text: {"char_len": len(text)}},
+        handlers={"evidence_grounding_v3": lambda payload: {"char_len": len(payload.payload)}},
     )
 
-    resolved = registry.get_for_prompt(build_prompt("style_brief_v1"))
+    resolved = registry.get_for_prompt(build_prompt("evidence_grounding_v3"))
 
-    assert resolved.descriptor.name == "style_brief_v1"
+    assert resolved.descriptor.name == "evidence_grounding_v3"
 
 
 def test_registry_rejects_unknown_extractor_names() -> None:
@@ -69,34 +69,42 @@ def test_registry_rejects_unknown_extractor_names() -> None:
 def test_registry_enforces_json_serializable_feature_maps() -> None:
     registry = ExtractorRegistry.from_directory(
         ROOT / "extractors",
-        handlers={"style_brief_v1": lambda text: {"bad": {1, 2}}},
+        handlers={"evidence_grounding_v3": lambda payload: {"bad": {1, 2}}},
     )
 
     with pytest.raises(ExtractorValidationError):
         registry.extract_answer(
-            build_prompt("style_brief_v1"),
-            CanonicalizedOutput(format_id="plain_text_v2", payload={"text": "example"}),
+            build_prompt("evidence_grounding_v3"),
+            CanonicalizedOutput(
+                format_id="tolerant_json_v3",
+                payload={
+                    "task_result": {"owner": "Alice Wong"},
+                    "evidence": {"owner": ["e1"]},
+                    "unknowns": {},
+                    "violations": [],
+                },
+            ),
         )
 
 
 def test_registry_extracts_score_features_from_prompt_context() -> None:
     registry = ExtractorRegistry(
         descriptors={
-            "evidence_grounding_score_v1": ExtractorDescriptor.model_validate(
+            "evidence_grounding_score_v3": ExtractorDescriptor.model_validate(
                 {
-                    "name": "evidence_grounding_score_v1",
+                    "name": "evidence_grounding_score_v3",
                     "family": "evidence_grounding",
-                    "version": 1,
+                    "version": 3,
                     "features": ["value_accuracy"],
                 }
             )
         },
         handlers={},
         score_handlers={
-            "evidence_grounding_score_v1": lambda prompt, canonical_output: {
+            "evidence_grounding_score_v3": lambda prompt, canonical_output: {
                 "value_accuracy": 1.0
                 if canonical_output.payload["task_result"]["owner"]
-                == prompt.evaluation.reference["expected_values"]["owner"]
+                == prompt.evaluation.reference["expected_task_result"]["owner"]
                 else 0.0
             }
         },
@@ -104,13 +112,21 @@ def test_registry_extracts_score_features_from_prompt_context() -> None:
 
     feature_map = registry.extract_score(
         build_prompt(
-            "evidence_grounding_v1",
-            score_extractor="evidence_grounding_score_v1",
+            "evidence_grounding_v3",
+            score_extractor="evidence_grounding_score_v3",
         ),
         CanonicalizedOutput(
-            format_id="strict_json_v2",
+            format_id="tolerant_json_v3",
             payload={"task_result": {"owner": "Alice Wong"}},
         ),
     )
 
     assert feature_map["value_accuracy"] == 1.0
+
+
+def test_default_registry_loads_shared_auxiliary_extractors() -> None:
+    registry = build_default_registry(ROOT / "extractors")
+
+    assert registry.has("reasoning_trace_v1")
+    assert registry.has("completion_metadata_v1")
+    assert registry.has("surface_contract_v1")

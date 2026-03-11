@@ -12,9 +12,7 @@ from modelfingerprint.contracts.run import (
     NormalizedCompletion,
 )
 from modelfingerprint.extractors.abstention import (
-    extract_abstention,
     extract_abstention_v3,
-    score_abstention,
     score_abstention_v3,
 )
 from modelfingerprint.extractors.base import (
@@ -29,35 +27,22 @@ from modelfingerprint.extractors.base import (
 )
 from modelfingerprint.extractors.completion_metadata import extract_completion_metadata
 from modelfingerprint.extractors.context_retrieval import (
-    extract_context_retrieval,
     extract_context_retrieval_v3,
-    score_context_retrieval,
     score_context_retrieval_v3,
 )
 from modelfingerprint.extractors.evidence_grounding import (
-    extract_evidence_grounding,
     extract_evidence_grounding_v3,
-    score_evidence_grounding,
     score_evidence_grounding_v3,
 )
-from modelfingerprint.extractors.minimal_diff import extract_minimal_diff
 from modelfingerprint.extractors.reasoning_trace import extract_reasoning_trace
 from modelfingerprint.extractors.representation_alignment import (
-    extract_representation_alignment,
     extract_representation_alignment_v3,
-    score_representation_alignment,
     score_representation_alignment_v3,
 )
-from modelfingerprint.extractors.retrieval import extract_retrieval
 from modelfingerprint.extractors.state_tracking import (
-    extract_state_tracking,
     extract_state_tracking_v3,
-    score_state_tracking,
     score_state_tracking_v3,
 )
-from modelfingerprint.extractors.strict_format import extract_strict_format
-from modelfingerprint.extractors.structured_extraction import extract_structured_extraction
-from modelfingerprint.extractors.style_brief import extract_style_brief
 from modelfingerprint.extractors.surface_contract import extract_surface_contract
 
 SURFACE_EXTRACTOR_NAME = "surface_contract_v1"
@@ -182,35 +167,20 @@ class ExtractorRegistry:
 
 def build_default_registry(directory: Path) -> ExtractorRegistry:
     handlers = {
-        "style_brief_v1": extract_style_brief,
-        "strict_format_v1": extract_strict_format,
-        "minimal_diff_v1": extract_minimal_diff,
-        "structured_extraction_v1": extract_structured_extraction,
-        "retrieval_v1": extract_retrieval,
-        "evidence_grounding_v1": extract_evidence_grounding,
         "evidence_grounding_v3": extract_evidence_grounding_v3,
-        "context_retrieval_v1": extract_context_retrieval,
         "context_retrieval_v3": extract_context_retrieval_v3,
-        "abstention_v1": extract_abstention,
         "abstention_v3": extract_abstention_v3,
-        "state_tracking_v1": extract_state_tracking,
         "state_tracking_v3": extract_state_tracking_v3,
-        "representation_alignment_v1": extract_representation_alignment,
         "representation_alignment_v3": extract_representation_alignment_v3,
         "reasoning_trace_v1": extract_reasoning_trace,
         "completion_metadata_v1": extract_completion_metadata,
         SURFACE_EXTRACTOR_NAME: extract_surface_contract,
     }
     score_handlers = {
-        "evidence_grounding_score_v1": score_evidence_grounding,
         "evidence_grounding_score_v3": score_evidence_grounding_v3,
-        "context_retrieval_score_v1": score_context_retrieval,
         "context_retrieval_score_v3": score_context_retrieval_v3,
-        "abstention_score_v1": score_abstention,
         "abstention_score_v3": score_abstention_v3,
-        "state_tracking_score_v1": score_state_tracking,
         "state_tracking_score_v3": score_state_tracking_v3,
-        "representation_alignment_score_v1": score_representation_alignment,
         "representation_alignment_score_v3": score_representation_alignment_v3,
     }
     return ExtractorRegistry.from_directory(

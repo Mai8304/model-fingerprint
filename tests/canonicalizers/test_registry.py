@@ -11,26 +11,26 @@ from modelfingerprint.contracts.run import CanonicalizationEvent, CanonicalizedO
 def build_prompt(canonicalizer: str) -> PromptDefinition:
     return PromptDefinition.model_validate(
         {
-            "id": "p003",
-            "name": "fixed_json_triage",
-            "family": "strict_format",
-            "intent": "detect strict JSON obedience",
-            "messages": [{"role": "user", "content": "Return JSON only."}],
+            "id": "p021",
+            "name": "grounded_identity_resolution",
+            "family": "evidence_grounding",
+            "intent": "normalize grounded JSON output",
+            "messages": [{"role": "user", "content": "Return a grounded JSON object only."}],
             "generation": {
                 "temperature": 0.0,
                 "top_p": 1.0,
                 "max_output_tokens": 96,
-                "response_format": "json_object",
+                "response_format": "text",
                 "reasoning_mode": "ignore",
             },
             "output_contract": {
-                "id": "strict_json_v2",
+                "id": "tolerant_json_v3",
                 "canonicalizer": canonicalizer,
             },
-            "extractors": {"answer": "strict_format_v1"},
-            "required_capabilities": ["chat_completions", "json_object_response"],
+            "extractors": {"answer": "evidence_grounding_v3"},
+            "required_capabilities": ["chat_completions"],
             "weight_hint": 0.9,
-            "tags": ["format", "json"],
+            "tags": ["grounding", "json"],
             "risk_level": "low",
         }
     )
@@ -39,10 +39,10 @@ def build_prompt(canonicalizer: str) -> PromptDefinition:
 def test_registry_resolves_prompt_canonicalizer_and_returns_events() -> None:
     registry = CanonicalizerRegistry(
         {
-            "strict_json_v2": lambda raw_output: (
+            "tolerant_json_v3": lambda raw_output: (
                 CanonicalizedOutput(
-                    format_id="strict_json_v2",
-                    payload={"answer": "yes", "confidence": "high"},
+                    format_id="tolerant_json_v3",
+                    payload={"task_result": {}, "evidence": {}, "unknowns": {}, "violations": []},
                 ),
                 [CanonicalizationEvent(code="removed_fence", message="removed markdown fence")],
             )
@@ -50,12 +50,12 @@ def test_registry_resolves_prompt_canonicalizer_and_returns_events() -> None:
     )
 
     canonical_output, events = registry.canonicalize(
-        build_prompt("strict_json_v2"),
-        '```json\n{"answer":"yes","confidence":"high"}\n```',
+        build_prompt("tolerant_json_v3"),
+        '```json\n{"task_result":{},"evidence":{},"unknowns":{},"violations":[]}\n```',
     )
 
-    assert canonical_output.format_id == "strict_json_v2"
-    assert canonical_output.payload["answer"] == "yes"
+    assert canonical_output.format_id == "tolerant_json_v3"
+    assert canonical_output.payload["task_result"] == {}
     assert events[0].code == "removed_fence"
 
 
@@ -69,7 +69,7 @@ def test_registry_rejects_unknown_canonicalizers() -> None:
 def test_registry_surfaces_typed_canonicalization_errors() -> None:
     registry = CanonicalizerRegistry(
         {
-            "strict_json_v2": lambda raw_output: (_ for _ in ()).throw(
+            "tolerant_json_v3": lambda raw_output: (_ for _ in ()).throw(
                 CanonicalizationError(
                     code="invalid_json",
                     message="response body is not valid JSON",
@@ -79,7 +79,7 @@ def test_registry_surfaces_typed_canonicalization_errors() -> None:
     )
 
     with pytest.raises(CanonicalizationError) as exc_info:
-        registry.canonicalize(build_prompt("strict_json_v2"), "not-json")
+        registry.canonicalize(build_prompt("tolerant_json_v3"), "not-json")
 
     assert exc_info.value.code == "invalid_json"
 
