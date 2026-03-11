@@ -12,6 +12,11 @@ from modelfingerprint.contracts.run import RunArtifact
 from modelfingerprint.dialects.openai_chat import OpenAIChatDialectAdapter
 from modelfingerprint.services.capability_probe import probe_capabilities
 from modelfingerprint.services.comparison_artifact import build_comparison_artifact
+from modelfingerprint.services.endpoint_profiles import (
+    EndpointProfileResolutionError,
+    load_endpoint_profiles,
+    resolve_or_build_endpoint_profile,
+)
 from modelfingerprint.services.prompt_bank import load_suites
 from modelfingerprint.services.runtime_policy import resolve_runtime_policy
 from modelfingerprint.services.suite_runner import SuiteRunner
@@ -94,10 +99,11 @@ class RunOrchestrator:
             return self._save_stopped_record(record)
 
         try:
+            endpoint = self._resolve_input_endpoint_profile(input)
             capability_probe_payload = self._probe_capabilities_fn(
-                base_url=input.base_url,
+                base_url=str(endpoint.base_url),
                 api_key=api_key,
-                model=input.model_name,
+                model=endpoint.model,
             )
         except WebRunConfigurationError as exc:
             return self._store.save(
@@ -118,6 +124,7 @@ class RunOrchestrator:
             run_id=run_id,
             input=input,
             api_key=api_key,
+            endpoint=endpoint,
             capability_probe_payload=capability_probe_payload,
         )
         prompt_items = [_project_prompt(prompt) for prompt in artifact.prompts]
@@ -206,13 +213,9 @@ class RunOrchestrator:
         run_id: str,
         input: WebRunInput,
         api_key: str,
+        endpoint: EndpointProfile,
         capability_probe_payload: dict[str, object],
     ) -> RunArtifact:
-        endpoint = _build_inline_endpoint_profile(
-            run_id=run_id,
-            input=input,
-            capability_probe_payload=capability_probe_payload,
-        )
         runtime_policy = resolve_runtime_policy(
             capability_probe_payload=capability_probe_payload,
             supports_output_token_cap=endpoint.capabilities.supports_output_token_cap,
@@ -249,6 +252,20 @@ class RunOrchestrator:
                 code="UNKNOWN_FINGERPRINT_MODEL",
                 message=f"unknown fingerprint model: {model_id}",
             )
+
+    def _resolve_input_endpoint_profile(self, input: WebRunInput) -> EndpointProfile:
+        profiles = load_endpoint_profiles(self._paths.endpoint_profiles_dir)
+        try:
+            return resolve_or_build_endpoint_profile(
+                profiles,
+                base_url=input.base_url,
+                model=input.model_name,
+            )
+        except EndpointProfileResolutionError as exc:
+            raise WebRunConfigurationError(
+                code="AMBIGUOUS_ENDPOINT_PROFILE",
+                message=str(exc),
+            ) from exc
 
     def _load_web_suite(self):
         suites = load_suites(self._paths.prompt_bank_dir / "suites")
@@ -358,62 +375,3 @@ def _determine_result_state(run_artifact: RunArtifact) -> WebResultState:
     if scoreable >= 3:
         return "provisional"
     return "insufficient_evidence"
-
-
-def _build_inline_endpoint_profile(
-    *,
-    run_id: str,
-    input: WebRunInput,
-    capability_probe_payload: dict[str, object],
-) -> EndpointProfile:
-    thinking_outcome = capability_probe_payload.get("results", {})
-    exposes_reasoning_text = False
-    if isinstance(thinking_outcome, dict):
-        thinking = thinking_outcome.get("thinking")
-        if isinstance(thinking, dict):
-            exposes_reasoning_text = thinking.get("status") == "supported"
-
-    return EndpointProfile.model_validate(
-        {
-            "id": f"web-run-{run_id}",
-            "dialect": "openai_chat_v1",
-            "base_url": input.base_url,
-            "model": input.model_name,
-            "auth": {
-                "kind": "bearer_env",
-                "env_var": "MODEL_FINGERPRINT_API_KEY",
-            },
-            "capabilities": {
-                "exposes_reasoning_text": exposes_reasoning_text,
-                "supports_json_object_response": False,
-                "supports_temperature": True,
-                "supports_top_p": True,
-                "supports_output_token_cap": True,
-            },
-            "request_mapping": {
-                "output_token_cap_field": "max_tokens",
-                "static_body": {},
-            },
-            "response_mapping": {
-                "answer_text_path": "choices.0.message.content",
-                "reasoning_text_path": (
-                    "choices.0.message.reasoning_content" if exposes_reasoning_text else None
-                ),
-                "finish_reason_path": "choices.0.finish_reason",
-                "usage_paths": {
-                    "prompt_tokens": "usage.prompt_tokens",
-                    "output_tokens": "usage.completion_tokens",
-                    "total_tokens": "usage.total_tokens",
-                    "reasoning_tokens": "usage.completion_tokens_details.reasoning_tokens",
-                },
-            },
-            "timeout_policy": {
-                "connect_seconds": 10,
-                "read_seconds": 120,
-            },
-            "retry_policy": {
-                "max_attempts": 1,
-                "retryable_statuses": [408, 429, 500, 502, 503, 504],
-            },
-        }
-    )

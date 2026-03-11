@@ -21,6 +21,7 @@ from modelfingerprint.services.comparison_artifact import build_comparison_artif
 from modelfingerprint.services.endpoint_profiles import (
     EndpointProfileValidationError,
     load_endpoint_profiles,
+    resolve_or_build_endpoint_profile,
 )
 from modelfingerprint.services.feature_pipeline import PromptExecutionResult
 from modelfingerprint.services.profile_builder import build_profile
@@ -197,10 +198,39 @@ def run_suite(
         dir_okay=False,
     ),
     endpoint_profile: str | None = typer.Option(None, "--endpoint-profile"),
+    base_url: str | None = typer.Option(None, "--base-url"),
+    model: str | None = typer.Option(None, "--model"),
+    api_key: str | None = typer.Option(None, "--api-key"),
     run_date: str = typer.Option("2026-03-09", "--run-date"),
 ) -> None:
-    if (fixture_responses is None) == (endpoint_profile is None):
-        raise typer.BadParameter("provide exactly one of --fixture-responses or --endpoint-profile")
+    using_fixture = fixture_responses is not None
+    using_endpoint_profile = endpoint_profile is not None
+    using_direct_live_target = base_url is not None or model is not None or api_key is not None
+    live_mode_count = int(using_endpoint_profile) + int(using_direct_live_target)
+
+    if using_fixture:
+        if live_mode_count != 0:
+            raise typer.BadParameter(
+                "choose fixture mode or live mode, not both"
+            )
+    elif live_mode_count != 1:
+        raise typer.BadParameter(
+            "provide exactly one live target: --endpoint-profile or --base-url/--model"
+        )
+
+    if using_direct_live_target:
+        if base_url is None or model is None:
+            raise typer.BadParameter("--base-url and --model are required for direct live mode")
+        if endpoint_profile is not None:
+            raise typer.BadParameter(
+                "--endpoint-profile cannot be combined with --base-url/--model"
+            )
+        if api_key is None:
+            api_key = os.getenv("MODEL_FINGERPRINT_API_KEY")
+        if api_key is None:
+            raise typer.BadParameter(
+                "missing API key; pass --api-key or set MODEL_FINGERPRINT_API_KEY"
+            )
 
     paths = RepositoryPaths(root=root)
     transport: object
@@ -234,13 +264,24 @@ def run_suite(
         transport = FixtureTransport()
     else:
         profiles = load_endpoint_profiles(paths.endpoint_profiles_dir)
-        endpoint = profiles.get(endpoint_profile or "")
-        if endpoint is None:
-            raise typer.BadParameter(f"unknown endpoint profile id: {endpoint_profile}")
-        api_key = _load_endpoint_api_key(endpoint)
+        if endpoint_profile is not None:
+            endpoint = profiles.get(endpoint_profile)
+            if endpoint is None:
+                raise typer.BadParameter(f"unknown endpoint profile id: {endpoint_profile}")
+            live_api_key = _load_endpoint_api_key(endpoint)
+        else:
+            assert base_url is not None
+            assert model is not None
+            assert api_key is not None
+            endpoint = resolve_or_build_endpoint_profile(
+                profiles,
+                base_url=base_url,
+                model=model,
+            )
+            live_api_key = api_key
         capability_probe_payload = probe_capabilities(
             base_url=str(endpoint.base_url),
-            api_key=api_key,
+            api_key=live_api_key,
             model=endpoint.model,
         )
         runtime_policy = resolve_runtime_policy(
@@ -250,7 +291,7 @@ def run_suite(
         trace_dir = paths.traces_dir / run_date / f"{target_label}.{suite_id}"
         transport = LiveRunner(
             endpoint=endpoint,
-            api_key=api_key,
+            api_key=live_api_key,
             dialect=_build_dialect(endpoint),
             trace_dir=trace_dir,
             runtime_policy=runtime_policy,
