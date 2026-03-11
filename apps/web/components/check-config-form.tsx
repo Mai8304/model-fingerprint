@@ -12,13 +12,17 @@ import { fingerprintOptions as defaultFingerprintOptions } from "@/lib/fingerpri
 import { useLocale } from "@/lib/i18n/provider"
 import type { FingerprintOption } from "@/lib/run-types"
 
+type RemoteFieldErrors = Partial<Record<keyof CheckConfigValues, string>>
+
 export function CheckConfigForm({
   disabled,
   fingerprintOptions = defaultFingerprintOptions,
+  remoteErrors,
   onSubmit,
 }: {
   disabled: boolean
   fingerprintOptions?: FingerprintOption[]
+  remoteErrors?: RemoteFieldErrors
   onSubmit: (values: CheckConfigValues) => void | Promise<void>
 }) {
   const { t } = useLocale()
@@ -39,6 +43,21 @@ export function CheckConfigForm({
     },
   })
 
+  const apiKeyError =
+    form.formState.errors.apiKey?.message ||
+    (form.formState.dirtyFields.apiKey ? undefined : remoteErrors?.apiKey)
+  const baseUrlError =
+    form.formState.errors.baseUrl?.message ||
+    (form.formState.dirtyFields.baseUrl ? undefined : remoteErrors?.baseUrl)
+  const modelNameError =
+    form.formState.errors.modelName?.message ||
+    (form.formState.dirtyFields.modelName ? undefined : remoteErrors?.modelName)
+  const fingerprintError =
+    form.formState.errors.fingerprintModel?.message ||
+    (form.formState.dirtyFields.fingerprintModel
+      ? undefined
+      : remoteErrors?.fingerprintModel)
+
   return (
     <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
       <div className="space-y-1.5">
@@ -53,8 +72,8 @@ export function CheckConfigForm({
           {...form.register("apiKey")}
           disabled={disabled}
         />
-        {form.formState.errors.apiKey ? (
-          <p className="text-sm text-rose-600">{form.formState.errors.apiKey.message}</p>
+        {apiKeyError ? (
+          <p className="text-sm text-rose-600">{apiKeyError}</p>
         ) : null}
       </div>
 
@@ -68,8 +87,8 @@ export function CheckConfigForm({
           {...form.register("baseUrl")}
           disabled={disabled}
         />
-        {form.formState.errors.baseUrl ? (
-          <p className="text-sm text-rose-600">{form.formState.errors.baseUrl.message}</p>
+        {baseUrlError ? (
+          <p className="text-sm text-rose-600">{baseUrlError}</p>
         ) : null}
       </div>
 
@@ -83,8 +102,8 @@ export function CheckConfigForm({
           {...form.register("modelName")}
           disabled={disabled}
         />
-        {form.formState.errors.modelName ? (
-          <p className="text-sm text-rose-600">{form.formState.errors.modelName.message}</p>
+        {modelNameError ? (
+          <p className="text-sm text-rose-600">{modelNameError}</p>
         ) : null}
       </div>
 
@@ -105,8 +124,8 @@ export function CheckConfigForm({
             </option>
           ))}
         </select>
-        {form.formState.errors.fingerprintModel ? (
-          <p className="text-sm text-rose-600">{form.formState.errors.fingerprintModel.message}</p>
+        {fingerprintError ? (
+          <p className="text-sm text-rose-600">{fingerprintError}</p>
         ) : null}
       </div>
 

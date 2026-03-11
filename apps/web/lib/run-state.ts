@@ -18,12 +18,21 @@ export function projectRunSnapshot(
         status: "configuration_error",
         resultState: "configuration_error",
         cancelRequested: false,
+        failedPrompts: 0,
+        currentPromptIndex: null,
         completedPrompts: 0,
         totalPrompts: 5,
         currentPromptId: null,
         currentPromptLabel: null,
+        currentStageId: null,
+        currentStageMessage: options.failureReason,
+        stages: [],
+        prompts: [],
         selectedFingerprint: "",
+        failureCode: "INVALID_REQUEST",
+        failureField: null,
         failureReason: options.failureReason,
+        result: null,
       }
     }
 
@@ -32,11 +41,18 @@ export function projectRunSnapshot(
       status: "idle",
       resultState: null,
       cancelRequested: false,
+      failedPrompts: 0,
+      currentPromptIndex: null,
       completedPrompts: 0,
       totalPrompts: 5,
       currentPromptId: null,
       currentPromptLabel: null,
+      currentStageId: null,
+      currentStageMessage: null,
+      stages: [],
+      prompts: [],
       selectedFingerprint: "",
+      result: null,
     }
   }
 
@@ -47,16 +63,29 @@ export function projectRunSnapshot(
     status: snapshot.run_status,
     resultState: result?.result_state ?? snapshot.result_state,
     cancelRequested: snapshot.cancel_requested,
+    createdAt: snapshot.created_at,
+    updatedAt: snapshot.updated_at,
+    baseUrl: snapshot.input.base_url,
+    modelName: snapshot.input.model_name,
     completedPrompts: result?.completed_prompts ?? snapshot.progress.completed_prompts,
+    failedPrompts: snapshot.progress.failed_prompts,
     totalPrompts: result?.total_prompts ?? snapshot.progress.total_prompts,
+    currentPromptIndex: snapshot.progress.current_prompt_index ?? null,
     currentPromptId,
     currentPromptLabel:
       currentPromptId === null ? null : getPromptLabel(currentPromptId, options.locale),
+    currentStageId: snapshot.current_stage_id ?? null,
+    currentStageMessage: snapshot.current_stage_message ?? null,
+    stages: snapshot.stages ?? [],
+    prompts: snapshot.prompts ?? [],
     selectedFingerprint:
       result?.selected_fingerprint.label ?? snapshot.input.fingerprint_model_id,
     topCandidate: result?.summary?.top_candidate_label ?? undefined,
     similarityScore: result?.summary?.similarity_score ?? undefined,
+    failureCode: snapshot.failure?.code,
     failureReason: options.failureReason ?? snapshot.failure?.message ?? undefined,
+    failureField: snapshot.failure?.field ?? null,
+    result: result ?? null,
   }
 }
 

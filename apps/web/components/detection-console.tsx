@@ -4,16 +4,20 @@ import { useEffect, useEffectEvent, useMemo, useState } from "react"
 import { ArrowRight, CheckCircle2, Fingerprint, FlaskConical } from "lucide-react"
 
 import { CheckConfigForm } from "@/components/check-config-form"
-import { ResultCard } from "@/components/workbench/result-card"
+import { ConclusionPanel } from "@/components/workbench/conclusion-panel"
+import { PromptDiagnosticsTable } from "@/components/workbench/prompt-diagnostics-table"
+import { RunOverview } from "@/components/workbench/run-overview"
+import { StageTimeline } from "@/components/workbench/stage-timeline"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { TopBar } from "@/components/top-bar"
 import { ApiClientError, cancelRun, createRun, getRun, getRunResult, listFingerprintModels } from "@/lib/api-client"
 import { useLocale } from "@/lib/i18n/provider"
 import type { CheckConfigValues } from "@/lib/check-config-schema"
+import { deriveRemoteFieldErrors } from "@/lib/error-presentation"
 import { fingerprintOptions as fallbackFingerprintOptions } from "@/lib/fingerprint-options"
 import type { FingerprintOption, RunResultResource, RunResource } from "@/lib/run-types"
-import { deriveWorkbenchState, projectRunSnapshot } from "@/lib/run-state"
+import { projectRunSnapshot } from "@/lib/run-state"
 
 function resolveErrorMessage(error: unknown) {
   if (error instanceof ApiClientError) {
@@ -28,7 +32,7 @@ function resolveErrorMessage(error: unknown) {
 }
 
 export function DetectionConsole() {
-  const { locale, t, format } = useLocale()
+  const { locale, t } = useLocale()
   const [availableFingerprints, setAvailableFingerprints] = useState<FingerprintOption[]>(
     fallbackFingerprintOptions,
   )
@@ -45,12 +49,12 @@ export function DetectionConsole() {
       }),
     [clientFailure, locale, remoteSnapshot, terminalResult],
   )
-  const workbenchState = useMemo(
-    () => deriveWorkbenchState(projectedRun, { t, format }),
-    [format, projectedRun, t],
-  )
   const runIsActive =
     projectedRun.status === "validating" || projectedRun.status === "running"
+  const remoteFieldErrors = useMemo(
+    () => deriveRemoteFieldErrors(projectedRun),
+    [projectedRun],
+  )
 
   useEffect(() => {
     document.title = t("app.title")
@@ -225,6 +229,7 @@ export function DetectionConsole() {
             <CheckConfigForm
               disabled={isSubmitting || runIsActive}
               fingerprintOptions={availableFingerprints}
+              remoteErrors={remoteFieldErrors}
               onSubmit={handleSubmit}
             />
           </CardContent>
@@ -235,7 +240,10 @@ export function DetectionConsole() {
             <CardTitle>{t("sections.result")}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6">
-            <ResultCard embedded state={workbenchState} />
+            <RunOverview run={projectedRun} />
+            <StageTimeline run={projectedRun} />
+            <PromptDiagnosticsTable run={projectedRun} />
+            <ConclusionPanel run={projectedRun} />
             {runIsActive ? (
               <Button onClick={() => void handleCancel()} variant="outline">
                 {t("actions.stopCheck")}

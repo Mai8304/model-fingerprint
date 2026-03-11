@@ -7,6 +7,7 @@ from modelfingerprint.webapi.contracts import (
     WebRunInput,
     WebRunPrompt,
     WebRunRecord,
+    WebRunStage,
 )
 from modelfingerprint.webapi.run_projection import project_run_snapshot
 
@@ -24,6 +25,22 @@ def test_project_run_snapshot_derives_progress_from_prompt_state() -> None:
             model_name="gpt-4o-mini",
             fingerprint_model_id="glm-5",
         ),
+        current_stage_id="prompt_execution",
+        current_stage_message="running p003 (3/3)",
+        stages=[
+            WebRunStage(
+                id="config_validation",
+                status="completed",
+                started_at=datetime(2026, 3, 10, 6, 0, 0, tzinfo=UTC),
+                finished_at=datetime(2026, 3, 10, 6, 0, 1, tzinfo=UTC),
+            ),
+            WebRunStage(
+                id="prompt_execution",
+                status="running",
+                message="running p003 (3/3)",
+                started_at=datetime(2026, 3, 10, 6, 1, 0, tzinfo=UTC),
+            ),
+        ],
         prompts=[
             WebRunPrompt(prompt_id="p001", status="completed", elapsed_seconds=56),
             WebRunPrompt(
@@ -45,7 +62,11 @@ def test_project_run_snapshot_derives_progress_from_prompt_state() -> None:
     assert snapshot.progress.failed_prompts == 1
     assert snapshot.progress.total_prompts == 3
     assert snapshot.progress.current_prompt_id == "p003"
+    assert snapshot.progress.current_prompt_index == 3
     assert snapshot.progress.eta_seconds == 360
+    assert snapshot.current_stage_id == "prompt_execution"
+    assert snapshot.current_stage_message == "running p003 (3/3)"
+    assert snapshot.stages[1].status == "running"
     assert snapshot.prompts[1].error_code == "RESPONSE_TIMEOUT"
     assert snapshot.failure is not None
     assert snapshot.failure.code == "RESPONSE_TIMEOUT"
