@@ -202,12 +202,14 @@ test("loads registry, submits a run, polls progress, and renders provisional out
   )
 
   await advancePolling(1000)
-  expect(screen.getByText("2 / 5")).toBeInTheDocument()
+  expect(screen.getAllByText("2 / 5").length).toBeGreaterThan(0)
   expect(screen.getByText("Prompt 3")).toBeInTheDocument()
+  expect(screen.getByText("Running Diagnostics")).toBeInTheDocument()
 
   await advancePolling(1000)
-  expect(screen.getByText("Provisional observation")).toBeInTheDocument()
-  expect(screen.getByText(/looks closer to GLM-5/i)).toBeInTheDocument()
+  expect(screen.getByText("Detailed Result")).toBeInTheDocument()
+  expect(screen.getByText(/Verdict: match/i)).toBeInTheDocument()
+  expect(screen.getByText("Top Candidates")).toBeInTheDocument()
 })
 
 test("renders insufficient-evidence output from the terminal result contract", async () => {
@@ -306,7 +308,7 @@ test("renders insufficient-evidence output from the terminal result contract", a
   await flushAsyncWork()
 
   await advancePolling(1000)
-  expect(screen.getByText("Insufficient evidence")).toBeInTheDocument()
+  expect(screen.getByText("Insufficient Evidence")).toBeInTheDocument()
 })
 
 test("stops an active run through the cancel endpoint", async () => {
@@ -431,5 +433,5 @@ test("stops an active run through the cancel endpoint", async () => {
   )
 
   await advancePolling(1000)
-  expect(screen.getByText("Check stopped")).toBeInTheDocument()
+  expect(screen.getByText("Check Stopped")).toBeInTheDocument()
 })

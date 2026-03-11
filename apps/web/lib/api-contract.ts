@@ -37,12 +37,34 @@ export const promptStatusValues = [
 
 export type PromptStatus = (typeof promptStatusValues)[number]
 
+export const runStageValues = [
+  "config_validation",
+  "endpoint_resolution",
+  "capability_probe",
+  "prompt_execution",
+  "comparison",
+] as const
+
+export type RunStage = (typeof runStageValues)[number]
+
+export const runStageStatusValues = [
+  "pending",
+  "running",
+  "completed",
+  "failed",
+] as const
+
+export type RunStageStatus = (typeof runStageStatusValues)[number]
+
 export const errorCodeValues = [
   "INVALID_REQUEST",
   "UNKNOWN_FINGERPRINT_MODEL",
+  "AMBIGUOUS_ENDPOINT_PROFILE",
   "AUTH_FAILED",
   "ENDPOINT_UNREACHABLE",
   "MODEL_NOT_FOUND",
+  "RATE_LIMITED",
+  "PROVIDER_SERVER_ERROR",
   "UNSUPPORTED_ENDPOINT_PROTOCOL",
   "RESPONSE_TIMEOUT",
   "TRANSPORT_ERROR",

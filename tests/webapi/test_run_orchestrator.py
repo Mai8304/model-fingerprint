@@ -36,6 +36,11 @@ class RecordingRunStore(RunStore):
         self.history.append((updated.run_status, updated.result_state))
         return updated
 
+    def update(self, run_id, transform):
+        updated = super().update(run_id, transform)
+        self.history.append((updated.run_status, updated.result_state))
+        return updated
+
 
 def test_orchestrator_completes_v3_suite_and_writes_formal_result(tmp_path: Path) -> None:
     store = RecordingRunStore(tmp_path / ".webapi" / "runs")
@@ -67,6 +72,61 @@ def test_orchestrator_completes_v3_suite_and_writes_formal_result(tmp_path: Path
     assert record.result.verdict == "match"
     assert record.result.summary is not None
     assert record.result.summary.top_candidate_model_id == "glm-5"
+    assert record.result.summary.top_candidate_similarity is not None
+    assert record.result.coverage is not None
+    assert record.result.coverage.answer_coverage_ratio == 1.0
+    assert record.result.dimensions is not None
+    assert record.result.thresholds_used is not None
+    assert record.current_stage_id == "comparison"
+    assert len(record.stages) == 5
+
+
+def test_orchestrator_maps_probe_failures_to_configuration_error(tmp_path: Path) -> None:
+    store = RecordingRunStore(tmp_path / ".webapi" / "runs")
+    paths = RepositoryPaths(root=ROOT)
+    input = WebRunInput(
+        base_url=OPENROUTER_GLM5_BASE_URL,
+        model_name=OPENROUTER_GLM5_MODEL,
+        fingerprint_model_id="glm-5",
+    )
+
+    orchestrator = RunOrchestrator(
+        paths=paths,
+        store=store,
+        probe_capabilities_fn=lambda **_: {
+            "results": {
+                "thinking": {
+                    "status": "insufficient_evidence",
+                    "http_status": 401,
+                    "detail": "Invalid API key",
+                },
+                "tools": {
+                    "status": "insufficient_evidence",
+                    "http_status": 401,
+                    "detail": "Invalid API key",
+                },
+                "streaming": {
+                    "status": "insufficient_evidence",
+                    "http_status": 401,
+                    "detail": "Invalid API key",
+                },
+            }
+        },
+        execute_suite_fn=lambda **_: None,
+    )
+
+    record = orchestrator.run(run_id="run_probe_401", input=input)
+
+    assert record.run_status == "configuration_error"
+    assert record.result_state == "configuration_error"
+    assert record.failure is not None
+    assert record.failure.code == "AUTH_FAILED"
+    assert record.failure.field == "apiKey"
+    assert record.current_stage_id == "capability_probe"
+    assert any(
+        stage.id == "capability_probe" and stage.status == "failed"
+        for stage in record.stages
+    )
 
 
 def test_orchestrator_marks_configuration_error_when_probe_fails(tmp_path: Path) -> None:

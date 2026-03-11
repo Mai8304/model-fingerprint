@@ -30,6 +30,16 @@ def test_run_store_round_trips_and_marks_cancel_requested(tmp_path) -> None:
     assert created.run_status == "validating"
     assert created.result_state is None
     assert created.cancel_requested is False
+    assert created.current_stage_id == "config_validation"
+    assert created.current_stage_message == "waiting for worker execution"
+    assert [stage.id for stage in created.stages] == [
+        "config_validation",
+        "endpoint_resolution",
+        "capability_probe",
+        "prompt_execution",
+        "comparison",
+    ]
+    assert created.stages[0].status == "running"
     assert [prompt.prompt_id for prompt in created.prompts] == ["p001", "p002", "p003"]
     assert all(prompt.status == "pending" for prompt in created.prompts)
 

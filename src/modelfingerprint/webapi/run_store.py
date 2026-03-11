@@ -7,9 +7,21 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from modelfingerprint.storage.filesystem import ensure_directories
-from modelfingerprint.webapi.contracts import WebRunInput, WebRunPrompt, WebRunRecord
+from modelfingerprint.webapi.contracts import (
+    WebRunInput,
+    WebRunPrompt,
+    WebRunRecord,
+    WebRunStage,
+)
 
 RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9._-]+$")
+DEFAULT_STAGE_IDS = (
+    "config_validation",
+    "endpoint_resolution",
+    "capability_probe",
+    "prompt_execution",
+    "comparison",
+)
 
 
 class RunStore:
@@ -37,6 +49,21 @@ class RunStore:
             created_at=timestamp,
             updated_at=timestamp,
             input=input,
+            current_stage_id="config_validation",
+            current_stage_message="waiting for worker execution",
+            stages=[
+                WebRunStage(
+                    id=stage_id,
+                    status="running" if stage_id == "config_validation" else "pending",
+                    message=(
+                        "waiting for worker execution"
+                        if stage_id == "config_validation"
+                        else None
+                    ),
+                    started_at=timestamp if stage_id == "config_validation" else None,
+                )
+                for stage_id in DEFAULT_STAGE_IDS
+            ],
             prompts=[
                 WebRunPrompt(prompt_id=prompt_id, status="pending")
                 for prompt_id in prompt_ids
@@ -51,6 +78,18 @@ class RunStore:
 
     def save(self, record: WebRunRecord) -> WebRunRecord:
         updated = record.model_copy(update={"updated_at": self._now()})
+        self._write(updated)
+        return updated
+
+    def update(
+        self,
+        run_id: str,
+        transform: Callable[[WebRunRecord, datetime], WebRunRecord],
+    ) -> WebRunRecord:
+        timestamp = self._now()
+        record = self.get(run_id)
+        updated = transform(record, timestamp)
+        updated = updated.model_copy(update={"updated_at": timestamp})
         self._write(updated)
         return updated
 

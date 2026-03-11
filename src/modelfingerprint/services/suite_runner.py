@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import date
 from pathlib import Path
 from typing import Protocol, cast
@@ -46,6 +47,12 @@ class EndpointAwareTransport(Protocol):
     endpoint: EndpointProfile
 
 
+PromptProgressCallback = Callable[
+    [str, PromptDefinition, int, int, PromptExecutionResult | None],
+    None,
+]
+
+
 class SuiteRunner:
     def __init__(
         self,
@@ -64,6 +71,7 @@ class SuiteRunner:
         claimed_model: str | None = None,
         run_date: date | None = None,
         capability_probe_payload: dict[str, object] | None = None,
+        progress_callback: PromptProgressCallback | None = None,
     ) -> Path:
         prompts = load_candidate_prompts(self._paths.prompt_bank_dir / "candidates")
         suites = load_suites(self._paths.prompt_bank_dir / "suites")
@@ -73,9 +81,15 @@ class SuiteRunner:
         suite = suites[suite_id]
         executions: list[PromptExecutionResult] = []
 
-        for prompt_id in suite.prompt_ids:
+        total_prompts = len(suite.prompt_ids)
+        for index, prompt_id in enumerate(suite.prompt_ids, start=1):
             prompt = prompts[prompt_id]
-            executions.append(self._execute_prompt(prompt))
+            if progress_callback is not None:
+                progress_callback("prompt_started", prompt, index, total_prompts, None)
+            execution = self._execute_prompt(prompt)
+            executions.append(execution)
+            if progress_callback is not None:
+                progress_callback("prompt_finished", prompt, index, total_prompts, execution)
 
         artifact = FeaturePipeline(self._registry).build_run_artifact(
             run_id=f"{target_label}.{suite_id}",
