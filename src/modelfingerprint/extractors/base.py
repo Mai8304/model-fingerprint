@@ -6,7 +6,11 @@ from dataclasses import dataclass, field
 
 from pydantic import Field, model_validator
 
-from modelfingerprint.contracts._common import ContractModel, FeaturePrimitive, PromptFamily
+from modelfingerprint.contracts._common import (
+    ContractModel,
+    ExtractorFamily,
+    FeaturePrimitive,
+)
 from modelfingerprint.contracts.run import CanonicalizationEvent, CanonicalizedOutput
 
 FeatureMap = dict[str, FeaturePrimitive]
@@ -27,7 +31,7 @@ class ExtractorValidationError(ValueError):
 
 class ExtractorDescriptor(ContractModel):
     name: str = Field(min_length=1)
-    family: PromptFamily
+    family: ExtractorFamily
     version: int = Field(gt=0)
     features: list[str] = Field(min_length=1)
 

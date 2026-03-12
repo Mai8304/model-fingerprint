@@ -154,6 +154,15 @@ class LiveRunner:
         if request_trace_path is not None:
             self._write_request_trace(request_trace_path, request)
 
+        if not _should_monitor_request(request):
+            return self._execute_blocking_runtime_request(
+                prompt=prompt,
+                request_snapshot=request_snapshot,
+                request=request,
+                output_token_cap=output_token_cap,
+                response_trace_path=response_trace_path,
+            )
+
         handle, start_error = self._start_request(
             request,
             read_timeout_seconds=self._runtime_policy.total_deadline_seconds,
@@ -286,6 +295,103 @@ class LiveRunner:
                     status=completion_status,
                     error=completion_error,
                     snapshot=snapshot,
+                    latency_ms=completion.latency_ms,
+                    finish_reason=completion.finish_reason,
+                    answer_text_present=completion.answer_text.strip() != "",
+                    reasoning_visible=completion.reasoning_visible,
+                    completed=True,
+                )
+            ],
+            error=completion_error,
+        )
+
+    def _execute_blocking_runtime_request(
+        self,
+        *,
+        prompt: PromptDefinition,
+        request_snapshot: PromptRequestSnapshot,
+        request: HttpRequestSpec,
+        output_token_cap: int | None,
+        response_trace_path: Path | None,
+    ) -> PromptExecutionResult:
+        assert self._runtime_policy is not None
+        payload, latency_ms, transport_error = self._send_request(
+            request,
+            read_timeout_seconds=self._runtime_policy.total_deadline_seconds,
+        )
+        if transport_error is not None:
+            status = _transport_error_status(transport_error)
+            return PromptExecutionResult(
+                prompt=prompt,
+                status=status,
+                request_snapshot=request_snapshot,
+                attempts=[
+                    _build_blocking_attempt_summary(
+                        request_attempt_index=1,
+                        read_timeout_seconds=self._runtime_policy.total_deadline_seconds,
+                        output_token_cap=output_token_cap,
+                        status=status,
+                        error=transport_error,
+                        answer_text_present=False,
+                        completed=False,
+                    )
+                ],
+                error=transport_error,
+            )
+        assert payload is not None
+
+        if response_trace_path is not None:
+            response_trace_path.write_text(
+                json.dumps(payload, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+
+        try:
+            completion = self._dialect.parse_response(
+                self.endpoint,
+                payload,
+                latency_ms=latency_ms,
+                raw_response_path=None if response_trace_path is None else str(response_trace_path),
+            )
+        except Exception as exc:
+            parse_error = PromptExecutionError(
+                kind="response_parse_error",
+                message=str(exc) or "response parsing failed",
+                retryable=False,
+            )
+            return PromptExecutionResult(
+                prompt=prompt,
+                status="invalid_response",
+                request_snapshot=request_snapshot,
+                attempts=[
+                    _build_blocking_attempt_summary(
+                        request_attempt_index=1,
+                        read_timeout_seconds=self._runtime_policy.total_deadline_seconds,
+                        output_token_cap=output_token_cap,
+                        status="invalid_response",
+                        error=parse_error,
+                        latency_ms=latency_ms,
+                        completed=True,
+                    )
+                ],
+                error=parse_error,
+            )
+
+        completion_status, completion_error = _classify_completion(prompt, completion)
+        return PromptExecutionResult(
+            prompt=prompt,
+            status=completion_status,
+            raw_output=completion.answer_text,
+            usage=completion.usage,
+            request_snapshot=request_snapshot,
+            completion=completion,
+            attempts=[
+                _build_blocking_attempt_summary(
+                    request_attempt_index=1,
+                    read_timeout_seconds=self._runtime_policy.total_deadline_seconds,
+                    output_token_cap=output_token_cap,
+                    status=completion_status,
+                    error=completion_error,
                     latency_ms=completion.latency_ms,
                     finish_reason=completion.finish_reason,
                     answer_text_present=completion.answer_text.strip() != "",
@@ -559,6 +665,13 @@ def _abort_reason_message(abort_reason: str | None) -> str:
     return "request monitoring timed out"
 
 
+def _should_monitor_request(request: HttpRequestSpec) -> bool:
+    accept = str(request.headers.get("Accept", ""))
+    if "text/event-stream" in accept.lower():
+        return True
+    return request.body.get("stream") is True
+
+
 def _build_attempt_summary(
     *,
     request_attempt_index: int,
@@ -588,6 +701,38 @@ def _build_attempt_summary(
         first_byte_latency_ms=snapshot.first_byte_latency_ms,
         last_progress_latency_ms=snapshot.last_progress_latency_ms,
         completed=snapshot.completed if completed is None else completed,
+        abort_reason=None if error is None or status != "timeout" else error.kind,
+    )
+
+
+def _build_blocking_attempt_summary(
+    *,
+    request_attempt_index: int,
+    read_timeout_seconds: int,
+    output_token_cap: int | None,
+    status: PromptExecutionStatus,
+    error: PromptExecutionError | None,
+    latency_ms: int | None = None,
+    finish_reason: str | None = None,
+    answer_text_present: bool = False,
+    reasoning_visible: bool | None = None,
+    completed: bool | None = None,
+) -> PromptAttemptSummary:
+    return PromptAttemptSummary(
+        request_attempt_index=request_attempt_index,
+        read_timeout_seconds=read_timeout_seconds,
+        output_token_cap=output_token_cap,
+        status=status,
+        error_kind=None if error is None else error.kind,
+        http_status=None if error is None else error.http_status,
+        latency_ms=latency_ms,
+        finish_reason=finish_reason,
+        answer_text_present=answer_text_present,
+        reasoning_visible=reasoning_visible,
+        bytes_received=None,
+        first_byte_latency_ms=None,
+        last_progress_latency_ms=None,
+        completed=completed,
         abort_reason=None if error is None or status != "timeout" else error.kind,
     )
 
