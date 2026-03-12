@@ -146,19 +146,27 @@ def show_run(path: Path, json_output: bool = typer.Option(False, "--json")) -> N
     typer.echo(f"capability_coverage_ratio: {_format_ratio(_run_capability_coverage(artifact))}")
     if artifact.runtime_policy is not None:
         typer.echo(f"runtime_execution_class: {artifact.runtime_policy.execution_class}")
+        typer.echo(f"runtime_default_intent: {artifact.runtime_policy.default_intent}")
+        default_policy = artifact.runtime_policy.policy_for_intent(
+            artifact.runtime_policy.default_intent or "structured_extraction"
+        )
+        first_attempt = default_policy.attempts[0]
+        typer.echo(f"runtime_default_attempt_count: {len(default_policy.attempts)}")
         typer.echo(
-            "runtime_no_data_checkpoints: "
-            + ",".join(str(value) for value in artifact.runtime_policy.no_data_checkpoints_seconds)
+            "runtime_first_attempt_output_token_cap: "
+            + _format_runtime_output_token_cap(first_attempt)
         )
         typer.echo(
-            "runtime_progress_poll_interval_seconds: "
-            f"{artifact.runtime_policy.progress_poll_interval_seconds}"
+            "runtime_first_attempt_first_byte_timeout_seconds: "
+            f"{first_attempt.first_byte_timeout_seconds}"
         )
         typer.echo(
-            f"runtime_total_deadline_seconds: {artifact.runtime_policy.total_deadline_seconds}"
+            "runtime_first_attempt_idle_timeout_seconds: "
+            f"{first_attempt.idle_timeout_seconds}"
         )
         typer.echo(
-            f"runtime_output_token_cap: {artifact.runtime_policy.output_token_cap or 'n/a'}"
+            "runtime_first_attempt_total_deadline_seconds: "
+            f"{first_attempt.total_deadline_seconds}"
         )
     typer.echo(f"protocol_status: {_run_protocol_status(artifact)}")
 
@@ -286,7 +294,7 @@ def run_suite(
         )
         runtime_policy = resolve_runtime_policy(
             capability_probe_payload=capability_probe_payload,
-            supports_output_token_cap=endpoint.capabilities.supports_output_token_cap,
+            endpoint=endpoint,
         )
         trace_dir = paths.traces_dir / run_date / f"{target_label}.{suite_id}"
         transport = LiveRunner(
@@ -433,6 +441,16 @@ def _format_ratio(value: float | None) -> str:
     if value is None:
         return "n/a"
     return f"{value:.4f}"
+
+
+def _format_runtime_output_token_cap(attempt) -> str:
+    if attempt.use_prompt_output_token_cap:
+        return "prompt"
+    if attempt.output_token_cap is not None:
+        return str(attempt.output_token_cap)
+    if attempt.output_token_cap_multiplier is not None:
+        return f"{attempt.output_token_cap_multiplier:g}x"
+    return "n/a"
 
 
 def _run_protocol_status(artifact: RunArtifact) -> str:

@@ -118,7 +118,7 @@ def build_runtime_policy(
                 }
             }
         },
-        supports_output_token_cap=resolved_endpoint.capabilities.supports_output_token_cap,
+        endpoint=resolved_endpoint,
     )
 
 
@@ -194,6 +194,25 @@ class ScriptedBlockingHttpClient:
             }
         )
         return self._payload, self._latency_ms
+
+
+class ScriptedBlockingSequenceHttpClient:
+    def __init__(self, responses: list[tuple[dict[str, object], int]]) -> None:
+        self.calls: list[dict[str, object]] = []
+        self._responses = list(responses)
+
+    def send(self, request, *, connect_timeout_seconds: int, read_timeout_seconds: int):
+        self.calls.append(
+            {
+                "url": request.url,
+                "headers": dict(request.headers),
+                "body": dict(request.body),
+                "connect_timeout_seconds": connect_timeout_seconds,
+                "read_timeout_seconds": read_timeout_seconds,
+            }
+        )
+        payload, latency_ms = self._responses.pop(0)
+        return payload, latency_ms
 
 
 class TimeoutFailingHttpClient:
@@ -306,8 +325,14 @@ def test_live_runner_uses_blocking_send_for_non_streaming_runtime_policy_request
     assert result.status == "completed"
     assert len(client.calls) == 1
     assert client.calls[0]["headers"]["Accept"] == "application/json"
-    assert client.calls[0]["read_timeout_seconds"] == 120
+    assert client.calls[0]["body"]["max_tokens"] == 96
+    assert client.calls[0]["read_timeout_seconds"] == 90
     assert len(result.attempts) == 1
+    assert result.attempts[0].runtime_intent == "structured_extraction"
+    assert result.attempts[0].runtime_tier_index == 0
+    assert result.attempts[0].first_byte_timeout_seconds == 30
+    assert result.attempts[0].idle_timeout_seconds == 15
+    assert result.attempts[0].total_deadline_seconds == 90
     assert result.attempts[0].latency_ms == 70000
     assert result.attempts[0].bytes_received is None
     assert result.attempts[0].completed is True
@@ -339,36 +364,27 @@ def test_live_runner_switches_to_progress_polling_without_resending_prompt(
     handle = ScriptedHandle(
         [
             ScriptedStep(
-                timeout_seconds=60.0,
-                snapshot=HttpProgressSnapshot(
-                    bytes_received=0,
-                    has_any_data=False,
-                    elapsed_ms=60000,
-                    completed=False,
-                ),
-            ),
-            ScriptedStep(
                 timeout_seconds=30.0,
                 snapshot=HttpProgressSnapshot(
                     bytes_received=192,
                     has_any_data=True,
-                    elapsed_ms=90000,
-                    first_byte_latency_ms=71000,
-                    last_progress_latency_ms=89000,
+                    elapsed_ms=30000,
+                    first_byte_latency_ms=21000,
+                    last_progress_latency_ms=29000,
                     completed=False,
                 ),
             ),
             ScriptedStep(
-                timeout_seconds=10.0,
+                timeout_seconds=15.0,
                 snapshot=HttpProgressSnapshot(
                     bytes_received=384,
                     has_any_data=True,
-                    elapsed_ms=100000,
-                    first_byte_latency_ms=71000,
-                    last_progress_latency_ms=99000,
+                    elapsed_ms=45000,
+                    first_byte_latency_ms=21000,
+                    last_progress_latency_ms=44000,
                     completed=True,
                 ),
-                terminal=successful_terminal(latency_ms=100000),
+                terminal=successful_terminal(latency_ms=45000),
             ),
         ]
     )
@@ -387,14 +403,15 @@ def test_live_runner_switches_to_progress_polling_without_resending_prompt(
 
     assert result.status == "completed"
     assert len(client.calls) == 1
-    assert client.calls[0]["body"]["max_tokens"] == 3000
+    assert client.calls[0]["body"]["max_tokens"] == 96
     assert client.calls[0]["body"]["stream"] is True
-    assert client.calls[0]["read_timeout_seconds"] == 120
-    assert handle.wait_calls == [60.0, 30.0, 10.0]
+    assert client.calls[0]["read_timeout_seconds"] == 90
+    assert handle.wait_calls == [30.0, 15.0]
     assert len(result.attempts) == 1
     assert result.attempts[0].request_attempt_index == 1
+    assert result.attempts[0].runtime_intent == "structured_extraction"
     assert result.attempts[0].bytes_received == 384
-    assert result.attempts[0].first_byte_latency_ms == 71000
+    assert result.attempts[0].first_byte_latency_ms == 21000
     assert result.attempts[0].completed is True
     assert (trace_dir / "p021.request.json").exists()
     assert (trace_dir / "p021.response.json").exists()
@@ -407,11 +424,11 @@ def test_live_runner_times_out_non_thinking_prompt_after_first_silent_checkpoint
     handle = ScriptedHandle(
         [
             ScriptedStep(
-                timeout_seconds=60.0,
+                timeout_seconds=30.0,
                 snapshot=HttpProgressSnapshot(
                     bytes_received=0,
                     has_any_data=False,
-                    elapsed_ms=60000,
+                    elapsed_ms=30000,
                     completed=False,
                 ),
             ),
@@ -420,7 +437,7 @@ def test_live_runner_times_out_non_thinking_prompt_after_first_silent_checkpoint
                 snapshot=HttpProgressSnapshot(
                     bytes_received=0,
                     has_any_data=False,
-                    elapsed_ms=60010,
+                    elapsed_ms=30010,
                     completed=False,
                     terminal_error_kind="cancelled",
                 ),
@@ -446,11 +463,11 @@ def test_live_runner_times_out_non_thinking_prompt_after_first_silent_checkpoint
 
     assert result.status == "timeout"
     assert len(client.calls) == 1
-    assert handle.wait_calls == [60.0, 2.0]
+    assert handle.wait_calls == [30.0, 2.0]
     assert handle.cancelled is True
     assert result.error is not None
-    assert result.error.kind == "no_data_checkpoint_exceeded"
-    assert result.attempts[0].abort_reason == "no_data_checkpoint_exceeded"
+    assert result.error.kind == "first_byte_timeout"
+    assert result.attempts[0].abort_reason == "first_byte_timeout"
     assert result.attempts[0].completed is False
 
 
@@ -458,46 +475,68 @@ def test_live_runner_aborts_after_total_deadline_when_partial_response_never_fin
     handle = ScriptedHandle(
         [
             ScriptedStep(
-                timeout_seconds=60.0,
+                timeout_seconds=30.0,
                 snapshot=HttpProgressSnapshot(
                     bytes_received=128,
                     has_any_data=True,
+                    elapsed_ms=30000,
+                    first_byte_latency_ms=25000,
+                    last_progress_latency_ms=29000,
+                    completed=False,
+                ),
+            ),
+            ScriptedStep(
+                timeout_seconds=15.0,
+                snapshot=HttpProgressSnapshot(
+                    bytes_received=192,
+                    has_any_data=True,
+                    elapsed_ms=45000,
+                    first_byte_latency_ms=25000,
+                    last_progress_latency_ms=44000,
+                    completed=False,
+                ),
+            ),
+            ScriptedStep(
+                timeout_seconds=15.0,
+                snapshot=HttpProgressSnapshot(
+                    bytes_received=256,
+                    has_any_data=True,
                     elapsed_ms=60000,
-                    first_byte_latency_ms=55000,
+                    first_byte_latency_ms=25000,
                     last_progress_latency_ms=59000,
                     completed=False,
                 ),
             ),
             ScriptedStep(
-                timeout_seconds=10.0,
+                timeout_seconds=15.0,
                 snapshot=HttpProgressSnapshot(
-                    bytes_received=192,
+                    bytes_received=320,
                     has_any_data=True,
-                    elapsed_ms=70000,
-                    first_byte_latency_ms=55000,
-                    last_progress_latency_ms=69000,
+                    elapsed_ms=75000,
+                    first_byte_latency_ms=25000,
+                    last_progress_latency_ms=74000,
                     completed=False,
                 ),
             ),
             ScriptedStep(
-                timeout_seconds=10.0,
+                timeout_seconds=15.0,
                 snapshot=HttpProgressSnapshot(
-                    bytes_received=256,
+                    bytes_received=384,
                     has_any_data=True,
-                    elapsed_ms=120000,
-                    first_byte_latency_ms=55000,
-                    last_progress_latency_ms=119000,
+                    elapsed_ms=90000,
+                    first_byte_latency_ms=25000,
+                    last_progress_latency_ms=89000,
                     completed=False,
                 ),
             ),
             ScriptedStep(
                 timeout_seconds=2.0,
                 snapshot=HttpProgressSnapshot(
-                    bytes_received=256,
+                    bytes_received=384,
                     has_any_data=True,
-                    elapsed_ms=120001,
-                    first_byte_latency_ms=55000,
-                    last_progress_latency_ms=119000,
+                    elapsed_ms=90001,
+                    first_byte_latency_ms=25000,
+                    last_progress_latency_ms=89000,
                     completed=False,
                     terminal_error_kind="cancelled",
                 ),
@@ -523,39 +562,39 @@ def test_live_runner_aborts_after_total_deadline_when_partial_response_never_fin
 
     assert result.status == "timeout"
     assert len(client.calls) == 1
-    assert handle.wait_calls == [60.0, 10.0, 10.0, 2.0]
+    assert handle.wait_calls == [30.0, 15.0, 15.0, 15.0, 15.0, 2.0]
     assert handle.cancelled is True
     assert result.error is not None
     assert result.error.kind == "total_deadline_exceeded"
     assert result.attempts[0].abort_reason == "total_deadline_exceeded"
-    assert result.attempts[0].bytes_received == 256
+    assert result.attempts[0].bytes_received == 384
 
 
 def test_feature_pipeline_preserves_progress_attempt_metadata(tmp_path: Path) -> None:
     handle = ScriptedHandle(
         [
             ScriptedStep(
-                timeout_seconds=60.0,
+                timeout_seconds=30.0,
                 snapshot=HttpProgressSnapshot(
                     bytes_received=96,
                     has_any_data=True,
-                    elapsed_ms=60000,
-                    first_byte_latency_ms=51000,
-                    last_progress_latency_ms=59000,
+                    elapsed_ms=30000,
+                    first_byte_latency_ms=21000,
+                    last_progress_latency_ms=29000,
                     completed=False,
                 ),
             ),
             ScriptedStep(
-                timeout_seconds=10.0,
+                timeout_seconds=15.0,
                 snapshot=HttpProgressSnapshot(
                     bytes_received=240,
                     has_any_data=True,
-                    elapsed_ms=70000,
-                    first_byte_latency_ms=51000,
-                    last_progress_latency_ms=69000,
+                    elapsed_ms=45000,
+                    first_byte_latency_ms=21000,
+                    last_progress_latency_ms=44000,
                     completed=True,
                 ),
-                terminal=successful_terminal(latency_ms=70000),
+                terminal=successful_terminal(latency_ms=45000),
             ),
         ]
     )
@@ -587,8 +626,9 @@ def test_feature_pipeline_preserves_progress_attempt_metadata(tmp_path: Path) ->
     assert artifact.prompts[0].completion is not None
     assert artifact.prompts[0].completion.reasoning_visible is True
     assert artifact.prompts[0].attempts
-    assert artifact.prompts[0].attempts[0].read_timeout_seconds == 120
+    assert artifact.prompts[0].attempts[0].read_timeout_seconds == 90
     assert artifact.prompts[0].attempts[0].request_attempt_index == 1
+    assert artifact.prompts[0].attempts[0].runtime_intent == "structured_extraction"
     assert artifact.prompts[0].attempts[0].bytes_received == 240
 
 
@@ -596,13 +636,13 @@ def test_live_runner_accepts_structured_answer_recovered_from_reasoning() -> Non
     handle = ScriptedHandle(
         [
             ScriptedStep(
-                timeout_seconds=60.0,
+                timeout_seconds=30.0,
                 snapshot=HttpProgressSnapshot(
                     bytes_received=160,
                     has_any_data=True,
-                    elapsed_ms=60000,
-                    first_byte_latency_ms=52000,
-                    last_progress_latency_ms=59000,
+                    elapsed_ms=30000,
+                    first_byte_latency_ms=22000,
+                    last_progress_latency_ms=29000,
                     completed=True,
                 ),
                 terminal=HttpTerminalResult(
@@ -649,6 +689,7 @@ def test_live_runner_accepts_structured_answer_recovered_from_reasoning() -> Non
 
     assert result.status == "completed"
     assert result.error is None
+    assert result.attempts[0].read_timeout_seconds == 90
     assert (
         result.raw_output
         == '{"task_result":{"owner":"Alice Wong"},"evidence":{"owner":["e1"]},"unknowns":{},"violations":[]}'
@@ -656,3 +697,74 @@ def test_live_runner_accepts_structured_answer_recovered_from_reasoning() -> Non
     assert result.completion is not None
     assert result.completion.reasoning_visible is True
     assert result.completion.finish_reason == "length"
+
+
+def test_live_runner_escalates_structured_extraction_tiers_only_after_explicit_failure_signals(
+) -> None:
+    client = ScriptedBlockingSequenceHttpClient(
+        [
+            (
+                {
+                    "choices": [
+                        {
+                            "finish_reason": "stop",
+                            "message": {
+                                "content": "",
+                                "reasoning_content": "need more room",
+                            },
+                        }
+                    ],
+                    "usage": {
+                        "prompt_tokens": 12,
+                        "completion_tokens": 8,
+                        "total_tokens": 20,
+                    },
+                },
+                1200,
+            ),
+            (
+                {
+                    "choices": [
+                        {
+                            "finish_reason": "stop",
+                            "message": {
+                                "content": "not json at all",
+                                "reasoning_content": "still missing structure",
+                            },
+                        }
+                    ],
+                    "usage": {
+                        "prompt_tokens": 12,
+                        "completion_tokens": 16,
+                        "total_tokens": 28,
+                    },
+                },
+                1600,
+            ),
+            (
+                successful_terminal(latency_ms=2200).payload,
+                2200,
+            ),
+        ]
+    )
+    runner = LiveRunner(
+        endpoint=build_endpoint(),
+        api_key="secret-key",
+        dialect=OpenAIChatDialectAdapter(),
+        http_client=client,
+        trace_dir=None,
+        runtime_policy=build_runtime_policy("accepted_but_ignored"),
+    )
+
+    result = runner.execute(build_prompt())
+
+    assert result.status == "completed"
+    assert [call["body"]["max_tokens"] for call in client.calls] == [96, 192, 3000]
+    assert [call["read_timeout_seconds"] for call in client.calls] == [90, 120, 120]
+    assert len(result.attempts) == 3
+    assert result.attempts[0].status == "invalid_response"
+    assert result.attempts[0].error_kind == "missing_answer_text"
+    assert result.attempts[1].status == "invalid_response"
+    assert result.attempts[1].error_kind == "invalid_structured_output"
+    assert result.attempts[2].status == "completed"
+    assert result.attempts[2].runtime_tier_index == 2

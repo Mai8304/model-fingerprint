@@ -384,7 +384,7 @@ class RunOrchestrator:
     ) -> RunArtifact:
         runtime_policy = resolve_runtime_policy(
             capability_probe_payload=capability_probe_payload,
-            supports_output_token_cap=endpoint.capabilities.supports_output_token_cap,
+            endpoint=endpoint,
         )
         run_date = date.today()
         trace_dir = (

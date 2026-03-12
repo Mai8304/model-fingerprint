@@ -222,13 +222,16 @@ def test_live_runner_preserves_messages_and_output_token_cap_field_exactly() -> 
                     }
                 }
             },
-            supports_output_token_cap=True,
+            endpoint=build_endpoint(
+                supports_json_object_response=True,
+                output_token_cap_field="max_completion_tokens",
+            ),
         ),
     )
 
     runner.execute(prompt)
 
-    assert client.calls[0]["body"]["max_completion_tokens"] == 3000
-    assert client.calls[0]["read_timeout_seconds"] == 120
+    assert client.calls[0]["body"]["max_completion_tokens"] == 96
+    assert client.calls[0]["read_timeout_seconds"] == 90
     assert client.calls[0]["body"]["messages"] == original_messages
     assert [message.model_dump(mode="json") for message in prompt.messages] == original_messages
