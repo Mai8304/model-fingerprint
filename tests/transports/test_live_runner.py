@@ -59,7 +59,10 @@ def build_prompt() -> PromptDefinition:
     )
 
 
-def build_endpoint() -> EndpointProfile:
+def build_endpoint(
+    *,
+    runtime_profile_id: str | None = None,
+) -> EndpointProfile:
     return EndpointProfile.model_validate(
         {
             "id": "siliconflow-openai-chat",
@@ -100,6 +103,7 @@ def build_endpoint() -> EndpointProfile:
                 "max_attempts": 3,
                 "retryable_statuses": [408, 429, 500, 502, 503, 504],
             },
+            "runtime_profile_id": runtime_profile_id,
         }
     )
 
@@ -697,6 +701,69 @@ def test_live_runner_accepts_structured_answer_recovered_from_reasoning() -> Non
     assert result.completion is not None
     assert result.completion.reasoning_visible is True
     assert result.completion.finish_reason == "length"
+
+
+def test_live_runner_applies_structured_request_overrides_from_runtime_profile() -> None:
+    client = ScriptedBlockingHttpClient(successful_terminal().payload, latency_ms=1800)
+    endpoint = build_endpoint(runtime_profile_id="structured_extraction_disable_thinking_v1")
+    runner = LiveRunner(
+        endpoint=endpoint,
+        api_key="secret-key",
+        dialect=OpenAIChatDialectAdapter(),
+        http_client=client,
+        trace_dir=None,
+        runtime_policy=build_runtime_policy("supported", endpoint=endpoint),
+    )
+
+    result = runner.execute(build_prompt())
+
+    assert result.status == "completed"
+    assert client.calls[0]["body"]["thinking"] == {"type": "disabled"}
+
+
+def test_live_runner_accepts_unfenced_reasoning_root_json_without_escalation() -> None:
+    payload = {
+        "choices": [
+            {
+                "finish_reason": "stop",
+                "message": {
+                    "content": None,
+                    "reasoning_content": (
+                        '{"task_result":{"owner":"Alice Wong","role":null},"evidence":{"owner":["e3"],'
+                        '"role":null},"unknowns":{"role":"not_mentioned"},"violations":[]}'
+                    ),
+                },
+            }
+        ],
+        "usage": {
+            "prompt_tokens": 12,
+            "completion_tokens": 118,
+            "total_tokens": 130,
+            "completion_tokens_details": {
+                "reasoning_tokens": 99,
+            },
+        },
+    }
+    client = ScriptedBlockingSequenceHttpClient([(payload, 3010)])
+    endpoint = build_endpoint(runtime_profile_id="reasoning_visible_structured_v1")
+    runner = LiveRunner(
+        endpoint=endpoint,
+        api_key="secret-key",
+        dialect=OpenAIChatDialectAdapter(),
+        http_client=client,
+        trace_dir=None,
+        runtime_policy=build_runtime_policy("supported", endpoint=endpoint),
+    )
+
+    result = runner.execute(build_prompt())
+
+    assert result.status == "completed"
+    assert [call["body"]["max_tokens"] for call in client.calls] == [1500]
+    assert len(result.attempts) == 1
+    assert result.raw_output == (
+        '{"task_result":{"owner":"Alice Wong","role":null},"evidence":{"owner":["e3"],'
+        '"role":null},"unknowns":{"role":"not_mentioned"},"violations":[]}'
+    )
 
 
 def test_live_runner_escalates_structured_extraction_tiers_only_after_explicit_failure_signals(

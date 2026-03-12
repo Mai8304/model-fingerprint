@@ -181,7 +181,7 @@ class LiveRunner:
                 self.endpoint,
                 self._api_key,
                 output_token_cap=output_token_cap,
-                body_overrides=None,
+                body_overrides=attempt_policy.request_body_overrides or None,
             )
             request_trace_path, response_trace_path = self._trace_paths(
                 prompt.id,

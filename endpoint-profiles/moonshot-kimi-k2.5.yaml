@@ -12,7 +12,7 @@ quirks:
   - omit_top_p
   - tools_require_thinking_disabled
   - vision_prefer_data_url
-runtime_profile_id: reasoning_openai_compatible_v1
+runtime_profile_id: structured_extraction_disable_thinking_v1
 capabilities:
   exposes_reasoning_text: true
   supports_json_object_response: false

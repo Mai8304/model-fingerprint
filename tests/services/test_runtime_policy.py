@@ -189,6 +189,46 @@ def test_resolve_runtime_policy_clamps_attempt_deadlines_and_output_caps() -> No
     assert all(attempt.output_token_cap is None for attempt in long_reasoning.attempts)
 
 
+def test_resolve_runtime_policy_applies_structured_thinking_disable_runtime_profile() -> None:
+    resolved = resolve_runtime_policy(
+        capability_probe_payload={
+            "results": {
+                "thinking": {
+                    "status": "supported",
+                }
+            }
+        },
+        endpoint=build_endpoint(runtime_profile_id="structured_extraction_disable_thinking_v1"),
+    )
+
+    structured = resolved.intent_policies[0]
+    assert structured.attempts[0].request_body_overrides == {"thinking": {"type": "disabled"}}
+    assert structured.attempts[1].request_body_overrides == {"thinking": {"type": "disabled"}}
+    assert structured.attempts[2].request_body_overrides == {}
+
+
+def test_resolve_runtime_policy_uses_reasoning_visible_structured_runtime_profile() -> None:
+    resolved = resolve_runtime_policy(
+        capability_probe_payload={
+            "results": {
+                "thinking": {
+                    "status": "supported",
+                }
+            }
+        },
+        endpoint=build_endpoint(
+            runtime_profile_id="reasoning_visible_structured_v1",
+            read_seconds=200,
+        ),
+    )
+
+    structured = resolved.intent_policies[0]
+    assert [attempt.output_token_cap for attempt in structured.attempts] == [1500, 3000]
+    assert [attempt.total_deadline_seconds for attempt in structured.attempts] == [120, 180]
+    assert all(attempt.use_prompt_output_token_cap is False for attempt in structured.attempts)
+    assert all(attempt.output_token_cap_multiplier is None for attempt in structured.attempts)
+
+
 def test_resolve_prompt_runtime_intent_prefers_prompt_contract_over_thinking_probe() -> None:
     structured_prompt = build_prompt()
     long_reasoning_prompt = build_prompt(

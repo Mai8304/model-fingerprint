@@ -173,17 +173,26 @@ def _recover_answer_from_reasoning(reasoning_text: str) -> str | None:
         match.group(1).strip() for match in FENCE_BLOCK_PATTERN.finditer(reasoning_text)
     ]
     for candidate in reversed(fenced_candidates):
-        recovered = _validated_json_object(candidate)
+        recovered = _recover_best_json_object(candidate)
         if recovered is not None:
             return recovered
 
     unfenced_reasoning, _ = strip_markdown_fence(reasoning_text)
-    return _extract_last_json_object(unfenced_reasoning)
+    return _recover_best_json_object(unfenced_reasoning)
 
 
-def _extract_last_json_object(text: str) -> str | None:
+def _recover_best_json_object(text: str) -> str | None:
+    stripped = text.strip()
+    recovered = _validated_json_object(stripped)
+    if recovered is not None:
+        return recovered
+    return _extract_largest_json_object(stripped)
+
+
+def _extract_largest_json_object(text: str) -> str | None:
     decoder = json.JSONDecoder()
-    last_object: str | None = None
+    largest_object: str | None = None
+    largest_size = -1
     for index, char in enumerate(text):
         if char != "{":
             continue
@@ -192,8 +201,11 @@ def _extract_last_json_object(text: str) -> str | None:
         except json.JSONDecodeError:
             continue
         if isinstance(payload, Mapping):
-            last_object = text[index : index + end_index].strip()
-    return last_object
+            candidate = text[index : index + end_index].strip()
+            if len(candidate) > largest_size:
+                largest_object = candidate
+                largest_size = len(candidate)
+    return largest_object
 
 
 def _validated_json_object(candidate: str) -> str | None:

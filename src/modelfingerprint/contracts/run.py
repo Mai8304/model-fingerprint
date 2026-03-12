@@ -96,6 +96,7 @@ class RuntimeAttemptPolicy(ContractModel):
     use_prompt_output_token_cap: bool = False
     output_token_cap: int | None = Field(default=None, ge=1)
     output_token_cap_multiplier: float | None = Field(default=None, gt=0.0)
+    request_body_overrides: dict[str, object] = Field(default_factory=dict)
     connect_timeout_seconds: int = Field(gt=0)
     write_timeout_seconds: int = Field(gt=0)
     first_byte_timeout_seconds: int = Field(gt=0)

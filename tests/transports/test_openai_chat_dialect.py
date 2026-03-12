@@ -232,6 +232,45 @@ def test_openai_chat_adapter_parses_reasoning_and_usage_fields() -> None:
     assert completion.usage.reasoning_tokens == 24
 
 
+def test_openai_chat_adapter_recovers_root_json_object_from_unfenced_reasoning() -> None:
+    adapter = OpenAIChatDialectAdapter()
+
+    completion = adapter.parse_response(
+        build_endpoint(),
+        {
+            "choices": [
+                {
+                    "finish_reason": "stop",
+                    "message": {
+                        "content": None,
+                        "reasoning_content": (
+                            '{'
+                            '"task_result":{"owner":"Alice Wong","role":null},'
+                            '"evidence":{"owner":["e3"],"role":null},'
+                            '"unknowns":{"role":"not_mentioned"},'
+                            '"violations":[]'
+                            '}'
+                        ),
+                    },
+                }
+            ],
+            "usage": {
+                "prompt_tokens": 12,
+                "completion_tokens": 18,
+                "total_tokens": 54,
+                "completion_tokens_details": {
+                    "reasoning_tokens": 24,
+                },
+            },
+        },
+    )
+
+    assert completion.answer_text == (
+        '{"task_result":{"owner":"Alice Wong","role":null},"evidence":{"owner":["e3"],"role":null},'
+        '"unknowns":{"role":"not_mentioned"},"violations":[]}'
+    )
+
+
 def test_openai_chat_adapter_adds_openrouter_headers_for_openrouter_base_url() -> None:
     adapter = OpenAIChatDialectAdapter()
     endpoint = EndpointProfile.model_validate(

@@ -29,6 +29,7 @@ class LiveSmokeBaseline:
     expected_request_body_subset: dict[str, object]
     forbidden_request_body_keys: tuple[str, ...]
     direct_latency_ms: int
+    expected_output_token_cap: int | None = None
 
 
 LIVE_SMOKE_BASELINES: dict[str, LiveSmokeBaseline] = {
@@ -50,6 +51,7 @@ LIVE_SMOKE_BASELINES: dict[str, LiveSmokeBaseline] = {
         },
         forbidden_request_body_keys=(),
         direct_latency_ms=3210,
+        expected_output_token_cap=1500,
     ),
     "moonshot-kimi-k2.5": LiveSmokeBaseline(
         endpoint_profile_id="moonshot-kimi-k2.5",
@@ -282,7 +284,12 @@ def test_run_suite_live_smoke_matches_direct_protocol_baseline(
     assert request_trace["headers"]["Authorization"] == "Bearer ***REDACTED***"
     _assert_mapping_contains_subset(request_trace["headers"], baseline.expected_request_headers)
     _assert_mapping_contains_subset(request_trace["body"], baseline.expected_request_body_subset)
-    assert request_trace["body"]["max_tokens"] == prompt.generation.max_output_tokens
+    expected_output_token_cap = (
+        prompt.generation.max_output_tokens
+        if baseline.expected_output_token_cap is None
+        else baseline.expected_output_token_cap
+    )
+    assert request_trace["body"]["max_tokens"] == expected_output_token_cap
     for forbidden_key in baseline.forbidden_request_body_keys:
         assert forbidden_key not in request_trace["body"]
 
