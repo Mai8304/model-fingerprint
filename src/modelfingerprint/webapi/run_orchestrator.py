@@ -10,7 +10,7 @@ from modelfingerprint.contracts.endpoint import EndpointProfile
 from modelfingerprint.contracts.profile import ProfileArtifact
 from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.contracts.run import RunArtifact
-from modelfingerprint.dialects.openai_chat import OpenAIChatDialectAdapter
+from modelfingerprint.dialects.base import build_protocol_family_adapter
 from modelfingerprint.services.capability_probe import probe_capabilities
 from modelfingerprint.services.comparison_artifact import build_comparison_artifact
 from modelfingerprint.services.endpoint_profiles import (
@@ -397,7 +397,7 @@ class RunOrchestrator:
             transport=LiveRunner(
                 endpoint=endpoint,
                 api_key=api_key,
-                dialect=OpenAIChatDialectAdapter(),
+                dialect=build_protocol_family_adapter(endpoint),
                 trace_dir=trace_dir,
                 runtime_policy=runtime_policy,
             ),

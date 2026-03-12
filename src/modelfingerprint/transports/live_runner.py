@@ -13,7 +13,11 @@ from modelfingerprint.contracts.run import (
     PromptRequestSnapshot,
     RuntimePolicySnapshot,
 )
-from modelfingerprint.dialects.base import DialectAdapter, HttpRequestSpec
+from modelfingerprint.dialects.base import (
+    DialectAdapter,
+    HttpRequestSpec,
+    build_protocol_family_adapter,
+)
 from modelfingerprint.services.feature_pipeline import (
     PromptExecutionResult,
     PromptExecutionStatus,
@@ -35,14 +39,14 @@ class LiveRunner:
         *,
         endpoint: EndpointProfile,
         api_key: str,
-        dialect: DialectAdapter,
+        dialect: DialectAdapter | None = None,
         http_client: HttpClient | None = None,
         trace_dir: Path | None = None,
         runtime_policy: RuntimePolicySnapshot | None = None,
     ) -> None:
         self.endpoint = endpoint
         self._api_key = api_key
-        self._dialect = dialect
+        self._dialect = dialect or build_protocol_family_adapter(endpoint)
         self._http_client = http_client or StandardHttpClient()
         self.trace_dir = trace_dir
         self._runtime_policy = runtime_policy

@@ -13,7 +13,7 @@ from modelfingerprint.contracts.endpoint import EndpointProfile
 from modelfingerprint.contracts.profile import ProfileArtifact
 from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.contracts.run import NormalizedCompletion, RunArtifact, UsageMetadata
-from modelfingerprint.dialects.openai_chat import OpenAIChatDialectAdapter
+from modelfingerprint.dialects.base import build_protocol_family_adapter
 from modelfingerprint.services.calibrator import Calibrator
 from modelfingerprint.services.capability_probe import probe_capabilities
 from modelfingerprint.services.comparator import compare_run
@@ -455,10 +455,11 @@ def _profile_capability_coverage(artifact: ProfileArtifact) -> float | None:
     return artifact.capability_profile.coverage_ratio
 
 
-def _build_dialect(endpoint: EndpointProfile) -> OpenAIChatDialectAdapter:
-    if endpoint.dialect == "openai_chat_v1":
-        return OpenAIChatDialectAdapter()
-    raise typer.BadParameter(f"unsupported dialect: {endpoint.dialect}")
+def _build_dialect(endpoint: EndpointProfile):
+    try:
+        return build_protocol_family_adapter(endpoint)
+    except ValueError as exc:
+        raise typer.BadParameter(str(exc)) from exc
 
 
 def _load_endpoint_api_key(endpoint: EndpointProfile) -> str:

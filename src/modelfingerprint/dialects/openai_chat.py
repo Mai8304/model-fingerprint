@@ -15,7 +15,7 @@ FENCE_BLOCK_PATTERN = re.compile(r"```[a-zA-Z0-9_-]*\n?(.*?)```", re.DOTALL)
 COMMON_REASONING_FIELDS = ("reasoning_content", "reasoning", "thinking")
 
 
-class OpenAIChatDialectAdapter:
+class OpenAICompatibleAdapter:
     def build_request(
         self,
         prompt: PromptDefinition,
@@ -228,3 +228,6 @@ def _openrouter_headers(base_url: str) -> dict[str, str]:
         "HTTP-Referer": "https://codex.local",
         "X-Title": "Codex Model Fingerprint",
     }
+
+
+OpenAIChatDialectAdapter = OpenAICompatibleAdapter
