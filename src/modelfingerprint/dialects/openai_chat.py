@@ -28,9 +28,11 @@ class OpenAIChatDialectAdapter:
         body: dict[str, object] = {
             "model": endpoint.model,
             "messages": [message.model_dump(mode="json") for message in prompt.messages],
-            "temperature": prompt.generation.temperature,
-            "top_p": prompt.generation.top_p,
         }
+        if endpoint.capabilities.supports_temperature:
+            body["temperature"] = prompt.generation.temperature
+        if endpoint.capabilities.supports_top_p:
+            body["top_p"] = prompt.generation.top_p
         if endpoint.request_mapping.static_body:
             _merge_mapping(body, endpoint.request_mapping.static_body)
         body[endpoint.request_mapping.output_token_cap_field] = (

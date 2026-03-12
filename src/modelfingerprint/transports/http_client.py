@@ -72,22 +72,11 @@ class StandardHttpClient:
         connect_timeout_seconds: int,
         read_timeout_seconds: int,
     ) -> tuple[dict[str, object], int]:
-        handle = self.start(
+        return _perform_request(
             request,
             connect_timeout_seconds=connect_timeout_seconds,
             read_timeout_seconds=read_timeout_seconds,
         )
-        terminal = handle.wait_until_terminal(
-            timeout_seconds=float(connect_timeout_seconds + read_timeout_seconds + 5),
-        )
-        if terminal is None:
-            handle.cancel()
-            raise HttpClientError(kind="timeout", message="request timed out")
-        if terminal.error is not None:
-            raise terminal.error
-        assert terminal.payload is not None
-        assert terminal.latency_ms is not None
-        return terminal.payload, terminal.latency_ms
 
     def start(
         self,
@@ -283,20 +272,39 @@ def _perform_request(
             status_code=response.status,
         )
 
+    payload = _decode_payload(
+        request=request,
+        response=response,
+        text=text,
+    )
+    return payload, latency_ms
+
+
+def _decode_payload(
+    *,
+    request: HttpRequestSpec,
+    response: Any,
+    text: str,
+) -> dict[str, object]:
     try:
         payload = json.loads(text)
-    except json.JSONDecodeError as exc:
-        raise HttpClientError(
-            kind="invalid_json",
-            message="response body is not valid JSON",
-        ) from exc
-    if not isinstance(payload, Mapping):
+    except json.JSONDecodeError:
+        payload = None
+    if isinstance(payload, Mapping):
+        return dict(payload)
+
+    if _should_decode_sse(request=request, response=response):
+        return _decode_sse_payload(text)
+
+    if payload is not None:
         raise HttpClientError(
             kind="invalid_json",
             message="response body must be a JSON object",
         )
-
-    return dict(payload), latency_ms
+    raise HttpClientError(
+        kind="invalid_json",
+        message="response body is not valid JSON",
+    )
 
 
 def _await_response_headers(
@@ -347,6 +355,7 @@ def _read_response_body(
 ) -> bytes:
     chunks: list[bytes] = []
     reader = getattr(response, "read1", None)
+    uses_buffered_reader = callable(reader)
     while True:
         _raise_if_cancelled(cancel_event)
         elapsed = monotonic() - start_time
@@ -354,7 +363,7 @@ def _read_response_body(
         if remaining <= 0:
             raise TimeoutError("request timed out")
         sock = connection.sock
-        if sock is not None:
+        if sock is not None and not uses_buffered_reader:
             try:
                 readable, _, _ = select.select([sock], [], [], min(remaining, 1.0))
             except OSError as exc:
@@ -363,9 +372,10 @@ def _read_response_body(
                 raise
             if not readable:
                 continue
+        if sock is not None:
             sock.settimeout(remaining)
         try:
-            chunk = reader(65536) if callable(reader) else response.read(65536)
+            chunk = reader(65536) if uses_buffered_reader else response.read(65536)
         except TimeoutError:
             if cancel_event is not None and cancel_event.is_set():
                 raise _RequestCancelled("request cancelled") from None
@@ -386,6 +396,144 @@ def _read_response_body(
             )
     return b"".join(chunks)
 
+
+def _should_decode_sse(*, request: HttpRequestSpec, response: Any) -> bool:
+    accept = str(request.headers.get("Accept", "")).lower()
+    if "text/event-stream" in accept:
+        return True
+    if request.body.get("stream") is True:
+        return True
+    content_type = _response_content_type(response).lower()
+    return "text/event-stream" in content_type
+
+
+def _response_content_type(response: Any) -> str:
+    getheader = getattr(response, "getheader", None)
+    if callable(getheader):
+        value = getheader("Content-Type")
+        if isinstance(value, str):
+            return value
+    headers = getattr(response, "headers", None)
+    if isinstance(headers, Mapping):
+        for key, value in headers.items():
+            if str(key).lower() == "content-type" and isinstance(value, str):
+                return value
+    return ""
+
+
+def _decode_sse_payload(text: str) -> dict[str, object]:
+    events = _parse_sse_events(text)
+    if not events:
+        raise HttpClientError(
+            kind="invalid_json",
+            message="response body is not valid JSON",
+        )
+
+    choices: dict[int, dict[str, object]] = {}
+    usage: dict[str, object] | None = None
+
+    for event in events:
+        usage_payload = event.get("usage")
+        if isinstance(usage_payload, Mapping):
+            usage = dict(usage_payload)
+
+        event_choices = event.get("choices")
+        if not isinstance(event_choices, list):
+            continue
+        for raw_choice in event_choices:
+            if not isinstance(raw_choice, Mapping):
+                continue
+            index = raw_choice.get("index", 0)
+            if not isinstance(index, int):
+                index = 0
+            choice_state = choices.setdefault(
+                index,
+                {
+                    "index": index,
+                    "finish_reason": None,
+                    "message": {},
+                },
+            )
+            _merge_choice_delta(choice_state, raw_choice)
+
+    if not choices and usage is None:
+        raise HttpClientError(
+            kind="invalid_json",
+            message="response body is not valid JSON",
+        )
+
+    payload: dict[str, object] = {
+        "choices": [choices[index] for index in sorted(choices)],
+    }
+    if usage is not None:
+        payload["usage"] = usage
+    return payload
+
+
+def _parse_sse_events(text: str) -> list[dict[str, object]]:
+    events: list[dict[str, object]] = []
+    data_lines: list[str] = []
+    for raw_line in text.splitlines():
+        line = raw_line.rstrip("\r")
+        if line == "":
+            _flush_sse_event(data_lines, events)
+            data_lines = []
+            continue
+        if line.startswith("data:"):
+            data_lines.append(line[5:].lstrip())
+    _flush_sse_event(data_lines, events)
+    return events
+
+
+def _flush_sse_event(
+    data_lines: list[str],
+    events: list[dict[str, object]],
+) -> None:
+    if not data_lines:
+        return
+    data = "\n".join(data_lines).strip()
+    if not data or data == "[DONE]":
+        return
+    try:
+        payload = json.loads(data)
+    except json.JSONDecodeError as exc:
+        raise HttpClientError(
+            kind="invalid_json",
+            message="response body is not valid JSON",
+        ) from exc
+    if not isinstance(payload, Mapping):
+        raise HttpClientError(
+            kind="invalid_json",
+            message="response body must be a JSON object",
+        )
+    events.append(dict(payload))
+
+
+def _merge_choice_delta(choice_state: dict[str, object], raw_choice: Mapping[str, object]) -> None:
+    if raw_choice.get("finish_reason") is not None:
+        choice_state["finish_reason"] = raw_choice.get("finish_reason")
+
+    message = choice_state.setdefault("message", {})
+    assert isinstance(message, dict)
+
+    raw_message = raw_choice.get("message")
+    if isinstance(raw_message, Mapping):
+        _merge_message_payload(message, raw_message)
+
+    delta = raw_choice.get("delta")
+    if isinstance(delta, Mapping):
+        _merge_message_payload(message, delta)
+
+
+def _merge_message_payload(message: dict[str, object], payload: Mapping[str, object]) -> None:
+    for key in ("content", "reasoning", "reasoning_content", "thinking"):
+        value = payload.get(key)
+        if isinstance(value, str) and value != "":
+            existing = message.get(key)
+            if isinstance(existing, str) and existing != "":
+                message[key] = existing + value
+            else:
+                message[key] = value
 
 def _raise_if_cancelled(cancel_event: threading.Event | None) -> None:
     if cancel_event is not None and cancel_event.is_set():

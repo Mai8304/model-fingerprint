@@ -39,8 +39,17 @@ def probe_capabilities(*, base_url: str, api_key: str, model: str) -> dict[str, 
     thinking = probe_thinking(base_url=base_url, api_key=api_key, model=model)
     tools = probe_tools(base_url=base_url, api_key=api_key, model=model)
     streaming = probe_streaming(base_url=base_url, api_key=api_key, model=model)
-    image = probe_image(base_url=base_url, api_key=api_key, model=model)
-    outcomes = [thinking, tools, streaming, image]
+    image_generation = probe_image_generation(
+        base_url=base_url,
+        api_key=api_key,
+        model=model,
+    )
+    vision_understanding = probe_vision_understanding(
+        base_url=base_url,
+        api_key=api_key,
+        model=model,
+    )
+    outcomes = [thinking, tools, streaming, image_generation, vision_understanding]
     coverage_ratio = sum(
         outcome.status != "insufficient_evidence" for outcome in outcomes
     ) / len(outcomes)
@@ -48,13 +57,14 @@ def probe_capabilities(*, base_url: str, api_key: str, model: str) -> dict[str, 
         "base_url": base_url,
         "model": model,
         "probe_mode": "minimal",
-        "probe_version": "v1",
+        "probe_version": "v2",
         "coverage_ratio": coverage_ratio,
         "results": {
             "tools": asdict(tools),
             "thinking": asdict(thinking),
             "streaming": asdict(streaming),
-            "image": asdict(image),
+            "image_generation": asdict(image_generation),
+            "vision_understanding": asdict(vision_understanding),
         },
     }
 
@@ -78,38 +88,54 @@ def probe_thinking(*, base_url: str, api_key: str, model: str) -> CapabilityProb
 
 
 def probe_tools(*, base_url: str, api_key: str, model: str) -> CapabilityProbeOutcome:
+    request_body = {
+        "model": model,
+        "messages": [
+            {
+                "role": "user",
+                "content": "调用 ping 工具，不要输出自然语言。",
+            }
+        ],
+        "max_tokens": 64,
+        "tools": [
+            {
+                "type": "function",
+                "function": {
+                    "name": "ping",
+                    "description": "Return pong.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": False,
+                    },
+                },
+            }
+        ],
+        "tool_choice": {
+            "type": "function",
+            "function": {"name": "ping"},
+        },
+    }
     response, failure = _post_json(
         url=_chat_completions_url(base_url),
         headers=_default_headers(base_url, api_key),
-        body={
-            "model": model,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": "调用 ping 工具，不要输出自然语言。",
-                }
-            ],
-            "max_tokens": 64,
-            "tools": [
-                {
-                    "type": "function",
-                    "function": {
-                        "name": "ping",
-                        "description": "Return pong.",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {},
-                            "additionalProperties": False,
-                        },
-                    },
-                }
-            ],
-            "tool_choice": {
-                "type": "function",
-                "function": {"name": "ping"},
-            },
-        },
+        body=request_body,
     )
+    if failure is not None and _should_retry_tools_with_thinking_disabled(failure):
+        retry_response, retry_failure = _post_json(
+            url=_chat_completions_url(base_url),
+            headers=_default_headers(base_url, api_key),
+            body={
+                **request_body,
+                "thinking": {"type": "disabled"},
+            },
+        )
+        if retry_failure is None:
+            assert retry_response is not None
+            payload = _json_payload(retry_response)
+            outcome = classify_tools_outcome(payload)
+            return _with_probe_path(_with_transport(outcome, retry_response), "thinking_disabled_retry")
+        failure = retry_failure
     if failure is not None:
         return _with_capability(failure, "tools")
     assert response is not None
@@ -140,7 +166,39 @@ def probe_streaming(*, base_url: str, api_key: str, model: str) -> CapabilityPro
     return _with_transport(outcome, response)
 
 
-def probe_image(*, base_url: str, api_key: str, model: str) -> CapabilityProbeOutcome:
+def probe_image_generation(
+    *,
+    base_url: str,
+    api_key: str,
+    model: str,
+) -> CapabilityProbeOutcome:
+    if _should_probe_image_generation_via_chat_completions(base_url=base_url):
+        response, failure = _post_json(
+            url=_chat_completions_url(base_url),
+            headers=_default_headers(base_url, api_key),
+            body={
+                "model": model,
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Generate a 256x256 image of a red square.",
+                            }
+                        ],
+                    }
+                ],
+                "modalities": ["image", "text"],
+            },
+        )
+        if failure is not None:
+            return _with_capability(failure, "image_generation")
+        assert response is not None
+        payload = _json_payload(response)
+        outcome = classify_image_generation_outcome(payload)
+        return _with_transport(outcome, response)
+
     response, failure = _post_json(
         url=_images_generations_url(base_url),
         headers=_default_headers(base_url, api_key),
@@ -152,10 +210,77 @@ def probe_image(*, base_url: str, api_key: str, model: str) -> CapabilityProbeOu
         },
     )
     if failure is not None:
-        return _with_capability(failure, "image")
+        return _with_capability(failure, "image_generation")
     assert response is not None
     payload = _json_payload(response)
-    outcome = classify_image_outcome(payload)
+    outcome = classify_image_generation_outcome(payload)
+    return _with_transport(outcome, response)
+
+
+def probe_vision_understanding(
+    *,
+    base_url: str,
+    api_key: str,
+    model: str,
+) -> CapabilityProbeOutcome:
+    primary = _probe_vision_understanding_once(
+        base_url=base_url,
+        api_key=api_key,
+        model=model,
+        image_url=_red_square_remote_url(),
+        max_tokens=64,
+    )
+    if primary.status == "supported":
+        return _with_probe_path(primary, "remote_image_primary")
+    if not _should_retry_vision_understanding(primary):
+        return primary
+
+    fallback = _probe_vision_understanding_once(
+        base_url=base_url,
+        api_key=api_key,
+        model=model,
+        image_url=_red_square_data_url(),
+        max_tokens=256,
+    )
+    if fallback.status != "supported":
+        return primary
+
+    return _with_probe_path(fallback, "data_url_retry")
+
+
+def _probe_vision_understanding_once(
+    *,
+    base_url: str,
+    api_key: str,
+    model: str,
+    image_url: str,
+    max_tokens: int,
+) -> CapabilityProbeOutcome:
+    response, failure = _post_json(
+        url=_chat_completions_url(base_url),
+        headers=_default_headers(base_url, api_key),
+        body={
+            "model": model,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "图里是什么颜色的方块？只回答颜色。"},
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": image_url},
+                        },
+                    ],
+                }
+            ],
+            "max_tokens": max_tokens,
+        },
+    )
+    if failure is not None:
+        return _with_capability(failure, "vision_understanding")
+    assert response is not None
+    payload = _json_payload(response)
+    outcome = classify_vision_understanding_outcome(payload)
     return _with_transport(outcome, response)
 
 
@@ -247,7 +372,25 @@ def classify_streaming_outcome(
     )
 
 
-def classify_image_outcome(payload: dict[str, object]) -> CapabilityProbeOutcome:
+def classify_image_generation_outcome(payload: dict[str, object]) -> CapabilityProbeOutcome:
+    choice = _first_choice(payload)
+    message = choice.get("message", {}) if isinstance(choice, dict) else {}
+    if isinstance(message, dict):
+        images = message.get("images")
+        if isinstance(images, list) and images and isinstance(images[0], dict):
+            first_image = images[0]
+            for key in ("image_url", "imageUrl"):
+                nested = first_image.get(key)
+                if isinstance(nested, dict):
+                    value = nested.get("url")
+                    if isinstance(value, str) and value != "":
+                        return CapabilityProbeOutcome(
+                            capability="image_generation",
+                            status="supported",
+                            detail=f"response returned image asset in choices.0.message.images.0.{key}.url",
+                            evidence={"asset_field": f"choices.0.message.images.0.{key}.url"},
+                        )
+
     data = payload.get("data")
     if isinstance(data, list) and data:
         first = data[0]
@@ -256,15 +399,34 @@ def classify_image_outcome(payload: dict[str, object]) -> CapabilityProbeOutcome
                 value = first.get(key)
                 if isinstance(value, str) and value != "":
                     return CapabilityProbeOutcome(
-                        capability="image",
+                        capability="image_generation",
                         status="supported",
                         detail=f"response returned image asset in {key}",
                         evidence={"asset_field": key},
                     )
     return CapabilityProbeOutcome(
-        capability="image",
+        capability="image_generation",
         status="accepted_but_ignored",
         detail="request succeeded but no image asset field was returned",
+    )
+
+
+def classify_vision_understanding_outcome(payload: dict[str, object]) -> CapabilityProbeOutcome:
+    choice = _first_choice(payload)
+    message = choice.get("message", {}) if isinstance(choice, dict) else {}
+    answer_text = _message_text_content(message if isinstance(message, dict) else {})
+    normalized_answer = _normalize_vision_answer(answer_text)
+    if normalized_answer is not None:
+        return CapabilityProbeOutcome(
+            capability="vision_understanding",
+            status="supported",
+            detail=f"recognized grounded answer: {normalized_answer}",
+            evidence={"normalized_answer": normalized_answer},
+        )
+    return CapabilityProbeOutcome(
+        capability="vision_understanding",
+        status="accepted_but_ignored",
+        detail="request succeeded but no recognized grounded answer was returned",
     )
 
 
@@ -293,6 +455,22 @@ def _with_capability(
         status=outcome.status,
         detail=outcome.detail,
         evidence=outcome.evidence,
+        http_status=outcome.http_status,
+        latency_ms=outcome.latency_ms,
+    )
+
+
+def _with_probe_path(
+    outcome: CapabilityProbeOutcome,
+    probe_path: str,
+) -> CapabilityProbeOutcome:
+    evidence = dict(outcome.evidence)
+    evidence["probe_path"] = probe_path
+    return CapabilityProbeOutcome(
+        capability=outcome.capability,
+        status=outcome.status,
+        detail=outcome.detail,
+        evidence=evidence,
         http_status=outcome.http_status,
         latency_ms=outcome.latency_ms,
     )
@@ -333,7 +511,7 @@ def _post_json(
             latency_ms=elapsed,
             detail=body_text,
         )
-    except (urllib.error.URLError, TimeoutError) as exc:
+    except (urllib.error.URLError, TimeoutError, OSError) as exc:
         elapsed = int((time.time() - started) * 1000)
         return None, CapabilityProbeOutcome(
             capability="transport",
@@ -394,6 +572,10 @@ def _images_generations_url(base_url: str) -> str:
     return f"{base_url.rstrip('/')}/images/generations"
 
 
+def _should_probe_image_generation_via_chat_completions(*, base_url: str) -> bool:
+    return "openrouter.ai" in base_url
+
+
 def _first_choice(payload: dict[str, object]) -> dict[str, object]:
     choices = payload.get("choices")
     if isinstance(choices, list) and choices and isinstance(choices[0], dict):
@@ -410,3 +592,55 @@ def _reasoning_tokens(payload: dict[str, object]) -> int:
         return 0
     value = details.get("reasoning_tokens")
     return value if isinstance(value, int) else 0
+
+
+def _message_text_content(message: dict[str, object]) -> str:
+    content = message.get("content")
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts: list[str] = []
+        for item in content:
+            if isinstance(item, str):
+                parts.append(item)
+                continue
+            if not isinstance(item, dict):
+                continue
+            text_value = item.get("text")
+            if isinstance(text_value, str):
+                parts.append(text_value)
+        return "".join(parts)
+    return ""
+
+
+def _normalize_vision_answer(answer_text: str) -> str | None:
+    normalized = "".join(ch for ch in answer_text.strip().lower() if ch.isalnum())
+    if normalized == "":
+        return None
+    if normalized in {"red", "红", "红色", "redsquare", "红色方块", "红方块"}:
+        return "red"
+    return None
+
+
+def _should_retry_vision_understanding(outcome: CapabilityProbeOutcome) -> bool:
+    if outcome.status == "accepted_but_ignored":
+        return True
+    return outcome.status == "unsupported" and outcome.http_status == 400
+
+
+def _red_square_data_url() -> str:
+    return (
+        "data:image/png;base64,"
+        "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAS0lEQVR42u3PQQkAAAgAsetfWiP4FgYrsKZeS0BAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEDgsqnc8OJg6Ln3AAAAAElFTkSuQmCC"
+    )
+
+
+def _red_square_remote_url() -> str:
+    return "https://dummyimage.com/64x64/ff0000/ff0000.png"
+
+
+def _should_retry_tools_with_thinking_disabled(outcome: CapabilityProbeOutcome) -> bool:
+    if outcome.status != "unsupported":
+        return False
+    detail = (outcome.detail or "").lower()
+    return "tool_choice" in detail and "thinking enabled" in detail

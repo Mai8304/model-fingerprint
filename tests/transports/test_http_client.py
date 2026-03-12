@@ -96,6 +96,21 @@ class SelectGatedStreamingResponse:
         return self._chunks.pop(0)
 
 
+class SelectGatedResponse:
+    def __init__(self, chunks: list[bytes], readable: threading.Event) -> None:
+        self.status = 200
+        self.reason = "OK"
+        self._chunks = list(chunks)
+        self._readable = readable
+
+    def read(self, amt: int | None = None) -> bytes:
+        if not self._readable.is_set():
+            raise AssertionError("read() should not be called before the socket is readable")
+        if not self._chunks:
+            return b""
+        return self._chunks.pop(0)
+
+
 class BrokenStreamingResponse:
     status = 200
     reason = "OK"
@@ -162,6 +177,21 @@ def build_request() -> HttpRequestSpec:
     )
 
 
+def build_stream_request() -> HttpRequestSpec:
+    return HttpRequestSpec(
+        url="https://example.test/v1/chat/completions",
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "text/event-stream",
+        },
+        body={
+            "model": "opaque",
+            "messages": [{"role": "user", "content": "ok"}],
+            "stream": True,
+        },
+    )
+
+
 def wait_until(predicate, *, timeout_seconds: float = 1.0) -> None:
     deadline = time.monotonic() + timeout_seconds
     while time.monotonic() < deadline:
@@ -205,6 +235,29 @@ def test_standard_http_client_enforces_total_read_window(monkeypatch: pytest.Mon
         )
 
     assert exc_info.value.kind == "timeout"
+
+
+def test_standard_http_client_send_uses_blocking_request_path(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "modelfingerprint.transports.http_client._perform_request",
+        lambda request, **kwargs: ({"ok": True}, 1234),
+    )
+
+    def fail_start(*args, **kwargs):
+        raise AssertionError("send() must not delegate to start()")
+
+    monkeypatch.setattr(StandardHttpClient, "start", fail_start)
+
+    payload, latency_ms = StandardHttpClient().send(
+        build_request(),
+        connect_timeout_seconds=5,
+        read_timeout_seconds=30,
+    )
+
+    assert payload == {"ok": True}
+    assert latency_ms == 1234
 
 
 def test_standard_http_client_reads_json_within_total_window(
@@ -310,7 +363,7 @@ def test_standard_http_client_waits_for_body_readability_within_total_window(
 ) -> None:
     clock = {"now": 0.0}
     readable = threading.Event()
-    response = SelectGatedStreamingResponse(
+    response = SelectGatedResponse(
         chunks=[b'{"ok":', b"true}"],
         readable=readable,
     )
@@ -349,6 +402,48 @@ def test_standard_http_client_waits_for_body_readability_within_total_window(
     assert latency_ms == 6000
     assert select_calls == [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
     assert connection.sock.timeouts == [30.0, 29.0, 26.0, 25.0]
+
+
+def test_standard_http_client_reads_buffered_read1_body_without_socket_readability(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    clock = {"now": 0.0}
+    response = FakeStreamingResponse(
+        chunks=[b'{"ok":', b"true}"],
+        clock=clock,
+    )
+    connection = FakeConnection(response)
+    select_calls: list[float] = []
+
+    monkeypatch.setattr(
+        "modelfingerprint.transports.http_client._build_connection",
+        lambda scheme, host, port, connect_timeout_seconds: connection,
+    )
+    monkeypatch.setattr(
+        "modelfingerprint.transports.http_client.monotonic",
+        lambda: clock["now"],
+    )
+
+    readiness = [True]
+
+    def fake_select(read, write, error, timeout):
+        select_calls.append(timeout)
+        clock["now"] += timeout
+        ready = readiness.pop(0) if readiness else False
+        return ([connection.sock], [], []) if ready else ([], [], [])
+
+    monkeypatch.setattr("modelfingerprint.transports.http_client.select.select", fake_select)
+
+    payload, latency_ms = StandardHttpClient().send(
+        build_request(),
+        connect_timeout_seconds=5,
+        read_timeout_seconds=30,
+    )
+
+    assert payload == {"ok": True}
+    assert latency_ms == 23000
+    assert select_calls == [1.0]
+    assert connection.sock.timeouts == [30.0, 29.0, 18.0, 7.0]
 
 
 def test_start_exposes_progress_before_terminal_payload(
@@ -503,6 +598,60 @@ def test_standard_http_client_treats_timed_out_object_reads_as_idle_waits(
     assert terminal is not None
     assert terminal.error is None
     assert terminal.payload == {"ok": True}
+
+
+def test_start_parses_sse_stream_into_terminal_payload(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    clock = {"now": 0.0}
+    response = FakeStreamingResponse(
+        chunks=[
+            (
+                b'data: {"choices":[{"index":0,"delta":{"content":"ok "}}]}\n\n'
+                b'data: {"choices":[{"index":0,"delta":{"content":"done"},"finish_reason":"stop"}],'
+                b'"usage":{"prompt_tokens":1,"completion_tokens":2,"total_tokens":3}}\n\n'
+                b"data: [DONE]\n\n"
+            ),
+        ],
+        clock=clock,
+    )
+    connection = FakeConnection(response)
+    monkeypatch.setattr(
+        "modelfingerprint.transports.http_client._build_connection",
+        lambda scheme, host, port, connect_timeout_seconds: connection,
+    )
+    monkeypatch.setattr(
+        "modelfingerprint.transports.http_client.monotonic",
+        lambda: clock["now"],
+    )
+    patch_select_ready(monkeypatch)
+
+    handle = StandardHttpClient().start(
+        build_stream_request(),
+        connect_timeout_seconds=5,
+        read_timeout_seconds=30,
+    )
+    terminal = handle.wait_until_terminal(timeout_seconds=1.0)
+
+    assert terminal is not None
+    assert terminal.error is None
+    assert terminal.payload == {
+        "choices": [
+            {
+                "finish_reason": "stop",
+                "index": 0,
+                "message": {
+                    "content": "ok done",
+                },
+            }
+        ],
+        "usage": {
+            "completion_tokens": 2,
+            "prompt_tokens": 1,
+            "total_tokens": 3,
+        },
+    }
+    assert terminal.latency_ms == 11000
 
 
 def test_start_surfaces_unexpected_transport_runtime_errors(
