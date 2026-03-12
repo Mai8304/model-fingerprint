@@ -196,6 +196,14 @@ class ScriptedBlockingHttpClient:
         return self._payload, self._latency_ms
 
 
+class TimeoutFailingHttpClient:
+    def send(self, request, *, connect_timeout_seconds: int, read_timeout_seconds: int):
+        raise HttpClientError(
+            kind="first_byte_timeout",
+            message="response did not arrive before the first byte deadline",
+        )
+
+
 class StreamingOpenAIChatDialectAdapter(OpenAIChatDialectAdapter):
     def build_request(self, *args, **kwargs) -> HttpRequestSpec:
         request = super().build_request(*args, **kwargs)
@@ -305,6 +313,24 @@ def test_live_runner_uses_blocking_send_for_non_streaming_runtime_policy_request
     assert result.attempts[0].completed is True
     assert (trace_dir / "p021.request.json").exists()
     assert (trace_dir / "p021.response.json").exists()
+
+
+def test_live_runner_treats_transport_timeout_kinds_as_timeout_status(
+    tmp_path: Path,
+) -> None:
+    runner = LiveRunner(
+        endpoint=build_endpoint(),
+        api_key="secret-key",
+        dialect=OpenAIChatDialectAdapter(),
+        http_client=TimeoutFailingHttpClient(),
+        trace_dir=tmp_path / "traces" / "run-timeout-kind",
+    )
+
+    result = runner.execute(build_prompt())
+
+    assert result.status == "timeout"
+    assert result.error is not None
+    assert result.error.kind == "first_byte_timeout"
 
 
 def test_live_runner_switches_to_progress_polling_without_resending_prompt(

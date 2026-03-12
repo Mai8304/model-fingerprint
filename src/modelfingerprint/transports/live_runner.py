@@ -93,9 +93,7 @@ class LiveRunner:
             if transport_error is not None:
                 return PromptExecutionResult(
                     prompt=prompt,
-                    status="timeout"
-                    if transport_error.kind == "timeout"
-                    else "transport_error",
+                    status="timeout" if _is_timeout_error_kind(transport_error.kind) else "transport_error",
                     request_snapshot=request_snapshot,
                     error=transport_error,
                 )
@@ -650,11 +648,21 @@ def _should_retry_runtime_result(
 
 
 def _transport_error_status(error: PromptExecutionError) -> PromptExecutionStatus:
-    if error.kind == "timeout":
+    if _is_timeout_error_kind(error.kind):
         return "timeout"
     if error.kind == "invalid_json":
         return "invalid_response"
     return "transport_error"
+
+
+def _is_timeout_error_kind(kind: str) -> bool:
+    return kind in {
+        "timeout",
+        "connect_timeout",
+        "first_byte_timeout",
+        "idle_timeout",
+        "total_deadline_exceeded",
+    }
 
 
 def _abort_reason_message(abort_reason: str | None) -> str:

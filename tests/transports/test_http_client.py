@@ -1,172 +1,103 @@
 from __future__ import annotations
 
+import asyncio
 import threading
 import time
+from dataclasses import dataclass
 
+import httpx
 import pytest
 
 from modelfingerprint.dialects.base import HttpRequestSpec
 from modelfingerprint.transports.http_client import HttpClientError, StandardHttpClient
 
 
-class FakeSocket:
-    def __init__(self) -> None:
-        self.timeouts: list[float] = []
-
-    def settimeout(self, value: float) -> None:
-        self.timeouts.append(value)
-
-
-class FakeResponse:
-    def __init__(self, chunks: list[bytes], clock: dict[str, float]) -> None:
-        self.status = 200
-        self.reason = "OK"
-        self._chunks = list(chunks)
-        self._clock = clock
-
-    def read(self, amt: int | None = None) -> bytes:
-        if not self._chunks:
-            return b""
-        self._clock["now"] += 11.0
-        return self._chunks.pop(0)
+@dataclass(frozen=True)
+class ChunkEvent:
+    delay_seconds: float
+    data: bytes | None = None
+    error: Exception | None = None
 
 
-class FakeStreamingResponse(FakeResponse):
-    def read(self, amt: int | None = None) -> bytes:
-        raise AssertionError("read() should not be used when read1() is available")
-
-    def read1(self, amt: int | None = None) -> bytes:
-        if not self._chunks:
-            return b""
-        self._clock["now"] += 11.0
-        return self._chunks.pop(0)
-
-
-class ControlledStreamingResponse:
+class FakeAsyncResponse:
     def __init__(
         self,
-        chunks: list[bytes],
-        release_events: list[threading.Event],
+        events: list[ChunkEvent],
         *,
-        closed_event: threading.Event,
+        status_code: int = 200,
+        headers: dict[str, str] | None = None,
+        reason_phrase: str = "OK",
     ) -> None:
-        self.status = 200
-        self.reason = "OK"
-        self._chunks = list(chunks)
-        self._release_events = list(release_events)
-        self._closed_event = closed_event
+        self.status_code = status_code
+        self.reason_phrase = reason_phrase
+        self.headers = headers or {"Content-Type": "application/json"}
+        self._events = list(events)
+        self.closed = False
 
-    def read1(self, amt: int | None = None) -> bytes:
-        if self._closed_event.is_set():
-            raise OSError("connection closed")
-        if not self._chunks:
-            return b""
-        event = self._release_events[0]
-        if not event.wait(0.01):
-            raise TimeoutError("waiting for response bytes")
-        self._release_events.pop(0)
-        return self._chunks.pop(0)
+    async def aiter_bytes(self):
+        for event in self._events:
+            await asyncio.sleep(event.delay_seconds)
+            if event.error is not None:
+                raise event.error
+            if event.data is not None:
+                yield event.data
 
-
-class TimedOutObjectResponse(ControlledStreamingResponse):
-    def read1(self, amt: int | None = None) -> bytes:
-        if self._closed_event.is_set():
-            raise OSError("connection closed")
-        if not self._chunks:
-            return b""
-        event = self._release_events[0]
-        if not event.wait(0.01):
-            raise OSError("cannot read from timed out object")
-        self._release_events.pop(0)
-        return self._chunks.pop(0)
+    async def aclose(self) -> None:
+        self.closed = True
 
 
-class SelectGatedStreamingResponse:
-    def __init__(self, chunks: list[bytes], readable: threading.Event) -> None:
-        self.status = 200
-        self.reason = "OK"
-        self._chunks = list(chunks)
-        self._readable = readable
-
-    def read1(self, amt: int | None = None) -> bytes:
-        if not self._readable.is_set():
-            raise AssertionError("read1() should not be called before the socket is readable")
-        if not self._chunks:
-            return b""
-        return self._chunks.pop(0)
-
-
-class SelectGatedResponse:
-    def __init__(self, chunks: list[bytes], readable: threading.Event) -> None:
-        self.status = 200
-        self.reason = "OK"
-        self._chunks = list(chunks)
-        self._readable = readable
-
-    def read(self, amt: int | None = None) -> bytes:
-        if not self._readable.is_set():
-            raise AssertionError("read() should not be called before the socket is readable")
-        if not self._chunks:
-            return b""
-        return self._chunks.pop(0)
-
-
-class BrokenStreamingResponse:
-    status = 200
-    reason = "OK"
-
-    def read1(self, amt: int | None = None) -> bytes:
-        raise ValueError("broken response stream")
-
-
-class FakeConnection:
-    def __init__(self, response: object) -> None:
-        self.sock = FakeSocket()
+class FakeStreamContext:
+    def __init__(
+        self,
+        response: FakeAsyncResponse | None,
+        *,
+        enter_delay_seconds: float = 0.0,
+        enter_error: Exception | None = None,
+    ) -> None:
         self._response = response
+        self._enter_delay_seconds = enter_delay_seconds
+        self._enter_error = enter_error
 
-    def connect(self) -> None:
-        return None
-
-    def request(self, method: str, path: str, body: bytes, headers: dict[str, str]) -> None:
-        return None
-
-    def getresponse(self) -> object:
+    async def __aenter__(self) -> FakeAsyncResponse:
+        await asyncio.sleep(self._enter_delay_seconds)
+        if self._enter_error is not None:
+            raise self._enter_error
+        assert self._response is not None
         return self._response
 
-    def close(self) -> None:
-        return None
+    async def __aexit__(self, exc_type, exc, tb) -> bool:
+        if self._response is not None:
+            await self._response.aclose()
+        return False
 
 
-class ClosableFakeConnection(FakeConnection):
-    def __init__(self, response: object, closed_event: threading.Event) -> None:
-        super().__init__(response)
-        self._closed_event = closed_event
+class FakeAsyncClient:
+    def __init__(self, stream_context: FakeStreamContext, **kwargs) -> None:
+        self.stream_context = stream_context
+        self.kwargs = kwargs
+        self.stream_calls: list[dict[str, object]] = []
+        self.closed = False
 
-    def close(self) -> None:
-        self._closed_event.set()
-
-
-class ControlledHeaderConnection(FakeConnection):
-    def __init__(
+    def stream(
         self,
-        response: object,
+        method: str,
+        url: str,
         *,
-        header_ready: threading.Event,
-        closed_event: threading.Event,
-    ) -> None:
-        super().__init__(response)
-        self._header_ready = header_ready
-        self._closed_event = closed_event
+        headers: dict[str, str],
+        json: dict[str, object],
+    ) -> FakeStreamContext:
+        self.stream_calls.append(
+            {
+                "method": method,
+                "url": url,
+                "headers": dict(headers),
+                "json": dict(json),
+            }
+        )
+        return self.stream_context
 
-    def getresponse(self) -> object:
-        while True:
-            if self._closed_event.is_set():
-                raise OSError("connection closed")
-            if self._header_ready.wait(0.01):
-                return self._response
-
-    def close(self) -> None:
-        self._closed_event.set()
+    async def aclose(self) -> None:
+        self.closed = True
 
 
 def build_request() -> HttpRequestSpec:
@@ -201,273 +132,176 @@ def wait_until(predicate, *, timeout_seconds: float = 1.0) -> None:
     raise AssertionError("timed out waiting for condition")
 
 
-def patch_select_ready(monkeypatch: pytest.MonkeyPatch) -> None:
+def patch_async_client(
+    monkeypatch: pytest.MonkeyPatch,
+    stream_context: FakeStreamContext,
+) -> list[FakeAsyncClient]:
+    created: list[FakeAsyncClient] = []
+
+    def fake_async_client(**kwargs) -> FakeAsyncClient:
+        instance = FakeAsyncClient(stream_context, **kwargs)
+        created.append(instance)
+        return instance
+
     monkeypatch.setattr(
-        "modelfingerprint.transports.http_client.select.select",
-        lambda read, write, error, timeout: (read, [], []),
+        "modelfingerprint.transports.http_client.httpx.AsyncClient",
+        fake_async_client,
     )
+    return created
 
 
-def test_standard_http_client_enforces_total_read_window(monkeypatch: pytest.MonkeyPatch) -> None:
-    clock = {"now": 0.0}
-    response = FakeResponse(
-        chunks=[b"{", b'"ok":', b"true}"],
-        clock=clock,
+def test_standard_http_client_send_posts_json_through_httpx(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    created = patch_async_client(
+        monkeypatch,
+        FakeStreamContext(
+            FakeAsyncResponse([ChunkEvent(delay_seconds=0.0, data=b'{"ok":true}')]),
+        ),
     )
-    connection = FakeConnection(response)
-    monkeypatch.setattr(
-        "modelfingerprint.transports.http_client._build_connection",
-        lambda scheme, host, port, connect_timeout_seconds: connection,
-    )
-    monkeypatch.setattr(
-        "modelfingerprint.transports.http_client.monotonic",
-        lambda: clock["now"],
-    )
-    patch_select_ready(monkeypatch)
 
-    client = StandardHttpClient()
+    payload, latency_ms = StandardHttpClient().send(
+        build_request(),
+        connect_timeout_seconds=5,
+        read_timeout_seconds=30,
+    )
+
+    assert payload == {"ok": True}
+    assert latency_ms >= 0
+    assert len(created) == 1
+    assert created[0].stream_calls == [
+        {
+            "method": "POST",
+            "url": "https://example.test/v1/chat/completions",
+            "headers": {"Content-Type": "application/json"},
+            "json": {"model": "opaque", "messages": [{"role": "user", "content": "ok"}]},
+        }
+    ]
+    timeout = created[0].kwargs["timeout"]
+    assert isinstance(timeout, httpx.Timeout)
+    assert timeout.connect == 5
+    assert timeout.read is None
+
+
+def test_standard_http_client_send_classifies_connect_timeout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    patch_async_client(
+        monkeypatch,
+        FakeStreamContext(
+            None,
+            enter_error=httpx.ConnectTimeout("connect timed out"),
+        ),
+    )
 
     with pytest.raises(HttpClientError) as exc_info:
-        client.send(
+        StandardHttpClient().send(
             build_request(),
             connect_timeout_seconds=5,
             read_timeout_seconds=30,
         )
 
-    assert exc_info.value.kind == "timeout"
+    assert exc_info.value.kind == "connect_timeout"
 
 
-def test_standard_http_client_send_uses_blocking_request_path(
+def test_standard_http_client_send_classifies_first_byte_timeout(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(
-        "modelfingerprint.transports.http_client._perform_request",
-        lambda request, **kwargs: ({"ok": True}, 1234),
+    patch_async_client(
+        monkeypatch,
+        FakeStreamContext(
+            FakeAsyncResponse([ChunkEvent(delay_seconds=0.1, data=b'{"ok":true}')]),
+        ),
     )
 
-    def fail_start(*args, **kwargs):
-        raise AssertionError("send() must not delegate to start()")
+    with pytest.raises(HttpClientError) as exc_info:
+        StandardHttpClient(
+            first_byte_timeout_seconds=0.01,
+            idle_timeout_seconds=0.5,
+        ).send(
+            build_request(),
+            connect_timeout_seconds=5,
+            read_timeout_seconds=1,
+        )
 
-    monkeypatch.setattr(StandardHttpClient, "start", fail_start)
-
-    payload, latency_ms = StandardHttpClient().send(
-        build_request(),
-        connect_timeout_seconds=5,
-        read_timeout_seconds=30,
-    )
-
-    assert payload == {"ok": True}
-    assert latency_ms == 1234
+    assert exc_info.value.kind == "first_byte_timeout"
 
 
-def test_standard_http_client_reads_json_within_total_window(
+def test_standard_http_client_send_classifies_idle_timeout(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    clock = {"now": 0.0}
-    response = FakeResponse(
-        chunks=[b'{"ok":', b"true}"],
-        clock=clock,
-    )
-    connection = FakeConnection(response)
-    monkeypatch.setattr(
-        "modelfingerprint.transports.http_client._build_connection",
-        lambda scheme, host, port, connect_timeout_seconds: connection,
-    )
-    monkeypatch.setattr(
-        "modelfingerprint.transports.http_client.monotonic",
-        lambda: clock["now"],
-    )
-    patch_select_ready(monkeypatch)
-
-    payload, latency_ms = StandardHttpClient().send(
-        build_request(),
-        connect_timeout_seconds=5,
-        read_timeout_seconds=30,
+    patch_async_client(
+        monkeypatch,
+        FakeStreamContext(
+            FakeAsyncResponse(
+                [
+                    ChunkEvent(delay_seconds=0.0, data=b'{"ok":'),
+                    ChunkEvent(delay_seconds=0.1, data=b"true}"),
+                ]
+            ),
+        ),
     )
 
-    assert payload == {"ok": True}
-    assert latency_ms == 22000
-    assert connection.sock.timeouts
+    with pytest.raises(HttpClientError) as exc_info:
+        StandardHttpClient(
+            first_byte_timeout_seconds=0.5,
+            idle_timeout_seconds=0.01,
+        ).send(
+            build_request(),
+            connect_timeout_seconds=5,
+            read_timeout_seconds=1,
+        )
+
+    assert exc_info.value.kind == "idle_timeout"
 
 
-def test_standard_http_client_prefers_read1_when_available(
+def test_standard_http_client_send_classifies_total_deadline_exceeded(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    clock = {"now": 0.0}
-    response = FakeStreamingResponse(
-        chunks=[b'{"ok":', b"true}"],
-        clock=clock,
-    )
-    connection = FakeConnection(response)
-    monkeypatch.setattr(
-        "modelfingerprint.transports.http_client._build_connection",
-        lambda scheme, host, port, connect_timeout_seconds: connection,
-    )
-    monkeypatch.setattr(
-        "modelfingerprint.transports.http_client.monotonic",
-        lambda: clock["now"],
-    )
-    patch_select_ready(monkeypatch)
-
-    payload, latency_ms = StandardHttpClient().send(
-        build_request(),
-        connect_timeout_seconds=5,
-        read_timeout_seconds=30,
+    patch_async_client(
+        monkeypatch,
+        FakeStreamContext(
+            FakeAsyncResponse(
+                [
+                    ChunkEvent(delay_seconds=0.0, data=b'{"ok":'),
+                    ChunkEvent(delay_seconds=0.1, data=b"true}"),
+                ]
+            ),
+        ),
     )
 
-    assert payload == {"ok": True}
-    assert latency_ms == 22000
+    with pytest.raises(HttpClientError) as exc_info:
+        StandardHttpClient(
+            first_byte_timeout_seconds=0.5,
+            idle_timeout_seconds=0.5,
+        ).send(
+            build_request(),
+            connect_timeout_seconds=5,
+            read_timeout_seconds=0.05,
+        )
 
-
-def test_standard_http_client_waits_for_response_headers_within_total_window(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    clock = {"now": 0.0}
-    response = FakeResponse(
-        chunks=[b'{"ok":true}'],
-        clock=clock,
-    )
-    connection = FakeConnection(response)
-    select_calls: list[float] = []
-    monkeypatch.setattr(
-        "modelfingerprint.transports.http_client._build_connection",
-        lambda scheme, host, port, connect_timeout_seconds: connection,
-    )
-    monkeypatch.setattr(
-        "modelfingerprint.transports.http_client.monotonic",
-        lambda: clock["now"],
-    )
-    readiness = [False, False, False, True, True, True]
-
-    def fake_select(read, write, error, timeout):
-        select_calls.append(timeout)
-        clock["now"] += timeout
-        return ([connection.sock], [], []) if readiness.pop(0) else ([], [], [])
-
-    monkeypatch.setattr("modelfingerprint.transports.http_client.select.select", fake_select)
-
-    payload, latency_ms = StandardHttpClient().send(
-        build_request(),
-        connect_timeout_seconds=5,
-        read_timeout_seconds=30,
-    )
-
-    assert payload == {"ok": True}
-    assert latency_ms == 17000
-    assert select_calls == [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-    assert connection.sock.timeouts == [27.0, 26.0, 14.0]
-
-
-def test_standard_http_client_waits_for_body_readability_within_total_window(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    clock = {"now": 0.0}
-    readable = threading.Event()
-    response = SelectGatedResponse(
-        chunks=[b'{"ok":', b"true}"],
-        readable=readable,
-    )
-    connection = FakeConnection(response)
-    select_calls: list[float] = []
-
-    monkeypatch.setattr(
-        "modelfingerprint.transports.http_client._build_connection",
-        lambda scheme, host, port, connect_timeout_seconds: connection,
-    )
-    monkeypatch.setattr(
-        "modelfingerprint.transports.http_client.monotonic",
-        lambda: clock["now"],
-    )
-
-    readiness = [True, True, False, False, True, True]
-
-    def fake_select(read, write, error, timeout):
-        select_calls.append(timeout)
-        clock["now"] += timeout
-        ready = readiness.pop(0)
-        if ready:
-            readable.set()
-            return ([connection.sock], [], [])
-        return ([], [], [])
-
-    monkeypatch.setattr("modelfingerprint.transports.http_client.select.select", fake_select)
-
-    payload, latency_ms = StandardHttpClient().send(
-        build_request(),
-        connect_timeout_seconds=5,
-        read_timeout_seconds=30,
-    )
-
-    assert payload == {"ok": True}
-    assert latency_ms == 6000
-    assert select_calls == [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-    assert connection.sock.timeouts == [30.0, 29.0, 26.0, 25.0]
-
-
-def test_standard_http_client_reads_buffered_read1_body_without_socket_readability(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    clock = {"now": 0.0}
-    response = FakeStreamingResponse(
-        chunks=[b'{"ok":', b"true}"],
-        clock=clock,
-    )
-    connection = FakeConnection(response)
-    select_calls: list[float] = []
-
-    monkeypatch.setattr(
-        "modelfingerprint.transports.http_client._build_connection",
-        lambda scheme, host, port, connect_timeout_seconds: connection,
-    )
-    monkeypatch.setattr(
-        "modelfingerprint.transports.http_client.monotonic",
-        lambda: clock["now"],
-    )
-
-    readiness = [True]
-
-    def fake_select(read, write, error, timeout):
-        select_calls.append(timeout)
-        clock["now"] += timeout
-        ready = readiness.pop(0) if readiness else False
-        return ([connection.sock], [], []) if ready else ([], [], [])
-
-    monkeypatch.setattr("modelfingerprint.transports.http_client.select.select", fake_select)
-
-    payload, latency_ms = StandardHttpClient().send(
-        build_request(),
-        connect_timeout_seconds=5,
-        read_timeout_seconds=30,
-    )
-
-    assert payload == {"ok": True}
-    assert latency_ms == 23000
-    assert select_calls == [1.0]
-    assert connection.sock.timeouts == [30.0, 29.0, 18.0, 7.0]
+    assert exc_info.value.kind == "total_deadline_exceeded"
 
 
 def test_start_exposes_progress_before_terminal_payload(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    closed_event = threading.Event()
-    release_one = threading.Event()
-    release_two = threading.Event()
-    response = ControlledStreamingResponse(
-        chunks=[b'{"ok":', b"true}"],
-        release_events=[release_one, release_two],
-        closed_event=closed_event,
+    patch_async_client(
+        monkeypatch,
+        FakeStreamContext(
+            FakeAsyncResponse(
+                [
+                    ChunkEvent(delay_seconds=0.01, data=b'{"ok":'),
+                    ChunkEvent(delay_seconds=0.2, data=b"true}"),
+                ]
+            ),
+        ),
     )
-    connection = ClosableFakeConnection(response, closed_event)
-    monkeypatch.setattr(
-        "modelfingerprint.transports.http_client._build_connection",
-        lambda scheme, host, port, connect_timeout_seconds: connection,
-    )
-    patch_select_ready(monkeypatch)
 
     handle = StandardHttpClient().start(
         build_request(),
         connect_timeout_seconds=5,
-        read_timeout_seconds=30,
+        read_timeout_seconds=1,
     )
 
     initial = handle.snapshot()
@@ -475,126 +309,13 @@ def test_start_exposes_progress_before_terminal_payload(
     assert initial.has_any_data is False
     assert initial.completed is False
 
-    release_one.set()
     wait_until(lambda: handle.snapshot().bytes_received > 0)
-
     partial = handle.snapshot()
     assert partial.has_any_data is True
     assert partial.first_byte_latency_ms is not None
     assert partial.completed is False
 
-    release_two.set()
     terminal = handle.wait_until_terminal(timeout_seconds=1.0)
-
-    assert terminal is not None
-    assert terminal.error is None
-    assert terminal.payload == {"ok": True}
-    assert terminal.latency_ms is not None
-
-    final = handle.snapshot()
-    assert final.completed is True
-    assert final.bytes_received >= len(b'{"ok":true}')
-
-
-def test_start_cancellation_settles_request(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    closed_event = threading.Event()
-    release_one = threading.Event()
-    response = ControlledStreamingResponse(
-        chunks=[b'{"ok":'],
-        release_events=[release_one],
-        closed_event=closed_event,
-    )
-    connection = ClosableFakeConnection(response, closed_event)
-    monkeypatch.setattr(
-        "modelfingerprint.transports.http_client._build_connection",
-        lambda scheme, host, port, connect_timeout_seconds: connection,
-    )
-    patch_select_ready(monkeypatch)
-
-    handle = StandardHttpClient().start(
-        build_request(),
-        connect_timeout_seconds=5,
-        read_timeout_seconds=30,
-    )
-
-    wait_until(lambda: handle.snapshot().elapsed_ms > 0)
-    handle.cancel()
-    terminal = handle.wait_until_terminal(timeout_seconds=1.0)
-
-    assert terminal is not None
-    assert terminal.payload is None
-    assert terminal.error is not None
-    assert terminal.error.kind == "cancelled"
-
-
-def test_start_cancellation_settles_request_while_waiting_for_headers(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    clock = {"now": 0.0}
-    connection = FakeConnection(response={})
-    monkeypatch.setattr(
-        "modelfingerprint.transports.http_client._build_connection",
-        lambda scheme, host, port, connect_timeout_seconds: connection,
-    )
-    monkeypatch.setattr(
-        "modelfingerprint.transports.http_client.monotonic",
-        lambda: clock["now"],
-    )
-
-    def fake_select(read, write, error, timeout):
-        clock["now"] += timeout
-        time.sleep(0.01)
-        return ([], [], [])
-
-    monkeypatch.setattr("modelfingerprint.transports.http_client.select.select", fake_select)
-
-    handle = StandardHttpClient().start(
-        build_request(),
-        connect_timeout_seconds=5,
-        read_timeout_seconds=30,
-    )
-
-    wait_until(lambda: handle.snapshot().elapsed_ms > 0)
-    handle.cancel()
-    terminal = handle.wait_until_terminal(timeout_seconds=1.0)
-
-    assert terminal is not None
-    assert terminal.payload is None
-    assert terminal.error is not None
-    assert terminal.error.kind == "cancelled"
-
-
-def test_standard_http_client_treats_timed_out_object_reads_as_idle_waits(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    closed_event = threading.Event()
-    release_one = threading.Event()
-    release_two = threading.Event()
-    response = TimedOutObjectResponse(
-        chunks=[b'{"ok":', b"true}"],
-        release_events=[release_one, release_two],
-        closed_event=closed_event,
-    )
-    connection = ClosableFakeConnection(response, closed_event)
-    monkeypatch.setattr(
-        "modelfingerprint.transports.http_client._build_connection",
-        lambda scheme, host, port, connect_timeout_seconds: connection,
-    )
-    patch_select_ready(monkeypatch)
-
-    handle = StandardHttpClient().start(
-        build_request(),
-        connect_timeout_seconds=5,
-        read_timeout_seconds=30,
-    )
-
-    release_one.set()
-    wait_until(lambda: handle.snapshot().bytes_received > 0)
-    release_two.set()
-    terminal = handle.wait_until_terminal(timeout_seconds=1.0)
-
     assert terminal is not None
     assert terminal.error is None
     assert terminal.payload == {"ok": True}
@@ -603,33 +324,30 @@ def test_standard_http_client_treats_timed_out_object_reads_as_idle_waits(
 def test_start_parses_sse_stream_into_terminal_payload(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    clock = {"now": 0.0}
-    response = FakeStreamingResponse(
-        chunks=[
-            (
-                b'data: {"choices":[{"index":0,"delta":{"content":"ok "}}]}\n\n'
-                b'data: {"choices":[{"index":0,"delta":{"content":"done"},"finish_reason":"stop"}],'
-                b'"usage":{"prompt_tokens":1,"completion_tokens":2,"total_tokens":3}}\n\n'
-                b"data: [DONE]\n\n"
+    patch_async_client(
+        monkeypatch,
+        FakeStreamContext(
+            FakeAsyncResponse(
+                [
+                    ChunkEvent(
+                        delay_seconds=0.0,
+                        data=(
+                            b'data: {"choices":[{"index":0,"delta":{"content":"ok "}}]}\n\n'
+                            b'data: {"choices":[{"index":0,"delta":{"content":"done"},"finish_reason":"stop"}],'
+                            b'"usage":{"prompt_tokens":1,"completion_tokens":2,"total_tokens":3}}\n\n'
+                            b"data: [DONE]\n\n"
+                        ),
+                    ),
+                ],
+                headers={"Content-Type": "text/event-stream"},
             ),
-        ],
-        clock=clock,
+        ),
     )
-    connection = FakeConnection(response)
-    monkeypatch.setattr(
-        "modelfingerprint.transports.http_client._build_connection",
-        lambda scheme, host, port, connect_timeout_seconds: connection,
-    )
-    monkeypatch.setattr(
-        "modelfingerprint.transports.http_client.monotonic",
-        lambda: clock["now"],
-    )
-    patch_select_ready(monkeypatch)
 
     handle = StandardHttpClient().start(
         build_stream_request(),
         connect_timeout_seconds=5,
-        read_timeout_seconds=30,
+        read_timeout_seconds=1,
     )
     terminal = handle.wait_until_terminal(timeout_seconds=1.0)
 
@@ -640,9 +358,7 @@ def test_start_parses_sse_stream_into_terminal_payload(
             {
                 "finish_reason": "stop",
                 "index": 0,
-                "message": {
-                    "content": "ok done",
-                },
+                "message": {"content": "ok done"},
             }
         ],
         "usage": {
@@ -651,28 +367,29 @@ def test_start_parses_sse_stream_into_terminal_payload(
             "total_tokens": 3,
         },
     }
-    assert terminal.latency_ms == 11000
 
 
-def test_start_surfaces_unexpected_transport_runtime_errors(
+def test_start_cancellation_settles_request(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    connection = FakeConnection(BrokenStreamingResponse())
-    monkeypatch.setattr(
-        "modelfingerprint.transports.http_client._build_connection",
-        lambda scheme, host, port, connect_timeout_seconds: connection,
+    patch_async_client(
+        monkeypatch,
+        FakeStreamContext(
+            FakeAsyncResponse([ChunkEvent(delay_seconds=0.2, data=b'{"ok":true}')]),
+        ),
     )
-    patch_select_ready(monkeypatch)
 
     handle = StandardHttpClient().start(
         build_request(),
         connect_timeout_seconds=5,
-        read_timeout_seconds=30,
+        read_timeout_seconds=1,
     )
+
+    wait_until(lambda: handle.snapshot().elapsed_ms > 0)
+    handle.cancel()
     terminal = handle.wait_until_terminal(timeout_seconds=1.0)
 
     assert terminal is not None
     assert terminal.payload is None
     assert terminal.error is not None
-    assert terminal.error.kind == "transport_runtime_error"
-    assert terminal.error.message == "broken response stream"
+    assert terminal.error.kind == "cancelled"
