@@ -302,6 +302,25 @@ def test_openai_chat_adapter_omits_unsupported_sampling_fields() -> None:
     assert request.body["model"] == "kimi-k2.5"
 
 
+def test_openai_chat_adapter_applies_quirks_to_omit_sampling_fields() -> None:
+    adapter = OpenAIChatDialectAdapter()
+    endpoint = EndpointProfile.model_validate(
+        {
+            **build_endpoint().model_dump(mode="json"),
+            "provider_id": "moonshot",
+            "base_url": "https://api.moonshot.ai/v1",
+            "model": "kimi-k2.5",
+            "quirks": ["omit_temperature", "omit_top_p"],
+        }
+    )
+
+    request = adapter.build_request(build_prompt(), endpoint, api_key="test-key")
+
+    assert "temperature" not in request.body
+    assert "top_p" not in request.body
+    assert request.body["max_tokens"] == 96
+
+
 def test_openai_chat_adapter_recovers_answer_from_reasoning_when_content_is_null() -> None:
     adapter = OpenAIChatDialectAdapter()
     endpoint = EndpointProfile.model_validate(

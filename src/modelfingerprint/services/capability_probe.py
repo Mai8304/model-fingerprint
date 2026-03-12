@@ -7,6 +7,11 @@ import urllib.request
 from dataclasses import asdict, dataclass, field
 from typing import Literal, cast
 
+from modelfingerprint.dialects.quirks import (
+    build_tools_probe_retry,
+    resolve_probe_quirks,
+    vision_probe_attempts,
+)
 from modelfingerprint.http_defaults import DEFAULT_BROWSER_USER_AGENT
 
 ProbeStatus = Literal[
@@ -88,6 +93,7 @@ def probe_thinking(*, base_url: str, api_key: str, model: str) -> CapabilityProb
 
 
 def probe_tools(*, base_url: str, api_key: str, model: str) -> CapabilityProbeOutcome:
+    quirk_ids = resolve_probe_quirks(base_url=base_url, model=model)
     request_body = {
         "model": model,
         "messages": [
@@ -121,20 +127,27 @@ def probe_tools(*, base_url: str, api_key: str, model: str) -> CapabilityProbeOu
         headers=_default_headers(base_url, api_key),
         body=request_body,
     )
-    if failure is not None and _should_retry_tools_with_thinking_disabled(failure):
+    retry_plan = (
+        None
+        if failure is None
+        else build_tools_probe_retry(
+            request_body=request_body,
+            failure_status=failure.status,
+            failure_detail=failure.detail,
+            quirk_ids=quirk_ids,
+        )
+    )
+    if retry_plan is not None:
         retry_response, retry_failure = _post_json(
             url=_chat_completions_url(base_url),
             headers=_default_headers(base_url, api_key),
-            body={
-                **request_body,
-                "thinking": {"type": "disabled"},
-            },
+            body=retry_plan.body,
         )
         if retry_failure is None:
             assert retry_response is not None
             payload = _json_payload(retry_response)
             outcome = classify_tools_outcome(payload)
-            return _with_probe_path(_with_transport(outcome, retry_response), "thinking_disabled_retry")
+            return _with_probe_path(_with_transport(outcome, retry_response), retry_plan.probe_path)
         failure = retry_failure
     if failure is not None:
         return _with_capability(failure, "tools")
@@ -223,29 +236,21 @@ def probe_vision_understanding(
     api_key: str,
     model: str,
 ) -> CapabilityProbeOutcome:
-    primary = _probe_vision_understanding_once(
-        base_url=base_url,
-        api_key=api_key,
-        model=model,
-        image_url=_red_square_remote_url(),
-        max_tokens=64,
-    )
-    if primary.status == "supported":
-        return _with_probe_path(primary, "remote_image_primary")
-    if not _should_retry_vision_understanding(primary):
-        return primary
-
-    fallback = _probe_vision_understanding_once(
-        base_url=base_url,
-        api_key=api_key,
-        model=model,
-        image_url=_red_square_data_url(),
-        max_tokens=256,
-    )
-    if fallback.status != "supported":
-        return primary
-
-    return _with_probe_path(fallback, "data_url_retry")
+    attempts = vision_probe_attempts(quirk_ids=resolve_probe_quirks(base_url=base_url, model=model))
+    last_outcome: CapabilityProbeOutcome | None = None
+    for attempt in attempts:
+        outcome = _probe_vision_understanding_once(
+            base_url=base_url,
+            api_key=api_key,
+            model=model,
+            image_url=attempt.image_url,
+            max_tokens=attempt.max_tokens,
+        )
+        if outcome.status == "supported":
+            return _with_probe_path(outcome, attempt.probe_path)
+        last_outcome = outcome
+    assert last_outcome is not None
+    return last_outcome
 
 
 def _probe_vision_understanding_once(
@@ -621,26 +626,3 @@ def _normalize_vision_answer(answer_text: str) -> str | None:
         return "red"
     return None
 
-
-def _should_retry_vision_understanding(outcome: CapabilityProbeOutcome) -> bool:
-    if outcome.status == "accepted_but_ignored":
-        return True
-    return outcome.status == "unsupported" and outcome.http_status == 400
-
-
-def _red_square_data_url() -> str:
-    return (
-        "data:image/png;base64,"
-        "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAS0lEQVR42u3PQQkAAAgAsetfWiP4FgYrsKZeS0BAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEDgsqnc8OJg6Ln3AAAAAElFTkSuQmCC"
-    )
-
-
-def _red_square_remote_url() -> str:
-    return "https://dummyimage.com/64x64/ff0000/ff0000.png"
-
-
-def _should_retry_tools_with_thinking_disabled(outcome: CapabilityProbeOutcome) -> bool:
-    if outcome.status != "unsupported":
-        return False
-    detail = (outcome.detail or "").lower()
-    return "tool_choice" in detail and "thinking enabled" in detail

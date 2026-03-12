@@ -314,6 +314,44 @@ def test_probe_tools_retries_with_thinking_disabled_when_tool_choice_conflicts(
     assert outcome.evidence.get("probe_path") == "thinking_disabled_retry"
 
 
+def test_probe_tools_does_not_retry_conflict_without_quirk(
+    monkeypatch,
+) -> None:
+    calls: list[dict[str, object]] = []
+
+    def fake_post_json(
+        *,
+        url: str,
+        headers: dict[str, str],
+        body: dict[str, object],
+        timeout_seconds: int = 90,
+    ):
+        calls.append(body)
+        return (
+            None,
+            _failure_outcome(
+                status_code=400,
+                latency_ms=12,
+                detail=(
+                    '{"error":{"message":"tool_choice \\"specified\\" is incompatible '
+                    'with thinking enabled"}}'
+                ),
+            ),
+        )
+
+    monkeypatch.setattr("modelfingerprint.services.capability_probe._post_json", fake_post_json)
+
+    outcome = probe_tools(
+        base_url="https://api.example.com/v1",
+        api_key="secret",
+        model="example-model",
+    )
+
+    assert outcome.status == "unsupported"
+    assert len(calls) == 1
+    assert "thinking" not in calls[0]
+
+
 def test_probe_streaming_adds_only_stream_delta(monkeypatch) -> None:
     captured: dict[str, Any] = {}
 
@@ -523,9 +561,9 @@ def test_probe_vision_understanding_retries_with_data_url_when_remote_image_is_i
     monkeypatch.setattr("modelfingerprint.services.capability_probe._post_json", fake_post_json)
 
     outcome = probe_vision_understanding(
-        base_url="https://openrouter.ai/api/v1",
+        base_url="https://api.moonshot.ai/v1",
         api_key="secret",
-        model="example-vision-model",
+        model="kimi-k2.5",
     )
 
     assert outcome.status == "supported"
@@ -536,6 +574,42 @@ def test_probe_vision_understanding_retries_with_data_url_when_remote_image_is_i
     assert calls[1]["max_tokens"] == 256
     assert first_message["content"][1]["image_url"]["url"].startswith("https://")
     assert second_message["content"][1]["image_url"]["url"].startswith("data:image/png;base64,")
+    assert outcome.evidence.get("probe_path") == "data_url_retry"
+
+
+def test_probe_vision_understanding_does_not_retry_without_quirk_when_remote_image_is_ignored(
+    monkeypatch,
+) -> None:
+    calls: list[dict[str, object]] = []
+
+    def fake_post_json(
+        *,
+        url: str,
+        headers: dict[str, str],
+        body: dict[str, object],
+        timeout_seconds: int = 90,
+    ):
+        calls.append(body)
+        return (
+            HttpProbeResponse(
+                status_code=200,
+                headers={"content-type": "application/json"},
+                body=b'{"choices":[{"finish_reason":"length","message":{"content":null}}]}',
+                latency_ms=12,
+            ),
+            None,
+        )
+
+    monkeypatch.setattr("modelfingerprint.services.capability_probe._post_json", fake_post_json)
+
+    outcome = probe_vision_understanding(
+        base_url="https://api.example.com/v1",
+        api_key="secret",
+        model="example-vision-model",
+    )
+
+    assert outcome.status == "accepted_but_ignored"
+    assert len(calls) == 1
 
 
 def test_probe_vision_understanding_uses_remote_image_result_when_data_url_gateway_path_would_fail(

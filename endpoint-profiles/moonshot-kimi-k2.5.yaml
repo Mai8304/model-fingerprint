@@ -1,10 +1,18 @@
 id: moonshot-kimi-k2.5
 dialect: openai_chat_v1
+protocol_family: openai_compatible
+provider_id: moonshot
 base_url: https://api.moonshot.ai/v1
 model: kimi-k2.5
 auth:
   kind: bearer_env
   env_var: MODEL_FINGERPRINT_API_KEY
+quirks:
+  - omit_temperature
+  - omit_top_p
+  - tools_require_thinking_disabled
+  - vision_prefer_data_url
+runtime_profile_id: reasoning_openai_compatible_v1
 capabilities:
   exposes_reasoning_text: true
   supports_json_object_response: false
