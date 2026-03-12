@@ -76,9 +76,20 @@ class RetryPolicy(ContractModel):
     retryable_statuses: list[int] = Field(default_factory=list)
 
 
+ProtocolFamily = Literal[
+    "openai_compatible",
+    "anthropic_messages",
+    "gemini_generate_content",
+]
+
+
 class EndpointProfile(ContractModel):
     id: str = Field(min_length=1)
     dialect: str = Field(min_length=1)
+    protocol_family: ProtocolFamily = "openai_compatible"
+    provider_id: str | None = Field(default=None, min_length=1)
+    quirks: list[str] = Field(default_factory=list)
+    runtime_profile_id: str | None = Field(default=None, min_length=1)
     base_url: HttpUrl
     model: str = Field(min_length=1)
     auth: EndpointAuth

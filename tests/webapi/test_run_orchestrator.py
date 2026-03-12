@@ -224,6 +224,10 @@ def test_orchestrator_falls_back_to_ad_hoc_endpoint_when_profile_is_unknown(
     assert record.result_state == "formal_result"
     assert record.failure is None
     assert endpoint.id.startswith("adhoc-openai-chat-v1:")
+    assert endpoint.protocol_family == "openai_compatible"
+    assert endpoint.provider_id is None
+    assert endpoint.quirks == []
+    assert endpoint.runtime_profile_id is None
     assert str(endpoint.base_url) == "https://api.example.com/v1"
     assert endpoint.model == "gpt-4o-mini"
     assert endpoint.capabilities.supports_json_object_response is True
