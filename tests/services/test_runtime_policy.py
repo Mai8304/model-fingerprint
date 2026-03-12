@@ -12,6 +12,9 @@ from modelfingerprint.services.runtime_policy import (
 
 def test_resolve_runtime_policy_uses_thinking_monitoring_schedule_only_for_supported_probe(
 ) -> None:
+    assert THINKING_NO_DATA_CHECKPOINTS_SECONDS == [60, 90]
+    assert NON_THINKING_NO_DATA_CHECKPOINTS_SECONDS == [60]
+
     supported = resolve_runtime_policy(
         capability_probe_payload={
             "results": {
