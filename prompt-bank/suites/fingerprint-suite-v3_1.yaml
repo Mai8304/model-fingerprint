@@ -1,0 +1,4 @@
+id: fingerprint-suite-v31
+name: fingerprint suite v3.1
+description: v3.1 suite with p021 and p025 replaced by tighter boundary and threshold prompts
+prompt_ids: [p026, p022, p023, p024, p027]

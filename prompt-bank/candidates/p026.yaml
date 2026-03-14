@@ -1,0 +1,51 @@
+id: p026
+name: boundary_sensitive_evidence_grounding_v31
+family: evidence_grounding
+intent: 用 owner、approver、acting coverage、traffic location 混杂的证据块测试 grounded extraction 与边界克制
+messages:
+  - role: system
+    content: |
+      只返回 JSON 对象，不要输出 markdown，不要附加解释。未知字段不要猜，放进 unknowns。
+  - role: user
+    content: |
+      只根据下列证据判断当前 owner、role、region、change_window。
+
+      [e1] February draft sheet listed Marco Ruiz as weekend coordinator and a Sunday fallback window.
+      [e2] Final CAB approval names Elena Park as the rollout owner for the approved Atlas migration.
+      [e3] Elena Park is the current Principal SRE for Atlas Payments.
+      [e4] Priya Singh approved Elena's plan; approver is not the rollout owner.
+      [e5] Elena covered the EU rotation last week, but that note does not define her home region.
+      [e6] Atlas failover traffic is served from Singapore during drills; infra location does not identify the owner's region.
+      [e7] Marco takes over only if Elena is offline during rollback.
+      [e8] The approved execution window is 2026-04-06 01:30 UTC.
+
+      返回 JSON，对象字段必须且只能包含：
+      - task_result: {owner, role, region, change_window}
+      - evidence: {owner, role, region, change_window}
+      - unknowns: {field_name: reason_code}
+      - violations
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 360
+  response_format: text
+  reasoning_mode: capture_if_available
+output_contract:
+  id: tolerant_json_v3
+  canonicalizer: tolerant_json_v3
+extractors:
+  answer: evidence_grounding_v3
+  score: evidence_grounding_score_v3
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+evaluation:
+  reference:
+    expected_task_result:
+      owner: Elena Park
+      role: Principal SRE
+      region: null
+      change_window: 2026-04-06 01:30 UTC
+required_capabilities: [chat_completions]
+weight_hint: 0.97
+tags: [v3_1, grounding, evidence, boundary]
+risk_level: low

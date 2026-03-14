@@ -1,0 +1,4 @@
+id: quick-check-v31
+name: quick check v3.1
+description: quick-check subset for the v3.1 fingerprint suite
+prompt_ids: [p026, p023, p024]

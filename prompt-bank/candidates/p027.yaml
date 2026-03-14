@@ -1,0 +1,60 @@
+id: p027
+name: short_merge_threshold_alignment_v31
+family: representation_alignment
+intent: 用更短的近似等价、缩写歧义和代号干扰测试语义归并阈值与 rejected 处理能力
+messages:
+  - role: system
+    content: |
+      只返回 JSON 对象，不要输出 markdown，不要附加解释。不能唯一归一的 mention 必须保留为 ambiguous。
+  - role: user
+    content: |
+      根据下面说明做实体归一，并剔除无效项。
+
+      - OpenWhale Control Plane、OW Control 指向同一个实体 openwhale_control
+      - Atlas East DB、atlas-db-east 指向同一个实体 atlas_db_east
+      - OW 可能表示 OpenWhale，也可能表示 Ops Watch，不能强行归一
+      - Atlas 可能表示 Atlas 产品族，也可能表示 Atlas East DB，不能强行归一
+      - Mercury 可能表示历史服务，也可能表示迁移代号，不能强行归一
+      - Project Mercury 是迁移代号，不是服务实体
+      - mercury-cutover 是迁移步骤标签，不是实体
+      - The word control in "hand control to night shift" is not an entity
+      - staging-note is a note id, not an entity
+
+      返回结果时：
+      - 不能唯一归一的 mention 必须放进 ambiguous_mentions
+      - 明确不是实体或不该参与归一的项必须放进 rejected_items
+
+      返回 JSON，对象字段必须且只能包含：
+      - task_result: {canonical_entities, alias_map, ambiguous_mentions, rejected_items}
+      - evidence: {}
+      - unknowns: {mention: reason_code}
+      - violations
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 380
+  response_format: text
+  reasoning_mode: capture_if_available
+output_contract:
+  id: tolerant_json_v3
+  canonicalizer: tolerant_json_v3
+extractors:
+  answer: representation_alignment_v3
+  score: representation_alignment_score_v3
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+evaluation:
+  reference:
+    expected_task_result:
+      canonical_entities: [openwhale_control, atlas_db_east]
+      alias_map:
+        OpenWhale Control Plane: openwhale_control
+        OW Control: openwhale_control
+        Atlas East DB: atlas_db_east
+        atlas-db-east: atlas_db_east
+      ambiguous_mentions: [OW, Atlas]
+      rejected_items: [Mercury, Project Mercury, mercury-cutover, control, staging-note]
+required_capabilities: [chat_completions]
+weight_hint: 0.96
+tags: [v3_1, alignment, ambiguity, threshold]
+risk_level: low

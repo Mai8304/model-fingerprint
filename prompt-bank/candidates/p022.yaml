@@ -1,19 +1,19 @@
 id: p022
-name: high_density_context_retrieval
+name: boundary_sensitive_context_retrieval_v31
 family: context_retrieval
-intent: 用当前有效实体、已撤销实体、近似字符串和段落定位混合的长上下文测试检索与排除干扰项
+intent: 用当前有效实体、团队标签、区域 shard、项目代号和历史条目混合的边界案例测试检索、排除和段落定位
 messages:
   - role: system
     content: |
       只返回 JSON 对象，不要输出 markdown，不要附加解释。
   - role: user
     content: |
-      阅读下面四段文本，找出当前有效的 alpha、beta、gamma、zephyr，并按首次出现顺序返回。被撤销、仅历史出现、被否定或只是干扰项的名字不能放进 found_entities。
+      阅读下面四段文本，找出当前有效的四个实体，并按首次被确认有效的顺序返回。被撤销、仅历史出现、团队标签、区域 shard、项目代号或只是干扰项的名字不能放进 found_entities。
 
-      [p1] alpha-2 was only a draft alias. alpha became active after the final review. zephyr-old remained archived.
-      [p2] beta stayed active through the freeze. gamma appeared in a rejected proposal, but gamma itself was later approved.
-      [p3] delta was cancelled. zephyr is active in the current registry. gamma-9 is a distractor only.
-      [p4] beta-legacy was retired last quarter. alpha remains active.
+      [p1] Arbor-review was only a checklist title. Arbor became active after CAB sign-off. Harbor shadow remained disabled.
+      [p2] Beacon stayed live through the freeze. Beacon Ops is the rotation label, not the service entity. Cinder appeared in an abandoned rollback memo, but Cinder itself stayed approved.
+      [p3] Drift-east is only a regional shard; Drift is the active global service. Ember was removed before launch. Beacon-legacy was retired last quarter.
+      [p4] Project Cinder is a migration codename and must not be treated as the Cinder service. Arbor remains active.
 
       返回 JSON，对象字段必须且只能包含：
       - task_result: {found_entities, excluded_entities}
@@ -37,15 +37,24 @@ extractors:
 evaluation:
   reference:
     expected_task_result:
-      found_entities: [alpha, beta, gamma, zephyr]
-      excluded_entities: [alpha-2, zephyr-old, delta, gamma-9, beta-legacy]
+      found_entities: [Arbor, Beacon, Cinder, Drift]
+      excluded_entities:
+        [
+          Arbor-review,
+          Harbor shadow,
+          Beacon Ops,
+          Ember,
+          Drift-east,
+          Beacon-legacy,
+          Project Cinder,
+        ]
     expected_evidence:
       paragraph_map:
-        alpha: p1
-        beta: p2
-        gamma: p2
-        zephyr: p3
+        Arbor: p1
+        Beacon: p2
+        Cinder: p2
+        Drift: p3
 required_capabilities: [chat_completions]
 weight_hint: 0.95
-tags: [v3, retrieval, negation, ordering]
+tags: [v3_1, retrieval, boundary, ordering]
 risk_level: low

@@ -125,13 +125,22 @@ def test_repository_v3_suite_is_loadable_and_has_expected_prompt_ids() -> None:
 
     assert FINGERPRINT_SUITE_ID == "fingerprint-suite-v3"
     assert QUICK_CHECK_SUITE_ID == "quick-check-v3"
-    assert set(suites) == {"fingerprint-suite-v3", "quick-check-v3"}
+    assert set(suites) == {
+        "fingerprint-suite-v3",
+        "quick-check-v3",
+        "fingerprint-suite-v31",
+        "quick-check-v31",
+    }
 
     suite = suites["fingerprint-suite-v3"]
     quick_check = suites["quick-check-v3"]
+    suite_v31 = suites["fingerprint-suite-v31"]
+    quick_check_v31 = suites["quick-check-v31"]
 
     assert suite.prompt_ids == ["p021", "p022", "p023", "p024", "p025"]
     assert set(quick_check.prompt_ids) < set(suite.prompt_ids)
+    assert suite_v31.prompt_ids == ["p026", "p022", "p023", "p024", "p027"]
+    assert set(quick_check_v31.prompt_ids) < set(suite_v31.prompt_ids)
 
 
 def test_duplicate_prompt_ids_and_unknown_extractors_are_rejected(
