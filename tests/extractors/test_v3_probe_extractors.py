@@ -6,6 +6,10 @@ from modelfingerprint.extractors.abstention import (
     extract_abstention_v3,
     score_abstention_v3,
 )
+from modelfingerprint.extractors.boundary_decision import (
+    extract_boundary_decision_v1,
+    score_boundary_decision_v1,
+)
 from modelfingerprint.extractors.context_retrieval import (
     extract_context_retrieval_v3,
     score_context_retrieval_v3,
@@ -13,6 +17,14 @@ from modelfingerprint.extractors.context_retrieval import (
 from modelfingerprint.extractors.evidence_grounding import (
     extract_evidence_grounding_v3,
     score_evidence_grounding_v3,
+)
+from modelfingerprint.extractors.mention_classification import (
+    extract_mention_classification_v1,
+    score_mention_classification_v1,
+)
+from modelfingerprint.extractors.selection_boundary import (
+    extract_selection_boundary_v1,
+    score_selection_boundary_v1,
 )
 from modelfingerprint.extractors.representation_alignment import (
     extract_representation_alignment_v3,
@@ -25,6 +37,18 @@ from modelfingerprint.extractors.state_tracking import (
 
 
 def build_prompt(prompt_id: str, family: str, reference: dict[str, object]) -> PromptDefinition:
+    if family == "boundary_decision":
+        answer_extractor = "boundary_decision_v1"
+        score_extractor = "boundary_decision_score_v1"
+    elif family == "mention_classification":
+        answer_extractor = "mention_classification_v1"
+        score_extractor = "mention_classification_score_v1"
+    elif family == "selection_boundary":
+        answer_extractor = "selection_boundary_v1"
+        score_extractor = "selection_boundary_score_v1"
+    else:
+        answer_extractor = f"{family}_v3"
+        score_extractor = f"{family}_score_v3"
     return PromptDefinition.model_validate(
         {
             "id": prompt_id,
@@ -41,8 +65,8 @@ def build_prompt(prompt_id: str, family: str, reference: dict[str, object]) -> P
             },
             "output_contract": {"id": "tolerant_json_v3", "canonicalizer": "tolerant_json_v3"},
             "extractors": {
-                "answer": f"{family}_v3",
-                "score": f"{family}_score_v3",
+                "answer": answer_extractor,
+                "score": score_extractor,
             },
             "evaluation": {"reference": reference},
             "required_capabilities": ["chat_completions"],
@@ -134,6 +158,60 @@ def test_v3_context_retrieval_scores_order_exclusion_and_paragraphs() -> None:
     assert scores["exclusion_accuracy"] == 1.0
 
 
+def test_v32_selection_boundary_scores_category_labels() -> None:
+    canonical_output = CanonicalizedOutput(
+        format_id="tolerant_json_v3",
+        payload={
+            "task_result": {
+                "m1": "I",
+                "m2": "R",
+                "m3": "I",
+                "m4": "R",
+                "m5": "I",
+                "m6": "R",
+                "m7": "I",
+                "m8": "V",
+                "m9": "A",
+                "m10": "V",
+            },
+            "evidence": {},
+            "unknowns": {},
+            "violations": [],
+        },
+    )
+    prompt = build_prompt(
+        "p042",
+        "selection_boundary",
+        {
+            "expected_task_result": {
+                "m1": "I",
+                "m2": "R",
+                "m3": "I",
+                "m4": "R",
+                "m5": "I",
+                "m6": "R",
+                "m7": "I",
+                "m8": "V",
+                "m9": "A",
+                "m10": "V",
+            }
+        },
+    )
+
+    behavior = extract_selection_boundary_v1(canonical_output)
+    scores = score_selection_boundary_v1(prompt, canonical_output)
+
+    assert behavior["include_count"] == 4
+    assert behavior["ambiguous_count"] == 1
+    assert behavior["variant_count"] == 2
+    assert behavior["rejected_count"] == 3
+    assert scores["classification_accuracy"] == 1.0
+    assert scores["selection_accuracy"] == 1.0
+    assert scores["ambiguity_accuracy"] == 1.0
+    assert scores["variant_accuracy"] == 1.0
+    assert scores["rejection_accuracy"] == 1.0
+
+
 def test_v3_abstention_scores_answer_unknown_and_conflict_paths() -> None:
     canonical_output = CanonicalizedOutput(
         format_id="tolerant_json_v3",
@@ -143,9 +221,16 @@ def test_v3_abstention_scores_answer_unknown_and_conflict_paths() -> None:
                 "q2": {"status": "unknown", "value": None},
                 "q3": {"status": "answer", "value": "retry failed background jobs"},
                 "q4": {"status": "conflict_unresolved", "value": None},
+                "q5": {"status": "answer", "value": "no"},
+                "q6": {"status": "answer", "value": "no"},
             },
-            "evidence": {"q1": ["e1"], "q2": ["e5"], "q3": ["e1"], "q4": ["e3", "e4"]},
-            "unknowns": {"q2": "missing_actor", "q4": "conflicting_notes"},
+            "evidence": {
+                "q1": ["e1"],
+                "q3": ["e1"],
+                "q5": ["e5"],
+                "q6": ["e5"],
+            },
+            "unknowns": {"q2": "missing_actor"},
             "violations": [],
         },
     )
@@ -158,6 +243,8 @@ def test_v3_abstention_scores_answer_unknown_and_conflict_paths() -> None:
                 "q2": {"status": "unknown", "value": None},
                 "q3": {"status": "answer", "value": "retry failed background jobs"},
                 "q4": {"status": "conflict_unresolved", "value": None},
+                "q5": {"status": "answer", "value": "no"},
+                "q6": {"status": "answer", "value": "no"},
             }
         },
     )
@@ -165,12 +252,16 @@ def test_v3_abstention_scores_answer_unknown_and_conflict_paths() -> None:
     behavior = extract_abstention_v3(canonical_output)
     scores = score_abstention_v3(prompt, canonical_output)
 
-    assert behavior["answered_count"] == 2
+    assert behavior["answered_count"] == 4
     assert behavior["unknown_count"] == 1
     assert behavior["conflict_count"] == 1
+    assert behavior["status_q4"] == "conflict_unresolved"
+    assert behavior["value_q5"] == "no"
     assert scores["answer_accuracy"] == 1.0
     assert scores["unknown_accuracy"] == 1.0
     assert scores["conflict_accuracy"] == 1.0
+    assert scores["match_q5"] is True
+    assert scores["match_q6"] is True
 
 
 def test_v3_state_tracking_scores_snapshot_derivation_and_defaults() -> None:
@@ -358,4 +449,154 @@ def test_v3_representation_alignment_accepts_mapping_shaped_entity_collections()
     assert behavior["rejected_count"] == 1
     assert scores["canonical_accuracy"] == 1.0
     assert scores["ambiguity_preservation"] == 1.0
+    assert scores["rejection_accuracy"] == 1.0
+
+
+def test_boundary_decision_scores_answers_unknowns_and_conflicts() -> None:
+    canonical_output = CanonicalizedOutput(
+        format_id="tolerant_json_v3",
+        payload={
+            "task_result": {
+                "q1": {"s": "a", "v": "ops"},
+                "q2": {"s": "a", "v": "no"},
+                "q3": {"s": "a", "v": "no"},
+                "q4": {"s": "a", "v": "override"},
+                "q5": {"s": "a", "v": "yes"},
+                "q6": {"s": "c", "v": None},
+                "q7": {"s": "u", "v": None},
+            },
+            "evidence": {"q1": ["r1", "r5"], "q4": ["r2"], "q5": ["r5"], "q6": ["r7", "r8"]},
+            "unknowns": ["q7"],
+            "violations": [],
+        },
+    )
+    prompt = build_prompt(
+        "p044",
+        "boundary_decision",
+        {
+            "expected_task_result": {
+                "q1": {"s": "a", "v": "ops"},
+                "q2": {"s": "a", "v": "no"},
+                "q3": {"s": "a", "v": "no"},
+                "q4": {"s": "a", "v": "override"},
+                "q5": {"s": "a", "v": "yes"},
+                "q6": {"s": "c", "v": None},
+                "q7": {"s": "u", "v": None},
+            }
+        },
+    )
+
+    behavior = extract_boundary_decision_v1(canonical_output)
+    scores = score_boundary_decision_v1(prompt, canonical_output)
+
+    assert behavior["answered_count"] == 5
+    assert behavior["unknown_count"] == 1
+    assert behavior["conflict_count"] == 1
+    assert behavior["status_q1"] == "a"
+    assert behavior["value_q1"] == "ops"
+    assert behavior["status_q6"] == "c"
+    assert "value_q6" not in behavior
+    assert scores["decision_accuracy"] == 1.0
+    assert scores["boundary_accuracy"] == 1.0
+    assert scores["evidence_alignment"] == 1.0
+    assert scores["match_q1"] is True
+    assert scores["match_q6"] is True
+
+
+def test_boundary_decision_tolerates_invalid_actual_slots_without_crashing() -> None:
+    canonical_output = CanonicalizedOutput(
+        format_id="tolerant_json_v3",
+        payload={
+            "task_result": {
+                "q1": {"status": "answer", "value": "ops"},
+                "q2": {"s": "a", "v": "no"},
+                "q3": {"s": "a", "v": "no"},
+                "q4": {"s": "a", "v": "override"},
+                "q5": {"s": "a", "v": "yes"},
+                "q6": {"s": "c", "v": None},
+                "q7": {"s": "u", "v": None},
+            },
+            "evidence": {"q1": "r1; r5"},
+            "unknowns": ["q7"],
+            "violations": [],
+        },
+    )
+    prompt = build_prompt(
+        "p044",
+        "boundary_decision",
+        {
+            "expected_task_result": {
+                "q1": {"s": "a", "v": "ops"},
+                "q2": {"s": "a", "v": "no"},
+                "q3": {"s": "a", "v": "no"},
+                "q4": {"s": "a", "v": "override"},
+                "q5": {"s": "a", "v": "yes"},
+                "q6": {"s": "c", "v": None},
+                "q7": {"s": "u", "v": None},
+            }
+        },
+    )
+
+    behavior = extract_boundary_decision_v1(canonical_output)
+    scores = score_boundary_decision_v1(prompt, canonical_output)
+
+    assert behavior["answered_count"] == 4
+    assert behavior["unknown_count"] == 1
+    assert behavior["conflict_count"] == 1
+    assert scores["decision_accuracy"] < 1.0
+    assert scores["boundary_accuracy"] < 1.0
+
+
+def test_mention_classification_scores_canonical_ambiguous_and_rejected_items() -> None:
+    canonical_output = CanonicalizedOutput(
+        format_id="tolerant_json_v3",
+        payload={
+            "task_result": {
+                "m1": "C:openwhale_control",
+                "m2": "C:openwhale_control",
+                "m3": "C:atlas_db_east",
+                "m4": "C:atlas_db_east",
+                "m5": "M",
+                "m6": "M",
+                "m7": "M",
+                "m8": "R",
+                "m9": "R",
+                "m10": "R",
+                "m11": "R",
+                "m12": "R",
+            },
+            "evidence": {},
+            "unknowns": {},
+            "violations": [],
+        },
+    )
+    prompt = build_prompt(
+        "p045",
+        "mention_classification",
+        {
+            "expected_task_result": {
+                "m1": "C:openwhale_control",
+                "m2": "C:openwhale_control",
+                "m3": "C:atlas_db_east",
+                "m4": "C:atlas_db_east",
+                "m5": "M",
+                "m6": "M",
+                "m7": "M",
+                "m8": "R",
+                "m9": "R",
+                "m10": "R",
+                "m11": "R",
+                "m12": "R",
+            }
+        },
+    )
+
+    behavior = extract_mention_classification_v1(canonical_output)
+    scores = score_mention_classification_v1(prompt, canonical_output)
+
+    assert behavior["canonical_count"] == 4
+    assert behavior["ambiguous_count"] == 3
+    assert behavior["rejected_count"] == 5
+    assert scores["classification_accuracy"] == 1.0
+    assert scores["ambiguity_accuracy"] == 1.0
     assert scores["rejection_accuracy"] == 1.0

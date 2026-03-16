@@ -1,0 +1,74 @@
+id: p042
+name: retrieval_boundary_matrix_v32
+family: selection_boundary
+intent: 用 active、ambiguous、variant、reject 的检索边界矩阵测试近似实体筛选阈值
+messages:
+  - role: system
+    content: |
+      只返回一个 JSON 对象，不要输出 markdown，不要附加解释。
+      顶层必须且只能包含 task_result、evidence、unknowns、violations。
+      task_result 必须包含 m1 到 m10。
+      每个 mN 只能是字符串。
+      允许的值只有 I、A、V、R。
+      I 表示 active canonical service mention。
+      A 表示 ambiguous shortname，不足以唯一归一。
+      V 表示 variant、shard 或 disabled shadow mention，不属于 active canonical service。
+      R 表示 review、team label、project codename 这类非实体 mention。
+  - role: user
+    content: |
+      只处理下面 10 个 mention，并按规则给每个 mention 标一个标签。
+
+      mention:
+      - m1 Arbor
+      - m2 Arbor-review
+      - m3 Beacon
+      - m4 Beacon Ops
+      - m5 Cinder
+      - m6 Project Cinder
+      - m7 Drift
+      - m8 Drift-east
+      - m9 Atlas East
+      - m10 Harbor shadow
+
+      规则：
+      - Arbor、Beacon、Cinder、Drift 是 active canonical service mention，所以标 I。
+      - Atlas East 是短名，不足以唯一归一，所以标 A。
+      - Drift-east、Harbor shadow 是 variant、shard 或 disabled shadow mention，所以标 V。
+      - Arbor-review、Beacon Ops、Project Cinder 都不是实体 mention，所以标 R。
+
+      返回 JSON：
+      - task_result: {m1..m10}
+      - evidence: {}
+      - unknowns: {}
+      - violations: []
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 140
+  response_format: text
+  reasoning_mode: capture_if_available
+output_contract:
+  id: tolerant_json_v3
+  canonicalizer: tolerant_json_v3
+extractors:
+  answer: selection_boundary_v1
+  score: selection_boundary_score_v1
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+evaluation:
+  reference:
+    expected_task_result:
+      m1: I
+      m2: R
+      m3: I
+      m4: R
+      m5: I
+      m6: R
+      m7: I
+      m8: V
+      m9: A
+      m10: V
+required_capabilities: [chat_completions]
+weight_hint: 0.96
+tags: [v3_2, retrieval, boundary, matrix]
+risk_level: low

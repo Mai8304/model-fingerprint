@@ -1,82 +1,212 @@
 "use client"
 
-import { getPromptLabel } from "@/lib/prompt-copy"
+import { getWorkbenchCopy } from "@/components/workbench/copy"
+import { defaultPromptIds, getPromptDisplayInfo } from "@/lib/prompt-copy"
 import { useLocale } from "@/lib/i18n/provider"
 import type { RunSnapshot } from "@/lib/run-types"
 
-function metric(value: string | number | boolean | null | undefined) {
-  if (value === null || value === undefined || value === "") {
-    return "-"
+function formatScore(value: number | null | undefined, fallback: string) {
+  if (value === null || value === undefined) {
+    return fallback
   }
-  if (typeof value === "boolean") {
-    return value ? "yes" : "no"
+  return value.toFixed(3)
+}
+
+function yesNo(value: boolean | null | undefined, yes: string, no: string, fallback: string) {
+  if (value === null || value === undefined) {
+    return fallback
   }
-  return String(value)
+  return value ? yes : no
+}
+
+function promptStatusLabel(
+  status: string,
+  labels: Record<string, string>,
+) {
+  return labels[status] ?? status
+}
+
+function formatElapsed(valueMs: number | null | undefined, valueSeconds: number | null | undefined) {
+  const milliseconds =
+    valueMs ??
+    (valueSeconds === null || valueSeconds === undefined
+      ? null
+      : Math.round(valueSeconds * 1000))
+  if (milliseconds === null) {
+    return null
+  }
+  if (milliseconds < 1000) {
+    return `${milliseconds}ms`
+  }
+  return `${(milliseconds / 1000).toFixed(1)}s`
+}
+
+function fillTemplate(template: string, value: string) {
+  return template.replace("{elapsed}", value)
+}
+
+function getLiveSummary(
+  prompt: RunSnapshot["prompts"][number],
+  copy: ReturnType<typeof getWorkbenchCopy>,
+) {
+  const failureText = prompt.error_detail ?? prompt.error_kind ?? prompt.error_code
+  if (failureText) {
+    return failureText
+  }
+
+  const elapsed = formatElapsed(prompt.elapsed_ms, prompt.elapsed_seconds)
+  if (prompt.status === "running") {
+    return elapsed === null
+      ? copy.promptProbe.summaries.running
+      : fillTemplate(copy.promptProbe.summaries.runningWithElapsed, elapsed)
+  }
+  if (prompt.status === "completed") {
+    return elapsed === null
+      ? copy.promptProbe.summaries.completed
+      : fillTemplate(copy.promptProbe.summaries.completedWithElapsed, elapsed)
+  }
+  if (prompt.status === "failed") {
+    return copy.promptProbe.summaries.failed
+  }
+  if (prompt.status === "stopped") {
+    return copy.promptProbe.summaries.stopped
+  }
+  return copy.promptProbe.summaries.waiting
+}
+
+function buildPromptRows(
+  run: RunSnapshot,
+  locale: ReturnType<typeof useLocale>["locale"],
+  copy: ReturnType<typeof getWorkbenchCopy>,
+) {
+  const livePrompts = new Map(run.prompts.map((prompt) => [prompt.prompt_id, prompt]))
+  const terminalPrompts = new Map(
+    (run.result?.prompt_breakdown ?? []).map((prompt) => [prompt.prompt_id, prompt]),
+  )
+  const promptIds = [
+    ...run.prompts.map((prompt) => prompt.prompt_id),
+    ...(run.result?.prompt_breakdown ?? []).map((prompt) => prompt.prompt_id),
+  ]
+  const orderedPromptIds =
+    promptIds.length > 0
+      ? Array.from(new Set(promptIds))
+      : run.runId === null
+        ? []
+        : [...defaultPromptIds]
+
+  return orderedPromptIds.map((promptId) => {
+    const livePrompt = livePrompts.get(promptId) ?? null
+    const terminalPrompt = terminalPrompts.get(promptId) ?? null
+    const display = getPromptDisplayInfo(promptId, locale)
+    const errorText =
+      terminalPrompt?.error_message ??
+      terminalPrompt?.error_kind ??
+      livePrompt?.error_detail ??
+      livePrompt?.error_kind ??
+      livePrompt?.error_code ??
+      copy.shared.unavailable
+    const status = terminalPrompt?.status ?? livePrompt?.status ?? "pending"
+    const similarity = terminalPrompt?.similarity ?? null
+    const scoreable = terminalPrompt?.scoreable ?? livePrompt?.scoreable ?? null
+    const summary =
+      terminalPrompt === null
+        ? livePrompt === null
+          ? copy.promptProbe.summaries.waiting
+          : getLiveSummary(livePrompt, copy)
+        : terminalPrompt.error_message ??
+          terminalPrompt.error_kind ??
+          (terminalPrompt.scoreable
+            ? `${copy.promptProbe.columns.similarity}: ${formatScore(terminalPrompt.similarity, copy.shared.unavailable)}`
+            : copy.promptProbe.columns.scoreable)
+
+    return {
+      promptId,
+      title: display.title,
+      stepLabel: display.stepLabel,
+      status,
+      similarity,
+      scoreable,
+      errorText,
+      summary,
+    }
+  })
 }
 
 export function PromptDiagnosticsTable({ run }: { run: RunSnapshot }) {
   const { locale } = useLocale()
+  const copy = getWorkbenchCopy(locale)
+  const prompts = buildPromptRows(run, locale, copy)
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
+    <section className="min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-4 dark:border-slate-800 dark:bg-slate-900/70">
       <div className="flex items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold text-slate-950">Prompt Diagnostics</h3>
-        <p className="text-xs uppercase tracking-[0.12em] text-slate-500">
+        <h3 className="text-sm font-semibold text-slate-950 dark:text-slate-50">
+          {copy.promptProbe.title}
+        </h3>
+        <p className="text-xs uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
           {run.completedPrompts} / {run.totalPrompts}
         </p>
       </div>
 
       <div className="mt-4 overflow-x-auto">
-        <table className="min-w-full border-separate border-spacing-0 text-left text-sm">
+        <table
+          className="w-full min-w-[720px] border-separate border-spacing-0 text-left text-sm"
+          data-testid="prompt-probe-table"
+        >
           <thead>
-            <tr className="text-xs uppercase tracking-[0.12em] text-slate-500">
-              <th className="border-b border-slate-200 px-3 py-2">Prompt</th>
-              <th className="border-b border-slate-200 px-3 py-2">Status</th>
-              <th className="border-b border-slate-200 px-3 py-2">Elapsed</th>
-              <th className="border-b border-slate-200 px-3 py-2">First Byte</th>
-              <th className="border-b border-slate-200 px-3 py-2">HTTP</th>
-              <th className="border-b border-slate-200 px-3 py-2">Error</th>
-              <th className="border-b border-slate-200 px-3 py-2">Finish</th>
-              <th className="border-b border-slate-200 px-3 py-2">Bytes</th>
-              <th className="border-b border-slate-200 px-3 py-2">Parse</th>
-              <th className="border-b border-slate-200 px-3 py-2">Scoreable</th>
+            <tr className="text-xs uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+              <th className="border-b border-slate-200 px-3 py-2 dark:border-slate-800">
+                {copy.promptProbe.columns.prompt}
+              </th>
+              <th className="border-b border-slate-200 px-3 py-2 dark:border-slate-800">
+                {copy.promptProbe.columns.status}
+              </th>
+              <th className="border-b border-slate-200 px-3 py-2 dark:border-slate-800">
+                {copy.promptProbe.columns.similarity}
+              </th>
+              <th className="border-b border-slate-200 px-3 py-2 dark:border-slate-800">
+                {copy.promptProbe.columns.scoreable}
+              </th>
+              <th className="border-b border-slate-200 px-3 py-2 dark:border-slate-800">
+                {copy.promptProbe.columns.error}
+              </th>
+              <th className="border-b border-slate-200 px-3 py-2 dark:border-slate-800">
+                {copy.promptProbe.columns.summary}
+              </th>
             </tr>
           </thead>
           <tbody>
-            {run.prompts.length === 0 ? (
+            {prompts.length === 0 ? (
               <tr>
-                <td className="px-3 py-4 text-sm text-slate-500" colSpan={10}>
-                  No prompt data yet.
+                <td className="px-3 py-4 align-middle text-sm text-slate-500 dark:text-slate-400" colSpan={6}>
+                  {copy.promptProbe.empty}
                 </td>
               </tr>
             ) : (
-              run.prompts.map((prompt) => {
-                const isCurrent = prompt.prompt_id === run.currentPromptId
+              prompts.map((prompt) => {
                 return (
-                  <tr
-                    key={prompt.prompt_id}
-                    className={isCurrent ? "bg-sky-50/70" : undefined}
-                  >
-                    <td className="border-b border-slate-100 px-3 py-3 align-top">
-                      <div className="font-medium text-slate-900">{prompt.prompt_id}</div>
-                      <div className="text-xs text-slate-500">
-                        {getPromptLabel(prompt.prompt_id, locale)}
+                  <tr key={prompt.promptId}>
+                    <td className="border-b border-slate-100 px-3 py-3 align-middle dark:border-slate-800">
+                      <div className="font-medium text-slate-900 dark:text-slate-100">{prompt.title}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        {prompt.stepLabel}
                       </div>
-                      {prompt.error_detail ? (
-                        <div className="mt-2 max-w-[260px] text-xs leading-5 text-slate-500">
-                          {prompt.error_detail}
-                        </div>
-                      ) : null}
                     </td>
-                    <td className="border-b border-slate-100 px-3 py-3 align-top">{metric(prompt.status)}</td>
-                    <td className="border-b border-slate-100 px-3 py-3 align-top">{metric(prompt.elapsed_ms === null ? null : `${prompt.elapsed_ms}ms`)}</td>
-                    <td className="border-b border-slate-100 px-3 py-3 align-top">{metric(prompt.first_byte_ms === null ? null : `${prompt.first_byte_ms}ms`)}</td>
-                    <td className="border-b border-slate-100 px-3 py-3 align-top">{metric(prompt.http_status)}</td>
-                    <td className="border-b border-slate-100 px-3 py-3 align-top">{metric(prompt.error_code ?? prompt.error_kind)}</td>
-                    <td className="border-b border-slate-100 px-3 py-3 align-top">{metric(prompt.finish_reason)}</td>
-                    <td className="border-b border-slate-100 px-3 py-3 align-top">{metric(prompt.bytes_received)}</td>
-                    <td className="border-b border-slate-100 px-3 py-3 align-top">{metric(prompt.parse_status)}</td>
-                    <td className="border-b border-slate-100 px-3 py-3 align-top">{metric(prompt.scoreable)}</td>
+                    <td className="border-b border-slate-100 px-3 py-3 align-middle text-slate-700 dark:border-slate-800 dark:text-slate-300">
+                      {promptStatusLabel(prompt.status, copy.promptProbe.statuses)}
+                    </td>
+                    <td className="border-b border-slate-100 px-3 py-3 align-middle text-slate-700 dark:border-slate-800 dark:text-slate-300">
+                      {formatScore(prompt.similarity, copy.shared.unavailable)}
+                    </td>
+                    <td className="border-b border-slate-100 px-3 py-3 align-middle text-slate-700 dark:border-slate-800 dark:text-slate-300">
+                      {yesNo(prompt.scoreable, copy.shared.yes, copy.shared.no, copy.shared.unavailable)}
+                    </td>
+                    <td className="border-b border-slate-100 px-3 py-3 align-middle text-slate-700 dark:border-slate-800 dark:text-slate-300">
+                      {prompt.errorText}
+                    </td>
+                    <td className="border-b border-slate-100 px-3 py-3 align-middle text-slate-700 dark:border-slate-800 dark:text-slate-300">
+                      {prompt.summary}
+                    </td>
                   </tr>
                 )
               })

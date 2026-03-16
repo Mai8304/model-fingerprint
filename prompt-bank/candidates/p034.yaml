@@ -1,0 +1,70 @@
+id: p034
+name: dense_state_tracking_with_defaults_v31
+family: state_tracking
+intent: 用多对象事件流、默认规则和例外规则测试最终状态归约能力
+messages:
+  - role: system
+    content: |
+      只返回一个 JSON 对象，不要输出 markdown，不要附加解释。
+      顶层必须且只能包含 task_result、evidence、unknowns、violations。
+      不要返回单个对象，不要省略 task_result。
+  - role: user
+    content: |
+      根据下面规则和事件，计算 ticket_a、worker_x 的最终状态。
+
+      规则：
+      - create 时默认 priority 是 p2
+      - 显式 priority 更新覆盖默认值
+      - close 会保留最后一个 owner，并把 status 变成 closed
+      - suspend 会保留最后一个 owner，并把 status 变成 suspended
+
+      事件：
+      - [r1] create ticket_a owner=ops
+      - [r2] update ticket_a priority=p1
+      - [r3] close ticket_a
+      - [r4] create worker_x owner=ops
+      - [r5] update worker_x priority=p3
+      - [r6] suspend worker_x
+
+      返回 JSON，对象字段必须且只能包含：
+      - task_result: {ticket_a, worker_x}
+      - every object must be {status, owner, priority}
+      - evidence: {derivation_codes, defaults_used}
+      - derivation_codes 必须逐字写成 {"ticket_a":"r3","worker_x":"r6"}
+      - defaults_used 必须是 []
+      - unknowns: {}
+      - violations: []
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 180
+  response_format: text
+  reasoning_mode: capture_if_available
+output_contract:
+  id: tolerant_json_v3
+  canonicalizer: tolerant_json_v3
+extractors:
+  answer: state_tracking_v3
+  score: state_tracking_score_v3
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+evaluation:
+  reference:
+    expected_task_result:
+      ticket_a:
+        status: closed
+        owner: ops
+        priority: p1
+      worker_x:
+        status: suspended
+        owner: ops
+        priority: p3
+    expected_evidence:
+      derivation_codes:
+        ticket_a: r3
+        worker_x: r6
+      defaults_used: []
+required_capabilities: [chat_completions]
+weight_hint: 0.99
+tags: [v3_1, state, defaults, exceptions]
+risk_level: low

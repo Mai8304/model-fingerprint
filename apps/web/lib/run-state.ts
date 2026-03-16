@@ -1,3 +1,4 @@
+import { presentFailureMessage } from "@/lib/failure-presentation"
 import type { LocaleKey } from "@/lib/i18n/messages"
 import type { TranslationHelpers } from "@/lib/i18n/locale"
 import { getPromptLabel } from "@/lib/prompt-copy"
@@ -8,6 +9,7 @@ export function projectRunSnapshot(
   result: RunResultResource | null,
   options: {
     locale: LocaleKey
+    failureCode?: RunSnapshot["failureCode"] | null
     failureReason?: string | null
   },
 ): RunSnapshot {
@@ -29,7 +31,7 @@ export function projectRunSnapshot(
         stages: [],
         prompts: [],
         selectedFingerprint: "",
-        failureCode: "INVALID_REQUEST",
+        failureCode: options.failureCode ?? "INVALID_REQUEST",
         failureField: null,
         failureReason: options.failureReason,
         result: null,
@@ -82,7 +84,7 @@ export function projectRunSnapshot(
       result?.selected_fingerprint.label ?? snapshot.input.fingerprint_model_id,
     topCandidate: result?.summary?.top_candidate_label ?? undefined,
     similarityScore: result?.summary?.similarity_score ?? undefined,
-    failureCode: snapshot.failure?.code,
+    failureCode: options.failureCode ?? snapshot.failure?.code,
     failureReason: options.failureReason ?? snapshot.failure?.message ?? undefined,
     failureField: snapshot.failure?.field ?? null,
     result: result ?? null,
@@ -91,7 +93,7 @@ export function projectRunSnapshot(
 
 export function deriveWorkbenchState(
   run: RunSnapshot,
-  { t, format }: TranslationHelpers,
+  { locale, t, format }: TranslationHelpers,
 ): WorkbenchState {
   if (run.status === "idle") {
     return {
@@ -105,7 +107,12 @@ export function deriveWorkbenchState(
     return {
       kind: "configuration_error",
       title: t("state.configurationError.title"),
-      description: run.failureReason ?? t("state.configurationError.description"),
+      description: presentFailureMessage({
+        code: run.failureCode,
+        message: run.failureReason,
+        locale,
+        fallback: t("state.configurationError.description"),
+      }),
     }
   }
 

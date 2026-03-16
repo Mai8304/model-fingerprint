@@ -6,7 +6,7 @@ from modelfingerprint.contracts.profile import ProfileArtifact
 from modelfingerprint.settings import RepositoryPaths
 from modelfingerprint.webapi.contracts import WebFingerprintModel
 
-WEB_FINGERPRINT_SUITE_ID = "fingerprint-suite-v3"
+WEB_FINGERPRINT_SUITE_ID = "fingerprint-suite-v32"
 
 LABEL_OVERRIDES = {
     "deepseek-chat": "DeepSeek Chat",

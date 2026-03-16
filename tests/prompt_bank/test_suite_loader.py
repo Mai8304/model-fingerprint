@@ -123,24 +123,30 @@ def test_repository_v3_suite_is_loadable_and_has_expected_prompt_ids() -> None:
     root = Path(__file__).resolve().parents[2]
     suites = load_suites(root / "prompt-bank" / "suites")
 
-    assert FINGERPRINT_SUITE_ID == "fingerprint-suite-v3"
-    assert QUICK_CHECK_SUITE_ID == "quick-check-v3"
+    assert FINGERPRINT_SUITE_ID == "fingerprint-suite-v32"
+    assert QUICK_CHECK_SUITE_ID == "quick-check-v32"
     assert set(suites) == {
         "fingerprint-suite-v3",
         "quick-check-v3",
         "fingerprint-suite-v31",
         "quick-check-v31",
+        "fingerprint-suite-v32",
+        "quick-check-v32",
     }
 
     suite = suites["fingerprint-suite-v3"]
     quick_check = suites["quick-check-v3"]
     suite_v31 = suites["fingerprint-suite-v31"]
     quick_check_v31 = suites["quick-check-v31"]
+    suite_v32 = suites["fingerprint-suite-v32"]
+    quick_check_v32 = suites["quick-check-v32"]
 
     assert suite.prompt_ids == ["p021", "p022", "p023", "p024", "p025"]
     assert set(quick_check.prompt_ids) < set(suite.prompt_ids)
-    assert suite_v31.prompt_ids == ["p026", "p022", "p023", "p024", "p027"]
+    assert suite_v31.prompt_ids == ["p031", "p032", "p033", "p034", "p035"]
     assert set(quick_check_v31.prompt_ids) < set(suite_v31.prompt_ids)
+    assert suite_v32.prompt_ids == ["p041", "p042", "p043", "p044", "p045"]
+    assert set(quick_check_v32.prompt_ids) < set(suite_v32.prompt_ids)
 
 
 def test_duplicate_prompt_ids_and_unknown_extractors_are_rejected(

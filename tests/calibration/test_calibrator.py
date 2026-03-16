@@ -3,8 +3,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
+from modelfingerprint.contracts.calibration import SimilarityStats
 from modelfingerprint.contracts.run import RunArtifact
-from modelfingerprint.services.calibrator import Calibrator
+from modelfingerprint.services.calibrator import Calibrator, _derive_thresholds
 from modelfingerprint.services.profile_builder import build_profile
 from modelfingerprint.settings import RepositoryPaths
 
@@ -132,3 +135,17 @@ def test_calibrator_builds_similarity_and_coverage_thresholds(tmp_path: Path) ->
     }
     assert path == tmp_path / "calibration" / "fingerprint-suite-v3.json"
     assert json.loads(path.read_text(encoding="utf-8"))["suite_id"] == "fingerprint-suite-v3"
+
+
+def test_derive_thresholds_clamps_overlap_to_monotonic_ordering() -> None:
+    thresholds = _derive_thresholds(
+        same_stats=SimilarityStats(mean=0.91, p05=0.82, p50=0.9, p95=0.98),
+        cross_stats=SimilarityStats(mean=0.79, p05=0.66, p50=0.8, p95=0.93),
+        consistency_stats=SimilarityStats(mean=1.0, p05=1.0, p50=1.0, p95=1.0),
+    )
+
+    assert thresholds.match == pytest.approx(0.82)
+    assert thresholds.match >= thresholds.suspicious >= thresholds.unknown
+    assert thresholds.suspicious == pytest.approx(0.82)
+    assert thresholds.unknown == pytest.approx(0.82)
+    assert thresholds.margin == pytest.approx(0.01)

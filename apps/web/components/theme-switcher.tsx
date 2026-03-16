@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useLocale } from "@/lib/i18n/provider"
+import { cn } from "@/lib/utils"
 
 type ThemeMode = "light" | "dark" | "system"
 
@@ -31,7 +32,7 @@ const themeIcon: Record<ThemeMode, typeof Sun> = {
   system: Monitor,
 }
 
-export function ThemeSwitcher() {
+export function ThemeSwitcher({ className }: { className?: string }) {
   const { theme, setTheme } = useTheme()
   const { t } = useLocale()
   const selectedTheme = (theme as ThemeMode | undefined) ?? "system"
@@ -42,6 +43,7 @@ export function ThemeSwitcher() {
       <DropdownMenuTrigger asChild>
         <Button
           aria-label={t("actions.changeTheme")}
+          className={cn(className)}
           size="icon"
           type="button"
           variant="outline"

@@ -1,0 +1,9 @@
+name: mention_classification_score_v1
+family: mention_classification
+version: 1
+features:
+  - classification_accuracy
+  - ambiguity_accuracy
+  - rejection_accuracy
+  - threshold_accuracy
+  - violation_free

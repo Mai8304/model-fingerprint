@@ -5,56 +5,53 @@ Scope: repository guidance for coding agents working in this project.
 Precedence:
 1. Direct user instructions
 2. This file
-3. Current docs under `docs/plans/` and `docs/tasks/`
+3. Code, contracts, and tests for the surface being changed
+4. Supporting docs under `README*` and `docs/`
 
-## Source of Truth
+## Read First
 
-Read these before making changes:
+- `README.md` / `README.zh-CN.md`: product scope, CLI flow, repository layout
+- `docs/apis/web_api_contract.md`: web API contract and `api_key` boundary
+- `.codex/skills/modelfingerprint-server-deploy/SKILL.md`: required workflow before any production server deployment
+- `src/modelfingerprint/contracts/*.py` and `schemas/*.json`: artifact contract source of truth
+- `prompt-bank/`, `extractors/`, `endpoint-profiles/`: versioned prompt, extractor, and endpoint inputs
+- `src/modelfingerprint/webapi/*.py` and `apps/web/lib/api-contract.ts`: Python/web boundary types
+- `docs/plans/*.md`: design context only; do not let stale plan docs override code or tests
 
-- `docs/plans/2026-03-09-model-fingerprint-architecture-design.md`
-- `docs/plans/2026-03-09-model-fingerprint-implementation-plan.md`
+## Repository Shape
 
-Follow task docs in this order unless the user explicitly changes priority:
+- `src/modelfingerprint/`: Python engine, CLI, contracts, transports, and web bridge/orchestration
+- `apps/web/`: Next.js UI and route handlers that call the Python bridge
+- Checked-in artifacts under `examples/`, `profiles/`, `calibration/`, and `schemas/` are part of the product surface
+- Treat `.webapi/`, `runs/`, `traces/`, and `output/` as data directories; do not rewrite or clean them unless the task requires it
 
-1. `docs/tasks/2026-03-09-mf-p0-foundation-and-contracts.md`
-2. `docs/tasks/2026-03-09-mf-p1-prompt-bank-and-extractors.md`
-3. `docs/tasks/2026-03-09-mf-p2-profile-calibration-and-comparison.md`
-4. `docs/tasks/2026-03-09-mf-p3-cli-reporting-and-e2e.md`
+## Deployment Environment
 
-## Project Shape
-
-- Keep protocol files versioned and file-based.
-- Keep source files and generated artifacts separate.
-- `screening-vN` must remain a strict subset of `default-vN`.
-- Material prompt or extractor changes require a new version instead of silent in-place mutation.
-
-## Tech Stack
-
-Prefer the planned stack unless the user asks otherwise:
-
-- Python 3.12+
-- Typer
-- Pydantic v2
-- PyYAML
-- jsonschema
-- pytest
-- Ruff
-- mypy
+- Public production URL: `https://model-fingerprint.com`
+- Origin server: `43.162.106.125` (`ubuntu`)
+- Local SSH key path for this repo: `/Users/zhuangwei/Downloads/coding/modelfingerprint/modelfingerprint.pem`
+- Never copy, print, upload, or commit PEM contents; use the local key file with `ssh -i ...`
+- Remote repo root: `/home/ubuntu/modelfingerprint`
+- Remote web working directory: `/home/ubuntu/modelfingerprint/apps/web`
+- Web process: `modelfingerprint-web` systemd service
+- Reverse proxy/TLS: `nginx` serves `model-fingerprint.com`, terminates HTTPS on `443`, and proxies to `http://127.0.0.1:3000`
+- Deployment order must be serial, not parallel:
+  1. Sync workspace to `/home/ubuntu/modelfingerprint`
+  2. Run remote `pnpm build` inside `/home/ubuntu/modelfingerprint/apps/web`
+  3. Restart `modelfingerprint-web`
+  4. Smoke-check `https://model-fingerprint.com` and `/api/v1/fingerprints`
 
 ## Working Rules
 
-- Read the relevant task document before implementing.
-- Prefer small, scoped changes.
-- Prefer fixture-driven tests and fake transports for default development paths.
-- Keep important protocol state on disk, not only in code or chat context.
+- Keep Python and HTTP payload keys `snake_case` at the contract boundary
+- Never log, persist, return, or commit secrets, `api_key` values, PEM material, or `.env` contents
+- Prefer additive or versioned changes for released suites, extractor IDs, schemas, and comparison semantics; avoid silent in-place behavior changes
+- When creating git commits, keep them atomic: one logical change per commit, with matching tests/docs in the same commit
+- If you change prompts, extractors, endpoint profiles, contracts, calibration logic, verdict logic, or web API payloads, update relevant tests and docs in the same change
+- Prefer small diffs and search with `rg`; do not delete checked-in reference artifacts as cleanup unless explicitly asked
 
 ## Verification
 
-- Run the smallest relevant test set for the code you changed.
-- Do not claim completion without verification.
-- If you change contracts, schemas, extractors, comparison logic, or verdict rules, update or add tests in the same change.
-
-## Documentation
-
-- If architecture, contracts, versioning rules, or execution flow materially changes, update the relevant file under `docs/plans/` or `docs/tasks/`.
-- Keep this file short; detailed design belongs in the docs.
+- Python changes: run the smallest relevant `uv run pytest ...`; add `uv run ruff check src tests` and `uv run mypy src` when contracts, typing, or core services change
+- Web changes: run the smallest relevant `pnpm --dir apps/web test ...`; add `pnpm --dir apps/web build` when Next.js routes, config, or build-time behavior changes
+- Cross-boundary changes to bridge, shared contracts, or API shapes: run both Python and web verification

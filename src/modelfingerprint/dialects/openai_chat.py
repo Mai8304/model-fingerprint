@@ -9,13 +9,14 @@ from modelfingerprint.contracts.endpoint import EndpointProfile
 from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.contracts.run import NormalizedCompletion, UsageMetadata
 from modelfingerprint.dialects.base import HttpRequestSpec, resolve_path
+from modelfingerprint.dialects.quirks import apply_request_quirks
 from modelfingerprint.http_defaults import DEFAULT_BROWSER_USER_AGENT
 
 FENCE_BLOCK_PATTERN = re.compile(r"```[a-zA-Z0-9_-]*\n?(.*?)```", re.DOTALL)
 COMMON_REASONING_FIELDS = ("reasoning_content", "reasoning", "thinking")
 
 
-class OpenAIChatDialectAdapter:
+class OpenAICompatibleAdapter:
     def build_request(
         self,
         prompt: PromptDefinition,
@@ -44,6 +45,7 @@ class OpenAIChatDialectAdapter:
             body["response_format"] = endpoint.request_mapping.json_response_shape
         if body_overrides:
             _merge_mapping(body, body_overrides)
+        body = apply_request_quirks(body, endpoint=endpoint)
 
         return HttpRequestSpec(
             url=f"{str(endpoint.base_url).rstrip('/')}/chat/completions",
@@ -228,3 +230,6 @@ def _openrouter_headers(base_url: str) -> dict[str, str]:
         "HTTP-Referer": "https://codex.local",
         "X-Title": "Codex Model Fingerprint",
     }
+
+
+OpenAIChatDialectAdapter = OpenAICompatibleAdapter

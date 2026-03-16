@@ -36,6 +36,14 @@ class DialectAdapter(Protocol):
     ) -> NormalizedCompletion: ...
 
 
+def build_protocol_family_adapter(endpoint: EndpointProfile) -> DialectAdapter:
+    if endpoint.protocol_family == "openai_compatible":
+        from modelfingerprint.dialects.openai_chat import OpenAICompatibleAdapter
+
+        return OpenAICompatibleAdapter()
+    raise ValueError(f"unsupported protocol family: {endpoint.protocol_family}")
+
+
 def resolve_path(payload: Mapping[str, object], dotted_path: str | None) -> object | None:
     if not dotted_path:
         return None

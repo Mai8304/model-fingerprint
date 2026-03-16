@@ -1,0 +1,8 @@
+name: mention_classification_v1
+family: mention_classification
+version: 1
+features:
+  - canonical_count
+  - ambiguous_count
+  - rejected_count
+  - violation_count

@@ -1,0 +1,19 @@
+name: selection_boundary_v1
+family: selection_boundary
+version: 1
+features:
+  - include_count
+  - ambiguous_count
+  - variant_count
+  - rejected_count
+  - violation_count
+  - label_m1
+  - label_m2
+  - label_m3
+  - label_m4
+  - label_m5
+  - label_m6
+  - label_m7
+  - label_m8
+  - label_m9
+  - label_m10

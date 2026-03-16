@@ -7,3 +7,9 @@ features:
   - conflict_accuracy
   - evidence_alignment
   - violation_free
+  - match_q1
+  - match_q2
+  - match_q3
+  - match_q4
+  - match_q5
+  - match_q6

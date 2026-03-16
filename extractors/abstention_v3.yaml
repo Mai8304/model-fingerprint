@@ -7,3 +7,15 @@ features:
   - conflict_count
   - evidence_field_count
   - violation_count
+  - status_q1
+  - status_q2
+  - status_q3
+  - status_q4
+  - status_q5
+  - status_q6
+  - value_q1
+  - value_q2
+  - value_q3
+  - value_q4
+  - value_q5
+  - value_q6

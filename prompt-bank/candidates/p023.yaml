@@ -1,38 +1,38 @@
 id: p023
-name: boundary_sensitive_abstention_v31
+name: tri_state_abstention_resolution
 family: abstention
-intent: 用更短的弱证据、角色边界和冲突字段组合测试 answer、unknown 与 conflict_unresolved 分类能力
+intent: 用可答、信息不足和冲突未解混合的问题组测试 answer 与 abstain 分类能力
 messages:
   - role: system
     content: |
       只返回 JSON 对象，不要输出 markdown，不要附加解释。信息不足用 unknown，冲突未解用 conflict_unresolved。
   - role: user
     content: |
-      只根据下面记录回答问题，不要根据常识补全。
+      只根据下面记录回答问题。
 
-      [e1] The review explicitly approves temporary read access.
-      [e2] No note confirms that write access was granted.
-      [e3] Mara Singh is the current duty owner.
-      [e4] One note says the failover contact should be Jordan Lee.
-      [e5] Another note says the failover contact is still under review and must not be finalized.
+      [e1] Priya approved retrying failed background jobs after the rollback.
+      [e2] The rollback finished before 03:00 UTC.
+      [e3] One note says the change was approved on Friday.
+      [e4] Another note says the approval date is still unconfirmed.
+      [e5] The notes do not identify who restarted the workers.
 
       回答下列问题：
-      - q1: Was temporary read access approved?
-      - q2: Was write access granted?
-      - q3: Who is the current duty owner?
-      - q4: Who is the failover contact?
+      - q1: Was retrying failed background jobs approved?
+      - q2: Who restarted the workers?
+      - q3: What action should happen after the rollback?
+      - q4: On which date was the change approved?
 
       返回 JSON，对象字段必须且只能包含：
       - task_result: {q1, q2, q3, q4}
       - every qN must be {status, value}
       - status 只能是 answer、unknown、conflict_unresolved
-      - evidence: 只为 status=answer 的问题提供最短引用，例如 {"q1":["e1"],"q3":["e3"]}
-      - unknowns: 只记录 status 不是 answer 的问题
+      - evidence: {q1, q2, q3, q4}
+      - unknowns: {qN: reason_code}
       - violations
 generation:
   temperature: 0.0
   top_p: 1.0
-  max_output_tokens: 280
+  max_output_tokens: 340
   response_format: text
   reasoning_mode: capture_if_available
 output_contract:
@@ -48,13 +48,13 @@ evaluation:
     expected_task_result:
       q1:
         status: answer
-        value: "yes"
+        value: yes
       q2:
         status: unknown
         value: null
       q3:
         status: answer
-        value: Mara Singh
+        value: retry failed background jobs
       q4:
         status: conflict_unresolved
         value: null

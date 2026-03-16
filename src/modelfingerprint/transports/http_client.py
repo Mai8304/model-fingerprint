@@ -1,15 +1,14 @@
 from __future__ import annotations
 
+import asyncio
 import json
-import select
-import ssl
 import threading
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
-from http.client import HTTPConnection, HTTPSConnection
 from time import monotonic
 from typing import Any, Protocol
-from urllib.parse import urlsplit
+
+import httpx
 
 from modelfingerprint.dialects.base import HttpRequestSpec
 
@@ -42,6 +41,14 @@ class HttpTerminalResult:
     error: HttpClientError | None
 
 
+@dataclass(frozen=True)
+class HttpRequestTimeouts:
+    connect_seconds: float
+    first_byte_seconds: float
+    idle_seconds: float
+    total_seconds: float
+
+
 class HttpClient(Protocol):
     def send(
         self,
@@ -65,6 +72,19 @@ class InFlightHttpRequest(Protocol):
 
 
 class StandardHttpClient:
+    def __init__(
+        self,
+        *,
+        first_byte_timeout_seconds: float | None = None,
+        idle_timeout_seconds: float | None = None,
+        client_factory: Callable[..., httpx.AsyncClient] | None = None,
+        clock: Callable[[], float] = monotonic,
+    ) -> None:
+        self._first_byte_timeout_seconds = first_byte_timeout_seconds
+        self._idle_timeout_seconds = idle_timeout_seconds
+        self._client_factory = client_factory or httpx.AsyncClient
+        self._clock = clock
+
     def send(
         self,
         request: HttpRequestSpec,
@@ -72,11 +92,29 @@ class StandardHttpClient:
         connect_timeout_seconds: int,
         read_timeout_seconds: int,
     ) -> tuple[dict[str, object], int]:
-        return _perform_request(
+        handle = self.start(
             request,
             connect_timeout_seconds=connect_timeout_seconds,
             read_timeout_seconds=read_timeout_seconds,
         )
+        timeouts = self._resolve_timeouts(
+            connect_timeout_seconds=connect_timeout_seconds,
+            read_timeout_seconds=read_timeout_seconds,
+        )
+        terminal = handle.wait_until_terminal(
+            timeout_seconds=timeouts.total_seconds + timeouts.connect_seconds + 1.0,
+        )
+        if terminal is None:
+            handle.cancel()
+            raise HttpClientError(
+                kind="total_deadline_exceeded",
+                message="request did not complete before the total deadline",
+            )
+        if terminal.error is not None:
+            raise terminal.error
+        assert terminal.payload is not None
+        assert terminal.latency_ms is not None
+        return terminal.payload, terminal.latency_ms
 
     def start(
         self,
@@ -87,8 +125,36 @@ class StandardHttpClient:
     ) -> InFlightHttpRequest:
         return _StandardInFlightHttpRequest(
             request=request,
-            connect_timeout_seconds=connect_timeout_seconds,
-            read_timeout_seconds=read_timeout_seconds,
+            timeouts=self._resolve_timeouts(
+                connect_timeout_seconds=connect_timeout_seconds,
+                read_timeout_seconds=read_timeout_seconds,
+            ),
+            client_factory=self._client_factory,
+            clock=self._clock,
+        )
+
+    def _resolve_timeouts(
+        self,
+        *,
+        connect_timeout_seconds: int,
+        read_timeout_seconds: int,
+    ) -> HttpRequestTimeouts:
+        total_seconds = float(read_timeout_seconds)
+        first_byte_seconds = (
+            total_seconds
+            if self._first_byte_timeout_seconds is None
+            else min(float(self._first_byte_timeout_seconds), total_seconds)
+        )
+        idle_seconds = (
+            total_seconds
+            if self._idle_timeout_seconds is None
+            else min(float(self._idle_timeout_seconds), total_seconds)
+        )
+        return HttpRequestTimeouts(
+            connect_seconds=float(connect_timeout_seconds),
+            first_byte_seconds=max(first_byte_seconds, 0.001),
+            idle_seconds=max(idle_seconds, 0.001),
+            total_seconds=max(total_seconds, 0.001),
         )
 
 
@@ -97,21 +163,24 @@ class _StandardInFlightHttpRequest:
         self,
         *,
         request: HttpRequestSpec,
-        connect_timeout_seconds: int,
-        read_timeout_seconds: int,
+        timeouts: HttpRequestTimeouts,
+        client_factory: Callable[..., httpx.AsyncClient],
+        clock: Callable[[], float],
     ) -> None:
         self._request = request
-        self._connect_timeout_seconds = connect_timeout_seconds
-        self._read_timeout_seconds = read_timeout_seconds
-        self._start_time = monotonic()
+        self._timeouts = timeouts
+        self._client_factory = client_factory
+        self._clock = clock
+        self._start_time = clock()
         self._lock = threading.Lock()
         self._done = threading.Event()
         self._cancel = threading.Event()
-        self._connection: HTTPConnection | HTTPSConnection | None = None
         self._bytes_received = 0
         self._first_byte_latency_ms: int | None = None
         self._last_progress_latency_ms: int | None = None
         self._terminal_result: HttpTerminalResult | None = None
+        self._loop: asyncio.AbstractEventLoop | None = None
+        self._task: asyncio.Task[HttpTerminalResult] | None = None
         self._thread = threading.Thread(target=self._run, name="mf-http-inflight", daemon=True)
         self._thread.start()
 
@@ -124,7 +193,7 @@ class _StandardInFlightHttpRequest:
         return HttpProgressSnapshot(
             bytes_received=bytes_received,
             has_any_data=bytes_received > 0,
-            elapsed_ms=int((monotonic() - self._start_time) * 1000),
+            elapsed_ms=int((self._clock() - self._start_time) * 1000),
             first_byte_latency_ms=first_byte_latency_ms,
             last_progress_latency_ms=last_progress_latency_ms,
             completed=terminal_result is not None and terminal_result.error is None,
@@ -147,28 +216,51 @@ class _StandardInFlightHttpRequest:
     def cancel(self) -> None:
         self._cancel.set()
         with self._lock:
-            connection = self._connection
-        if connection is not None:
-            try:
-                connection.close()
-            except OSError:
-                return
+            loop = self._loop
+            task = self._task
+        if loop is not None and task is not None and not task.done():
+            loop.call_soon_threadsafe(task.cancel)
 
     def _run(self) -> None:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        with self._lock:
+            self._loop = loop
+            self._task = loop.create_task(self._run_async())
+            task = self._task
+        assert task is not None
         try:
-            payload, latency_ms = _perform_request(
+            terminal = loop.run_until_complete(task)
+        finally:
+            with self._lock:
+                self._loop = None
+                self._task = None
+            loop.close()
+        with self._lock:
+            self._terminal_result = terminal
+        self._done.set()
+
+    async def _run_async(self) -> HttpTerminalResult:
+        try:
+            payload, latency_ms = await _perform_request_async(
                 self._request,
-                connect_timeout_seconds=self._connect_timeout_seconds,
-                read_timeout_seconds=self._read_timeout_seconds,
+                timeouts=self._timeouts,
                 cancel_event=self._cancel,
-                register_connection=self._register_connection,
                 progress_callback=self._record_progress,
+                client_factory=self._client_factory,
+                clock=self._clock,
             )
-            terminal = HttpTerminalResult(payload=payload, latency_ms=latency_ms, error=None)
+            return HttpTerminalResult(payload=payload, latency_ms=latency_ms, error=None)
         except HttpClientError as exc:
-            terminal = HttpTerminalResult(payload=None, latency_ms=None, error=exc)
+            return HttpTerminalResult(payload=None, latency_ms=None, error=exc)
+        except asyncio.CancelledError:
+            return HttpTerminalResult(
+                payload=None,
+                latency_ms=None,
+                error=HttpClientError(kind="cancelled", message="request cancelled"),
+            )
         except Exception as exc:
-            terminal = HttpTerminalResult(
+            return HttpTerminalResult(
                 payload=None,
                 latency_ms=None,
                 error=HttpClientError(
@@ -176,14 +268,6 @@ class _StandardInFlightHttpRequest:
                     message=str(exc) or "unexpected transport runtime error",
                 ),
             )
-        with self._lock:
-            self._terminal_result = terminal
-            self._connection = None
-        self._done.set()
-
-    def _register_connection(self, connection: HTTPConnection | HTTPSConnection | None) -> None:
-        with self._lock:
-            self._connection = connection
 
     def _record_progress(self, chunk_size: int, *, elapsed_ms: int) -> None:
         with self._lock:
@@ -193,83 +277,69 @@ class _StandardInFlightHttpRequest:
             self._last_progress_latency_ms = elapsed_ms
 
 
-class _RequestCancelled(Exception):
-    pass
-
-
-def _perform_request(
+async def _perform_request_async(
     request: HttpRequestSpec,
     *,
-    connect_timeout_seconds: int,
-    read_timeout_seconds: int,
-    cancel_event: threading.Event | None = None,
-    register_connection: Callable[[HTTPConnection | HTTPSConnection | None], None] | None = None,
-    progress_callback: Callable[..., None] | None = None,
+    timeouts: HttpRequestTimeouts,
+    cancel_event: threading.Event | None,
+    progress_callback: Callable[..., None] | None,
+    client_factory: Callable[..., httpx.AsyncClient],
+    clock: Callable[[], float],
 ) -> tuple[dict[str, object], int]:
-    parsed = urlsplit(request.url)
-    if parsed.scheme not in {"http", "https"}:
-        raise HttpClientError(
-            kind="network",
-            message=f"unsupported URL scheme: {parsed.scheme}",
-        )
-    if not parsed.hostname:
-        raise HttpClientError(kind="network", message="request URL is missing a hostname")
-
-    path = parsed.path or "/"
-    if parsed.query:
-        path = f"{path}?{parsed.query}"
-    body_bytes = json.dumps(request.body).encode("utf-8")
-    connection = _build_connection(
-        parsed.scheme,
-        parsed.hostname,
-        parsed.port,
-        connect_timeout_seconds,
-    )
-    if register_connection is not None:
-        register_connection(connection)
-    start = monotonic()
+    start_time = clock()
+    total_deadline = start_time + timeouts.total_seconds
+    first_byte_deadline = start_time + timeouts.first_byte_seconds
+    client = client_factory(timeout=_build_httpx_timeout(timeouts))
+    response_context = None
+    response: Any = None
 
     try:
         _raise_if_cancelled(cancel_event)
-        connection.connect()
-        _raise_if_cancelled(cancel_event)
-        connection.request("POST", path, body=body_bytes, headers=request.headers)
-        _raise_if_cancelled(cancel_event)
-        response = _await_response_headers(
-            connection=connection,
-            read_timeout_seconds=read_timeout_seconds,
-            start_time=start,
-            cancel_event=cancel_event,
+        response_context = client.stream(
+            "POST",
+            request.url,
+            headers=request.headers,
+            json=request.body,
         )
-        payload_bytes = _read_response_body(
+        response = await _await_stream_open(
+            response_context=response_context,
+            cancel_event=cancel_event,
+            clock=clock,
+            first_byte_deadline=first_byte_deadline,
+            total_deadline=total_deadline,
+        )
+        payload_bytes = await _read_response_body_async(
             response=response,
-            connection=connection,
-            read_timeout_seconds=read_timeout_seconds,
-            start_time=start,
             cancel_event=cancel_event,
+            clock=clock,
+            first_byte_deadline=first_byte_deadline,
+            total_deadline=total_deadline,
+            idle_timeout_seconds=timeouts.idle_seconds,
             progress_callback=progress_callback,
+            start_time=start_time,
         )
-    except _RequestCancelled as exc:
-        raise HttpClientError(kind="cancelled", message=str(exc) or "request cancelled") from exc
-    except TimeoutError as exc:
-        raise HttpClientError(kind="timeout", message=str(exc) or "request timed out") from exc
-    except OSError as exc:
+    except asyncio.CancelledError as exc:
+        raise HttpClientError(kind="cancelled", message="request cancelled") from exc
+    except httpx.ConnectTimeout as exc:
+        raise HttpClientError(kind="connect_timeout", message="request connect timed out") from exc
+    except httpx.HTTPError as exc:
         if cancel_event is not None and cancel_event.is_set():
             raise HttpClientError(kind="cancelled", message="request cancelled") from exc
         raise HttpClientError(kind="network", message=str(exc)) from exc
     finally:
-        connection.close()
-        if register_connection is not None:
-            register_connection(None)
+        if response_context is not None:
+            await response_context.__aexit__(None, None, None)
+        await client.aclose()
 
-    latency_ms = int((monotonic() - start) * 1000)
+    latency_ms = int((clock() - start_time) * 1000)
     text = payload_bytes.decode("utf-8", errors="replace")
-    if response.status >= 400:
-        message = text.strip() or response.reason or f"HTTP {response.status}"
+    status_code = _response_status(response)
+    if status_code >= 400:
+        message = text.strip() or _response_reason(response) or f"HTTP {status_code}"
         raise HttpClientError(
             kind="http_status",
             message=message,
-            status_code=response.status,
+            status_code=status_code,
         )
 
     payload = _decode_payload(
@@ -278,6 +348,128 @@ def _perform_request(
         text=text,
     )
     return payload, latency_ms
+
+
+async def _await_stream_open(
+    *,
+    response_context: Any,
+    cancel_event: threading.Event | None,
+    clock: Callable[[], float],
+    first_byte_deadline: float,
+    total_deadline: float,
+) -> Any:
+    _raise_if_cancelled(cancel_event)
+    timeout_seconds, timeout_kind = _next_wait_timeout(
+        clock=clock,
+        total_deadline=total_deadline,
+        deadline=first_byte_deadline,
+        timeout_kind="first_byte_timeout",
+    )
+    try:
+        return await asyncio.wait_for(response_context.__aenter__(), timeout=timeout_seconds)
+    except asyncio.TimeoutError as exc:
+        raise _timeout_error(timeout_kind) from exc
+
+
+async def _read_response_body_async(
+    *,
+    response: Any,
+    cancel_event: threading.Event | None,
+    clock: Callable[[], float],
+    first_byte_deadline: float,
+    total_deadline: float,
+    idle_timeout_seconds: float,
+    progress_callback: Callable[..., None] | None,
+    start_time: float,
+) -> bytes:
+    chunks: list[bytes] = []
+    iterator = response.aiter_bytes()
+    first_chunk = True
+
+    while True:
+        _raise_if_cancelled(cancel_event)
+        if first_chunk:
+            timeout_seconds, timeout_kind = _next_wait_timeout(
+                clock=clock,
+                total_deadline=total_deadline,
+                deadline=first_byte_deadline,
+                timeout_kind="first_byte_timeout",
+            )
+        else:
+            timeout_seconds, timeout_kind = _next_wait_timeout(
+                clock=clock,
+                total_deadline=total_deadline,
+                duration_seconds=idle_timeout_seconds,
+                timeout_kind="idle_timeout",
+            )
+        try:
+            chunk = await asyncio.wait_for(anext(iterator), timeout=timeout_seconds)
+        except StopAsyncIteration:
+            break
+        except asyncio.TimeoutError as exc:
+            raise _timeout_error(timeout_kind) from exc
+        if not chunk:
+            continue
+        chunks.append(chunk)
+        first_chunk = False
+        if progress_callback is not None:
+            progress_callback(
+                len(chunk),
+                elapsed_ms=int((clock() - start_time) * 1000),
+            )
+    return b"".join(chunks)
+
+
+def _next_wait_timeout(
+    *,
+    clock: Callable[[], float],
+    total_deadline: float,
+    timeout_kind: str,
+    deadline: float | None = None,
+    duration_seconds: float | None = None,
+) -> tuple[float, str]:
+    now = clock()
+    remaining_total = total_deadline - now
+    if remaining_total <= 0:
+        raise _timeout_error("total_deadline_exceeded")
+    if deadline is not None:
+        remaining_stage = deadline - now
+    else:
+        assert duration_seconds is not None
+        remaining_stage = duration_seconds
+    if remaining_stage <= 0:
+        raise _timeout_error(timeout_kind)
+    if remaining_total <= remaining_stage:
+        return remaining_total, "total_deadline_exceeded"
+    return remaining_stage, timeout_kind
+
+
+def _timeout_error(kind: str) -> HttpClientError:
+    if kind == "connect_timeout":
+        return HttpClientError(kind=kind, message="request connect timed out")
+    if kind == "first_byte_timeout":
+        return HttpClientError(
+            kind=kind,
+            message="response did not arrive before the first byte deadline",
+        )
+    if kind == "idle_timeout":
+        return HttpClientError(
+            kind=kind,
+            message="response stream was idle past the idle timeout",
+        )
+    return HttpClientError(
+        kind="total_deadline_exceeded",
+        message="request did not complete before the total deadline",
+    )
+
+
+def _build_httpx_timeout(timeouts: HttpRequestTimeouts) -> httpx.Timeout:
+    return httpx.Timeout(
+        connect=timeouts.connect_seconds,
+        read=None,
+        write=timeouts.connect_seconds,
+        pool=timeouts.connect_seconds,
+    )
 
 
 def _decode_payload(
@@ -307,96 +499,6 @@ def _decode_payload(
     )
 
 
-def _await_response_headers(
-    *,
-    connection: HTTPConnection | HTTPSConnection,
-    read_timeout_seconds: int,
-    start_time: float,
-    cancel_event: threading.Event | None = None,
-) -> Any:
-    while True:
-        _raise_if_cancelled(cancel_event)
-        remaining = read_timeout_seconds - (monotonic() - start_time)
-        if remaining <= 0:
-            raise TimeoutError("request timed out")
-        sock = connection.sock
-        if sock is not None:
-            try:
-                readable, _, _ = select.select([sock], [], [], min(remaining, 1.0))
-            except OSError as exc:
-                if cancel_event is not None and cancel_event.is_set():
-                    raise _RequestCancelled("request cancelled") from exc
-                raise
-            if not readable:
-                continue
-            sock.settimeout(remaining)
-        try:
-            return connection.getresponse()
-        except TimeoutError:
-            if cancel_event is not None and cancel_event.is_set():
-                raise _RequestCancelled("request cancelled") from None
-            continue
-        except OSError as exc:
-            if _is_idle_timeout_read_error(exc):
-                if cancel_event is not None and cancel_event.is_set():
-                    raise _RequestCancelled("request cancelled") from None
-                continue
-            raise
-
-
-def _read_response_body(
-    *,
-    response: Any,
-    connection: HTTPConnection | HTTPSConnection,
-    read_timeout_seconds: int,
-    start_time: float,
-    cancel_event: threading.Event | None = None,
-    progress_callback: Callable[..., None] | None = None,
-) -> bytes:
-    chunks: list[bytes] = []
-    reader = getattr(response, "read1", None)
-    uses_buffered_reader = callable(reader)
-    while True:
-        _raise_if_cancelled(cancel_event)
-        elapsed = monotonic() - start_time
-        remaining = read_timeout_seconds - elapsed
-        if remaining <= 0:
-            raise TimeoutError("request timed out")
-        sock = connection.sock
-        if sock is not None and not uses_buffered_reader:
-            try:
-                readable, _, _ = select.select([sock], [], [], min(remaining, 1.0))
-            except OSError as exc:
-                if cancel_event is not None and cancel_event.is_set():
-                    raise _RequestCancelled("request cancelled") from exc
-                raise
-            if not readable:
-                continue
-        if sock is not None:
-            sock.settimeout(remaining)
-        try:
-            chunk = reader(65536) if uses_buffered_reader else response.read(65536)
-        except TimeoutError:
-            if cancel_event is not None and cancel_event.is_set():
-                raise _RequestCancelled("request cancelled") from None
-            continue
-        except OSError as exc:
-            if _is_idle_timeout_read_error(exc):
-                if cancel_event is not None and cancel_event.is_set():
-                    raise _RequestCancelled("request cancelled") from None
-                continue
-            raise
-        if not chunk:
-            break
-        chunks.append(chunk)
-        if progress_callback is not None:
-            progress_callback(
-                len(chunk),
-                elapsed_ms=int((monotonic() - start_time) * 1000),
-            )
-    return b"".join(chunks)
-
-
 def _should_decode_sse(*, request: HttpRequestSpec, response: Any) -> bool:
     accept = str(request.headers.get("Accept", "")).lower()
     if "text/event-stream" in accept:
@@ -408,16 +510,31 @@ def _should_decode_sse(*, request: HttpRequestSpec, response: Any) -> bool:
 
 
 def _response_content_type(response: Any) -> str:
-    getheader = getattr(response, "getheader", None)
-    if callable(getheader):
-        value = getheader("Content-Type")
-        if isinstance(value, str):
-            return value
     headers = getattr(response, "headers", None)
     if isinstance(headers, Mapping):
         for key, value in headers.items():
             if str(key).lower() == "content-type" and isinstance(value, str):
                 return value
+    return ""
+
+
+def _response_status(response: Any) -> int:
+    status_code = getattr(response, "status_code", None)
+    if isinstance(status_code, int):
+        return status_code
+    status = getattr(response, "status", None)
+    if isinstance(status, int):
+        return status
+    return 0
+
+
+def _response_reason(response: Any) -> str:
+    reason_phrase = getattr(response, "reason_phrase", None)
+    if isinstance(reason_phrase, str):
+        return reason_phrase
+    reason = getattr(response, "reason", None)
+    if isinstance(reason, str):
+        return reason
     return ""
 
 
@@ -535,27 +652,7 @@ def _merge_message_payload(message: dict[str, object], payload: Mapping[str, obj
             else:
                 message[key] = value
 
+
 def _raise_if_cancelled(cancel_event: threading.Event | None) -> None:
     if cancel_event is not None and cancel_event.is_set():
-        raise _RequestCancelled("request cancelled")
-
-
-def _is_idle_timeout_read_error(exc: OSError) -> bool:
-    message = str(exc).lower()
-    return "timed out object" in message or "read operation timed out" in message
-
-
-def _build_connection(
-    scheme: str,
-    host: str,
-    port: int | None,
-    connect_timeout_seconds: int,
-) -> HTTPConnection | HTTPSConnection:
-    if scheme == "https":
-        return HTTPSConnection(
-            host=host,
-            port=port,
-            timeout=connect_timeout_seconds,
-            context=ssl.create_default_context(),
-        )
-    return HTTPConnection(host=host, port=port, timeout=connect_timeout_seconds)
+        raise HttpClientError(kind="cancelled", message="request cancelled")

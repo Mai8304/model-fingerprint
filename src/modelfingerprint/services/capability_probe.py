@@ -125,10 +125,7 @@ def probe_tools(*, base_url: str, api_key: str, model: str) -> CapabilityProbeOu
         retry_response, retry_failure = _post_json(
             url=_chat_completions_url(base_url),
             headers=_default_headers(base_url, api_key),
-            body={
-                **request_body,
-                "thinking": {"type": "disabled"},
-            },
+            body=_tool_retry_body(base_url=base_url, request_body=request_body),
         )
         if retry_failure is None:
             assert retry_response is not None
@@ -141,6 +138,20 @@ def probe_tools(*, base_url: str, api_key: str, model: str) -> CapabilityProbeOu
     assert response is not None
     payload = _json_payload(response)
     outcome = classify_tools_outcome(payload)
+    if _should_retry_tools_after_ignored(base_url=base_url, outcome=outcome):
+        retry_response, retry_failure = _post_json(
+            url=_chat_completions_url(base_url),
+            headers=_default_headers(base_url, api_key),
+            body=_tool_retry_body(base_url=base_url, request_body=request_body),
+        )
+        if retry_failure is None:
+            assert retry_response is not None
+            retry_payload = _json_payload(retry_response)
+            retry_outcome = classify_tools_outcome(retry_payload)
+            return _with_probe_path(
+                _with_transport(retry_outcome, retry_response),
+                "ignored_retry",
+            )
     return _with_transport(outcome, response)
 
 
@@ -644,3 +655,31 @@ def _should_retry_tools_with_thinking_disabled(outcome: CapabilityProbeOutcome) 
         return False
     detail = (outcome.detail or "").lower()
     return "tool_choice" in detail and "thinking enabled" in detail
+
+
+def _should_retry_tools_after_ignored(
+    *,
+    base_url: str,
+    outcome: CapabilityProbeOutcome,
+) -> bool:
+    if outcome.status != "accepted_but_ignored":
+        return False
+    if "openrouter.ai" not in base_url:
+        return False
+    finish_reason = outcome.evidence.get("finish_reason")
+    return finish_reason in {None, "length", "stop"}
+
+
+def _tool_retry_body(
+    *,
+    base_url: str,
+    request_body: dict[str, object],
+) -> dict[str, object]:
+    body = {
+        **request_body,
+        "max_tokens": 256,
+        "thinking": {"type": "disabled"},
+    }
+    if "openrouter.ai" in base_url:
+        body["reasoning"] = {"effort": "minimal", "exclude": True}
+    return body

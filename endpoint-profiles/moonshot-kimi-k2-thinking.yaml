@@ -1,0 +1,37 @@
+id: moonshot-kimi-k2-thinking
+dialect: openai_chat_v1
+protocol_family: openai_compatible
+provider_id: moonshot
+base_url: https://api.moonshot.ai/v1
+model: kimi-k2-thinking
+auth:
+  kind: bearer_env
+  env_var: MODEL_FINGERPRINT_API_KEY
+quirks:
+  - omit_temperature
+  - omit_top_p
+  - tools_require_thinking_disabled
+  - vision_prefer_data_url
+runtime_profile_id: structured_extraction_disable_thinking_high_budget_v1
+capabilities:
+  exposes_reasoning_text: true
+  supports_json_object_response: false
+  supports_temperature: false
+  supports_top_p: false
+  supports_output_token_cap: true
+request_mapping:
+  output_token_cap_field: max_tokens
+response_mapping:
+  answer_text_path: choices.0.message.content
+  reasoning_text_path: choices.0.message.reasoning_content
+  finish_reason_path: choices.0.finish_reason
+  usage_paths:
+    prompt_tokens: usage.prompt_tokens
+    output_tokens: usage.completion_tokens
+    total_tokens: usage.total_tokens
+timeout_policy:
+  connect_seconds: 10
+  read_seconds: 180
+retry_policy:
+  max_attempts: 1
+  retryable_statuses: [408, 429, 500, 502, 503, 504]

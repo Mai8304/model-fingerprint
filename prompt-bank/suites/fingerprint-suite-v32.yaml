@@ -1,0 +1,4 @@
+id: fingerprint-suite-v32
+name: fingerprint suite v3.2
+description: v3.2 suite with fully versioned prompt ids and no overlap with v3 or v3.1
+prompt_ids: [p041, p042, p043, p044, p045]

@@ -1,0 +1,70 @@
+id: p033
+name: boundary_sensitive_abstention_v31
+family: abstention
+intent: 用更短的弱证据、角色边界和冲突字段组合测试 answer、unknown 与 conflict_unresolved 分类能力
+messages:
+  - role: system
+    content: |
+      只返回一个 JSON 对象，不要输出 markdown，不要附加解释。
+      顶层必须且只能包含 task_result、evidence、unknowns、violations。
+      不要省略 task_result，不要返回单个 qN 对象。
+      status 不是 answer 时，value 必须是 null。
+  - role: user
+    content: |
+      只根据下面记录回答问题，不要根据常识补全。
+
+      [e1] The review explicitly approves temporary read access.
+      [e2] Write access is still undecided and must not be finalized.
+      [e3] Mara Singh is the current duty owner.
+      [e4] One note proposes Jordan Lee as the failover contact.
+      [e5] Another note says the failover contact remains unresolved and must not be finalized.
+
+      回答下列问题：
+      - q1: Was temporary read access approved?
+      - q2: Was write access granted?
+      - q3: Who is the current duty owner?
+      - q4: Who is the failover contact?
+
+      返回 JSON，对象字段必须且只能包含：
+      - task_result: {q1, q2, q3, q4}
+      - every qN must be {status, value}
+      - status 只能是 answer、unknown、conflict_unresolved
+      - q1.value 只能是 "yes"
+      - q2.value 和 q4.value 必须是 null
+      - q3.value 必须逐字复制名字
+      - evidence: 只允许为 q1 和 q3 提供最短引用，例如 {"q1":["e1"],"q3":["e3"]}
+      - unknowns: 只记录 status 不是 answer 的问题，例如 ["q2","q4"]
+      - violations: 必须是 []
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 180
+  response_format: text
+  reasoning_mode: capture_if_available
+output_contract:
+  id: tolerant_json_v3
+  canonicalizer: tolerant_json_v3
+extractors:
+  answer: abstention_v3
+  score: abstention_score_v3
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+evaluation:
+  reference:
+    expected_task_result:
+      q1:
+        status: answer
+        value: "yes"
+      q2:
+        status: unknown
+        value: null
+      q3:
+        status: answer
+        value: Mara Singh
+      q4:
+        status: conflict_unresolved
+        value: null
+required_capabilities: [chat_completions]
+weight_hint: 0.97
+tags: [v3_1, abstention, conflict]
+risk_level: low

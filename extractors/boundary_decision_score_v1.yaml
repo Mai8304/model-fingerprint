@@ -1,0 +1,8 @@
+name: boundary_decision_score_v1
+family: boundary_decision
+version: 1
+features:
+  - decision_accuracy
+  - boundary_accuracy
+  - evidence_alignment
+  - violation_free

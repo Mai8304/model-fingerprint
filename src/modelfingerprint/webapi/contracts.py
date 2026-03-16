@@ -5,7 +5,13 @@ from typing import Literal
 
 from pydantic import Field
 
-from modelfingerprint.contracts._common import ContractModel, SuiteId
+from modelfingerprint.contracts._common import (
+    ContractModel,
+    Probability,
+    ProbeCapabilityId,
+    ProbeCapabilityStatus,
+    SuiteId,
+)
 from modelfingerprint.contracts.comparison import ComparisonVerdict
 
 WebRunStatus = Literal[
@@ -55,11 +61,18 @@ WebProtocolStatus = Literal[
 ]
 
 
+class WebFingerprintCapabilitySummary(ContractModel):
+    status: ProbeCapabilityStatus | None = None
+    confidence: Probability | None = None
+
+
 class WebFingerprintModel(ContractModel):
     id: str = Field(min_length=1)
     label: str = Field(min_length=1)
     suite_id: SuiteId
     available: bool
+    image_generation: WebFingerprintCapabilitySummary | None = None
+    vision_understanding: WebFingerprintCapabilitySummary | None = None
 
 
 class WebRunInput(ContractModel):
@@ -114,6 +127,8 @@ class WebRunResultSummary(ContractModel):
     similarity_score: float | None = Field(default=None, ge=0.0, le=1.0)
     confidence_low: float | None = Field(default=None, ge=0.0, le=1.0)
     confidence_high: float | None = Field(default=None, ge=0.0, le=1.0)
+    range_gap: float | None = Field(default=None, ge=0.0)
+    in_confidence_range: bool | None = None
     top_candidate_model_id: str | None = None
     top_candidate_label: str | None = None
     top_candidate_similarity: float | None = Field(default=None, ge=0.0, le=1.0)
@@ -164,6 +179,13 @@ class WebRunResultPromptBreakdown(ContractModel):
     error_message: str | None = None
 
 
+class WebRunResultCapabilityComparison(ContractModel):
+    capability: ProbeCapabilityId
+    observed_status: ProbeCapabilityStatus | None = None
+    expected_status: ProbeCapabilityStatus | None = None
+    is_consistent: bool | None = None
+
+
 class WebRunResultThresholds(ContractModel):
     match: float = Field(ge=0.0, le=1.0)
     suspicious: float = Field(ge=0.0, le=1.0)
@@ -196,6 +218,7 @@ class WebRunResult(ContractModel):
     coverage: WebRunResultCoverage | None = None
     diagnostics: WebRunResultDiagnostics
     prompt_breakdown: list[WebRunResultPromptBreakdown] = Field(default_factory=list)
+    capability_comparisons: list[WebRunResultCapabilityComparison] = Field(default_factory=list)
     thresholds_used: WebRunResultThresholds | None = None
 
 

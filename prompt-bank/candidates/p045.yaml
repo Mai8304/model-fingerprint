@@ -1,0 +1,84 @@
+id: p045
+name: mention_threshold_classification_v32
+family: mention_classification
+intent: 用 alias、ambiguous、reject、near-match 的逐 mention 短标签测试语义归并阈值
+messages:
+  - role: system
+    content: |
+      只返回 JSON 对象，不要输出 markdown，不要附加解释。
+      顶层必须且只能包含 task_result、evidence、unknowns、violations。
+      task_result 必须包含 m1 到 m12。
+      每个 mN 只能是字符串。
+      允许的值只有：
+      - C:openwhale_control
+      - C:atlas_db_east
+      - M
+      - R
+      M 只用于“像实体缩写或短名，但不能唯一归一”的 mention。
+      R 只用于“根本不是实体 mention”的项目名、cutover 名、注释标签或普通词。
+      不能把项目名、cutover 名、注释标签或普通词标成 M。
+  - role: user
+    content: |
+      只处理下面 12 个原始 mention，逐项判断：
+
+      - m1 OpenWhale Control Plane
+      - m2 OW Control
+      - m3 Atlas East DB
+      - m4 atlas-db-east
+      - m5 OW
+      - m6 Atlas
+      - m7 Atlas East
+      - m8 OpenWhale Controls
+      - m9 Project Mercury
+      - m10 mercury-cutover
+      - m11 control
+      - m12 staging-note
+
+      规则：
+      - OpenWhale Control Plane、OW Control 唯一归一到 openwhale_control
+      - Atlas East DB、atlas-db-east 唯一归一到 atlas_db_east
+      - OW、Atlas、Atlas East 是“像实体短名，但不能唯一归一”，所以标 M
+      - OpenWhale Controls 不是已知实体名，它是泛化名称，所以标 R，不是 M
+      - Project Mercury 是项目名，不是实体 mention，所以标 R，不是 M
+      - mercury-cutover 是 cutover 名，不是实体 mention，所以标 R，不是 M
+      - control 是普通词，不是实体 mention，所以标 R，不是 M
+      - staging-note 是注释标签，不是实体 mention，所以标 R，不是 M
+
+      返回 JSON：
+      - task_result: {m1..m12}
+      - evidence: {}
+      - unknowns: {}
+      - violations: []
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 130
+  response_format: text
+  reasoning_mode: capture_if_available
+output_contract:
+  id: tolerant_json_v3
+  canonicalizer: tolerant_json_v3
+extractors:
+  answer: mention_classification_v1
+  score: mention_classification_score_v1
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+evaluation:
+  reference:
+    expected_task_result:
+      m1: C:openwhale_control
+      m2: C:openwhale_control
+      m3: C:atlas_db_east
+      m4: C:atlas_db_east
+      m5: M
+      m6: M
+      m7: M
+      m8: R
+      m9: R
+      m10: R
+      m11: R
+      m12: R
+required_capabilities: [chat_completions]
+weight_hint: 0.98
+tags: [v3_2, alignment, ambiguity, threshold]
+risk_level: medium

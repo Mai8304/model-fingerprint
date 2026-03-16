@@ -5,10 +5,14 @@ from pathlib import Path
 
 import yaml
 
-from modelfingerprint.contracts.endpoint import EndpointProfile
+from modelfingerprint.contracts.endpoint import EndpointProfile, ProtocolFamily
 from modelfingerprint.contracts.prompt import PromptDefinition
+from pydantic import ValidationError
 
 KNOWN_DIALECT_IDS = frozenset({"openai_chat_v1"})
+KNOWN_PROTOCOL_FAMILIES = frozenset[ProtocolFamily](
+    {"openai_compatible", "anthropic_messages", "gemini_generate_content"}
+)
 DEFAULT_AD_HOC_API_KEY_ENV_VAR = "MODEL_FINGERPRINT_API_KEY"
 AD_HOC_ENDPOINT_PROFILE_PREFIX = "adhoc-openai-chat-v1"
 
@@ -31,11 +35,18 @@ def load_endpoint_profiles(directory: Path) -> dict[str, EndpointProfile]:
     profiles: dict[str, EndpointProfile] = {}
 
     for path in sorted(directory.rglob("*.yaml")):
-        profile = EndpointProfile.model_validate(_read_yaml(path))
+        try:
+            profile = EndpointProfile.model_validate(_read_yaml(path))
+        except ValidationError as exc:
+            raise EndpointProfileValidationError(str(exc)) from exc
         if profile.id in profiles:
             raise EndpointProfileValidationError(f"duplicate endpoint profile id: {profile.id}")
         if profile.dialect not in KNOWN_DIALECT_IDS:
             raise EndpointProfileValidationError(f"unknown dialect: {profile.dialect}")
+        if profile.protocol_family not in KNOWN_PROTOCOL_FAMILIES:
+            raise EndpointProfileValidationError(
+                f"unknown protocol_family: {profile.protocol_family}"
+            )
         profiles[profile.id] = profile
 
     return profiles
@@ -53,6 +64,7 @@ def build_ad_hoc_endpoint_profile(
         {
             "id": f"{AD_HOC_ENDPOINT_PROFILE_PREFIX}:{profile_hash}",
             "dialect": "openai_chat_v1",
+            "protocol_family": "openai_compatible",
             "base_url": normalized_base_url,
             "model": model,
             "auth": {

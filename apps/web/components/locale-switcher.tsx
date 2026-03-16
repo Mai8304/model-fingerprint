@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useLocale } from "@/lib/i18n/provider"
 import type { LocaleKey } from "@/lib/i18n/messages"
+import { cn } from "@/lib/utils"
 
 const locales: LocaleKey[] = ["en", "zh-CN", "ja"]
 
@@ -23,7 +24,7 @@ const localeLabelKey: Record<LocaleKey, "locale.english" | "locale.simplifiedChi
   ja: "locale.japanese",
 }
 
-export function LocaleSwitcher() {
+export function LocaleSwitcher({ className }: { className?: string }) {
   const { locale, setLocale, t } = useLocale()
 
   return (
@@ -31,6 +32,7 @@ export function LocaleSwitcher() {
       <DropdownMenuTrigger asChild>
         <Button
           aria-label={t("actions.changeLanguage")}
+          className={cn(className)}
           size="icon"
           type="button"
           variant="outline"

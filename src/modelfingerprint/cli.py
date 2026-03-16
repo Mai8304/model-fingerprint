@@ -13,7 +13,7 @@ from modelfingerprint.contracts.endpoint import EndpointProfile
 from modelfingerprint.contracts.profile import ProfileArtifact
 from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.contracts.run import NormalizedCompletion, RunArtifact, UsageMetadata
-from modelfingerprint.dialects.openai_chat import OpenAIChatDialectAdapter
+from modelfingerprint.dialects.base import build_protocol_family_adapter
 from modelfingerprint.services.calibrator import Calibrator
 from modelfingerprint.services.capability_probe import probe_capabilities
 from modelfingerprint.services.comparator import compare_run
@@ -37,6 +37,7 @@ from modelfingerprint.services.prompt_bank import (
 )
 from modelfingerprint.services.runtime_policy import resolve_runtime_policy
 from modelfingerprint.services.suite_runner import SuiteRunner
+from modelfingerprint.services.suite_runner import _normalize_capability_probe_payload
 from modelfingerprint.services.verdicts import decide_verdict
 from modelfingerprint.settings import RepositoryPaths
 from modelfingerprint.storage.filesystem import ensure_directories
@@ -146,19 +147,27 @@ def show_run(path: Path, json_output: bool = typer.Option(False, "--json")) -> N
     typer.echo(f"capability_coverage_ratio: {_format_ratio(_run_capability_coverage(artifact))}")
     if artifact.runtime_policy is not None:
         typer.echo(f"runtime_execution_class: {artifact.runtime_policy.execution_class}")
+        typer.echo(f"runtime_default_intent: {artifact.runtime_policy.default_intent}")
+        default_policy = artifact.runtime_policy.policy_for_intent(
+            artifact.runtime_policy.default_intent or "structured_extraction"
+        )
+        first_attempt = default_policy.attempts[0]
+        typer.echo(f"runtime_default_attempt_count: {len(default_policy.attempts)}")
         typer.echo(
-            "runtime_no_data_checkpoints: "
-            + ",".join(str(value) for value in artifact.runtime_policy.no_data_checkpoints_seconds)
+            "runtime_first_attempt_output_token_cap: "
+            + _format_runtime_output_token_cap(first_attempt)
         )
         typer.echo(
-            "runtime_progress_poll_interval_seconds: "
-            f"{artifact.runtime_policy.progress_poll_interval_seconds}"
+            "runtime_first_attempt_first_byte_timeout_seconds: "
+            f"{first_attempt.first_byte_timeout_seconds}"
         )
         typer.echo(
-            f"runtime_total_deadline_seconds: {artifact.runtime_policy.total_deadline_seconds}"
+            "runtime_first_attempt_idle_timeout_seconds: "
+            f"{first_attempt.idle_timeout_seconds}"
         )
         typer.echo(
-            f"runtime_output_token_cap: {artifact.runtime_policy.output_token_cap or 'n/a'}"
+            "runtime_first_attempt_total_deadline_seconds: "
+            f"{first_attempt.total_deadline_seconds}"
         )
     typer.echo(f"protocol_status: {_run_protocol_status(artifact)}")
 
@@ -286,7 +295,7 @@ def run_suite(
         )
         runtime_policy = resolve_runtime_policy(
             capability_probe_payload=capability_probe_payload,
-            supports_output_token_cap=endpoint.capabilities.supports_output_token_cap,
+            endpoint=endpoint,
         )
         trace_dir = paths.traces_dir / run_date / f"{target_label}.{suite_id}"
         transport = LiveRunner(
@@ -306,6 +315,115 @@ def run_suite(
         capability_probe_payload=capability_probe_payload,
     )
     typer.echo(path)
+
+
+@app.command("refresh-capabilities")
+def refresh_capabilities_command(
+    model_id: str = typer.Option(..., "--model-id"),
+    target_label: str | None = typer.Option(None, "--target-label"),
+    root: Path = typer.Option(Path.cwd(), "--root", exists=True, file_okay=False),
+    endpoint_profile: str | None = typer.Option(None, "--endpoint-profile"),
+    base_url: str | None = typer.Option(None, "--base-url"),
+    model: str | None = typer.Option(None, "--model"),
+    api_key: str | None = typer.Option(None, "--api-key"),
+    run_date: str = typer.Option("2026-03-11", "--run-date"),
+    suite_id: str = typer.Option(FINGERPRINT_SUITE_ID, "--suite-id"),
+) -> None:
+    using_endpoint_profile = endpoint_profile is not None
+    using_direct_live_target = base_url is not None or model is not None or api_key is not None
+    live_mode_count = int(using_endpoint_profile) + int(using_direct_live_target)
+    if live_mode_count != 1:
+        raise typer.BadParameter(
+            "provide exactly one live target: --endpoint-profile or --base-url/--model"
+        )
+
+    if using_direct_live_target:
+        if base_url is None or model is None:
+            raise typer.BadParameter("--base-url and --model are required for direct live mode")
+        if endpoint_profile is not None:
+            raise typer.BadParameter(
+                "--endpoint-profile cannot be combined with --base-url/--model"
+            )
+        if api_key is None:
+            api_key = os.getenv("MODEL_FINGERPRINT_API_KEY")
+        if api_key is None:
+            raise typer.BadParameter(
+                "missing API key; pass --api-key or set MODEL_FINGERPRINT_API_KEY"
+            )
+
+    paths = RepositoryPaths(root=root)
+    profiles = load_endpoint_profiles(paths.endpoint_profiles_dir)
+    if endpoint_profile is not None:
+        endpoint = profiles.get(endpoint_profile)
+        if endpoint is None:
+            raise typer.BadParameter(f"unknown endpoint profile id: {endpoint_profile}")
+        live_api_key = _load_endpoint_api_key(endpoint)
+    else:
+        assert base_url is not None
+        assert model is not None
+        assert api_key is not None
+        endpoint = resolve_or_build_endpoint_profile(
+            profiles,
+            base_url=base_url,
+            model=model,
+        )
+        live_api_key = api_key
+
+    capability_probe_payload = probe_capabilities(
+        base_url=str(endpoint.base_url),
+        api_key=live_api_key,
+        model=endpoint.model,
+    )
+    capability_probe = _normalize_capability_probe_payload(capability_probe_payload)
+    if capability_probe is None:
+        raise typer.BadParameter("capability probe did not return any capability results")
+
+    resolved_target_label = target_label or model_id
+    artifact = RunArtifact(
+        run_id=f"{resolved_target_label}.{suite_id}.capability-refresh",
+        run_kind="capability_refresh",
+        suite_id=suite_id,
+        target_label=resolved_target_label,
+        claimed_model=model_id,
+        endpoint_profile_id=endpoint.id,
+        capability_probe=capability_probe,
+        prompts=[],
+    )
+
+    output_dir = paths.runs_dir / run_date
+    ensure_directories(output_dir)
+    output_path = output_dir / f"{resolved_target_label}.{suite_id}.capability-refresh.json"
+    output_path.write_text(
+        json.dumps(artifact.model_dump(mode="json"), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    typer.echo(output_path)
+
+
+@app.command("apply-capability-refresh")
+def apply_capability_refresh_command(
+    refresh: Path = typer.Option(..., "--refresh", exists=True, dir_okay=False),
+    run_paths: list[Path] = typer.Option(..., "--run", exists=True, dir_okay=False),
+) -> None:
+    refresh_artifact = _load_run(refresh)
+    if refresh_artifact.run_kind != "capability_refresh":
+        raise typer.BadParameter("--refresh must point to a capability_refresh artifact")
+    if refresh_artifact.capability_probe is None:
+        raise typer.BadParameter("--refresh artifact does not include capability_probe")
+
+    capability_probe_payload = refresh_artifact.capability_probe.model_dump(mode="json")
+
+    for run_path in run_paths:
+        payload = json.loads(run_path.read_text(encoding="utf-8"))
+        if payload.get("run_kind", "full_suite") != "full_suite":
+            raise typer.BadParameter(f"--run must point to full_suite artifacts: {run_path}")
+        payload["capability_probe"] = capability_probe_payload
+        validated = RunArtifact.model_validate(payload)
+        run_path.write_text(
+            json.dumps(validated.model_dump(mode="json"), indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        typer.echo(run_path)
 
 
 @app.command("build-profile")
@@ -435,6 +553,16 @@ def _format_ratio(value: float | None) -> str:
     return f"{value:.4f}"
 
 
+def _format_runtime_output_token_cap(attempt) -> str:
+    if attempt.use_prompt_output_token_cap:
+        return "prompt"
+    if attempt.output_token_cap is not None:
+        return str(attempt.output_token_cap)
+    if attempt.output_token_cap_multiplier is not None:
+        return f"{attempt.output_token_cap_multiplier:g}x"
+    return "n/a"
+
+
 def _run_protocol_status(artifact: RunArtifact) -> str:
     if artifact.protocol_compatibility is None:
         return "unknown"
@@ -455,10 +583,11 @@ def _profile_capability_coverage(artifact: ProfileArtifact) -> float | None:
     return artifact.capability_profile.coverage_ratio
 
 
-def _build_dialect(endpoint: EndpointProfile) -> OpenAIChatDialectAdapter:
-    if endpoint.dialect == "openai_chat_v1":
-        return OpenAIChatDialectAdapter()
-    raise typer.BadParameter(f"unsupported dialect: {endpoint.dialect}")
+def _build_dialect(endpoint: EndpointProfile):
+    try:
+        return build_protocol_family_adapter(endpoint)
+    except ValueError as exc:
+        raise typer.BadParameter(str(exc)) from exc
 
 
 def _load_endpoint_api_key(endpoint: EndpointProfile) -> str:

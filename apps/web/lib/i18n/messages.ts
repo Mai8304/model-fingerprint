@@ -2,6 +2,7 @@ export type LocaleKey = "en" | "zh-CN" | "ja"
 
 export type MessageKey =
   | "app.title"
+  | "app.tagline"
   | "app.subtitle"
   | "actions.startCheck"
   | "actions.theme"
@@ -60,6 +61,7 @@ export type MessageKey =
 export const messages: Record<LocaleKey, Record<MessageKey, string>> = {
   en: {
     "app.title": "Model Fingerprint",
+    "app.tagline": "Verify model identity and detect downgrades or swaps",
     "app.subtitle": "Identify whether a model is what it claims to be through fingerprint comparison.",
     "actions.startCheck": "Start Check",
     "actions.theme": "Theme",
@@ -132,6 +134,7 @@ export const messages: Record<LocaleKey, Record<MessageKey, string>> = {
   },
   "zh-CN": {
     "app.title": "模型指纹识别",
+    "app.tagline": "验证模型身份，识别降智与替换",
     "app.subtitle": "通过模型指纹比对，判断一个模型是否与其声明身份一致。",
     "actions.startCheck": "开始检查",
     "actions.theme": "主题",
@@ -193,6 +196,7 @@ export const messages: Record<LocaleKey, Record<MessageKey, string>> = {
   },
   ja: {
     "app.title": "モデル指紋識別",
+    "app.tagline": "モデルの真正性を検証し、劣化や差し替えを検知",
     "app.subtitle": "モデル指紋比較により、対象モデルが申告どおりのモデルかを判定します。",
     "actions.startCheck": "検査開始",
     "actions.theme": "テーマ",

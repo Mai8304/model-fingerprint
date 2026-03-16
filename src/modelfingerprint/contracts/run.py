@@ -77,22 +77,130 @@ class CapabilityProbeResult(ContractModel):
     capabilities: dict[ProbeCapabilityId, CapabilityProbeOutcome] = Field(min_length=1)
 
 
+RuntimeRequestIntent = Literal[
+    "structured_extraction",
+    "capability_probe",
+    "long_reasoning",
+]
+RuntimeEscalationSignal = Literal[
+    "finish_reason_length",
+    "missing_answer_text",
+    "invalid_structured_output",
+    "missing_reasoning_text",
+    "retryable_transport_error",
+]
+
+
+class RuntimeAttemptPolicy(ContractModel):
+    attempt_index: int = Field(ge=1)
+    use_prompt_output_token_cap: bool = False
+    output_token_cap: int | None = Field(default=None, ge=1)
+    output_token_cap_multiplier: float | None = Field(default=None, gt=0.0)
+    request_body_overrides: dict[str, object] = Field(default_factory=dict)
+    connect_timeout_seconds: int = Field(gt=0)
+    write_timeout_seconds: int = Field(gt=0)
+    first_byte_timeout_seconds: int = Field(gt=0)
+    idle_timeout_seconds: int = Field(gt=0)
+    total_deadline_seconds: int = Field(gt=0)
+    escalate_on: list[RuntimeEscalationSignal] = Field(default_factory=list)
+
+
+class RuntimeIntentPolicy(ContractModel):
+    intent: RuntimeRequestIntent
+    attempts: list[RuntimeAttemptPolicy] = Field(min_length=1)
+
+
 class RuntimePolicySnapshot(ContractModel):
     policy_id: str = Field(min_length=1)
     thinking_probe_status: ProbeCapabilityStatus
     execution_class: RuntimeExecutionClass
-    no_data_checkpoints_seconds: list[int] = Field(min_length=1)
-    progress_poll_interval_seconds: int = Field(gt=0)
-    total_deadline_seconds: int = Field(gt=0)
+    default_intent: RuntimeRequestIntent | None = None
+    intent_policies: list[RuntimeIntentPolicy] = Field(default_factory=list)
+    no_data_checkpoints_seconds: list[int] | None = Field(default=None, min_length=1)
+    progress_poll_interval_seconds: int | None = Field(default=None, gt=0)
+    total_deadline_seconds: int | None = Field(default=None, gt=0)
     output_token_cap: int | None = Field(default=None, ge=1)
     round_windows_seconds: list[int] | None = Field(default=None, min_length=1)
     max_rounds: int | None = Field(default=None, ge=1)
+
+    @model_validator(mode="before")
+    @classmethod
+    def upgrade_legacy_runtime_policy(
+        cls,
+        value: object,
+    ) -> object:
+        if not isinstance(value, dict):
+            return value
+        data = dict(value)
+        if data.get("intent_policies"):
+            return data
+        total_deadline = int(data.get("total_deadline_seconds") or 120)
+        no_data_checkpoints = list(data.get("no_data_checkpoints_seconds") or [60])
+        progress_poll_interval = int(data.get("progress_poll_interval_seconds") or 10)
+        default_intent = data.get("default_intent")
+        if default_intent not in {
+            "structured_extraction",
+            "capability_probe",
+            "long_reasoning",
+        }:
+            default_intent = (
+                "long_reasoning"
+                if data.get("execution_class") == "thinking"
+                else "structured_extraction"
+            )
+        data["default_intent"] = default_intent
+        data["intent_policies"] = [
+            {
+                "intent": default_intent,
+                "attempts": [
+                    {
+                        "attempt_index": 1,
+                        "output_token_cap": data.get("output_token_cap"),
+                        "connect_timeout_seconds": 10,
+                        "write_timeout_seconds": 10,
+                        "first_byte_timeout_seconds": int(no_data_checkpoints[-1]),
+                        "idle_timeout_seconds": progress_poll_interval,
+                        "total_deadline_seconds": total_deadline,
+                        "escalate_on": [],
+                    }
+                ],
+            }
+        ]
+        return data
+
+    @model_validator(mode="after")
+    def validate_runtime_policy(self) -> RuntimePolicySnapshot:
+        if not self.intent_policies:
+            raise ValueError("runtime policy must include at least one intent policy")
+        intents = {policy.intent for policy in self.intent_policies}
+        if self.default_intent is None:
+            self.default_intent = self.intent_policies[0].intent
+        if self.default_intent not in intents:
+            raise ValueError("runtime policy default_intent must exist in intent_policies")
+        return self
+
+    def policy_for_intent(self, intent: RuntimeRequestIntent) -> RuntimeIntentPolicy:
+        for policy in self.intent_policies:
+            if policy.intent == intent:
+                return policy
+        assert self.default_intent is not None
+        for policy in self.intent_policies:
+            if policy.intent == self.default_intent:
+                return policy
+        raise ValueError(f"missing runtime intent policy: {intent}")
 
 
 class PromptAttemptSummary(ContractModel):
     request_attempt_index: int | None = Field(default=None, ge=1)
     read_timeout_seconds: int = Field(gt=0)
+    runtime_intent: RuntimeRequestIntent | None = None
+    runtime_tier_index: int | None = Field(default=None, ge=0)
     output_token_cap: int | None = Field(default=None, ge=1)
+    connect_timeout_seconds: int | None = Field(default=None, gt=0)
+    write_timeout_seconds: int | None = Field(default=None, gt=0)
+    first_byte_timeout_seconds: int | None = Field(default=None, gt=0)
+    idle_timeout_seconds: int | None = Field(default=None, gt=0)
+    total_deadline_seconds: int | None = Field(default=None, gt=0)
     status: Literal[
         "completed",
         "timeout",
@@ -151,6 +259,7 @@ class PromptRunResult(ContractModel):
 
 class RunArtifact(ContractModel):
     run_id: str = Field(min_length=1)
+    run_kind: Literal["full_suite", "capability_refresh"] = "full_suite"
     suite_id: SuiteId
     target_label: str = Field(min_length=1)
     claimed_model: str | None = None
@@ -164,4 +273,17 @@ class RunArtifact(ContractModel):
     capability_probe: CapabilityProbeResult | None = None
     protocol_compatibility: ProtocolCompatibility | None = None
     trace_dir: str | None = None
-    prompts: list[PromptRunResult] = Field(min_length=1)
+    prompts: list[PromptRunResult] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_run_kind(self) -> RunArtifact:
+        if self.run_kind == "full_suite":
+            if not self.prompts:
+                raise ValueError("full_suite runs must include at least one prompt result")
+            return self
+
+        if self.prompts:
+            raise ValueError("capability_refresh runs must not include prompt results")
+        if self.capability_probe is None:
+            raise ValueError("capability_refresh runs must include capability_probe")
+        return self

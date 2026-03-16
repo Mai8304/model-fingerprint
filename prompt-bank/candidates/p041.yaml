@@ -1,0 +1,78 @@
+id: p041
+name: grounded_decision_matrix_v32
+family: boundary_decision
+intent: 用 owner、approver、acting coverage、traffic location、fallback window 的混杂证据测试高信息密度边界判断
+messages:
+  - role: system
+    content: |
+      只返回 JSON 对象，不要输出 markdown，不要附加解释。
+      顶层必须且只能包含 task_result、evidence、unknowns、violations。
+      task_result 必须包含 q1 到 q8。
+      每个 qN 必须且只能是 {"s","v"}。
+      s 只能是 a、u、c，分别表示 answer、unknown、conflict_unresolved。
+      s 不是 a 时，v 必须是 null。
+  - role: user
+    content: |
+      只根据下列证据回答 q1 到 q8。
+
+      [e1] February draft sheet listed Marco Ruiz as weekend coordinator and a Sunday fallback window.
+      [e2] Final CAB approval names Elena Park as the rollout owner for the approved Atlas migration.
+      [e3] Elena Park is the current Principal SRE for Atlas Payments.
+      [e4] Priya Singh approved Elena's plan; approver is not the rollout owner.
+      [e5] Elena covered the EU rotation last week, but that note does not define her home region.
+      [e6] Atlas failover traffic is served from Singapore during drills; infra location does not identify the owner's region.
+      [e7] Marco takes over only if Elena is offline during rollback.
+      [e8] The approved execution window is 2026-04-06 01:30 UTC.
+
+      回答：
+      - q1: 当前获批 rollout owner 是谁？
+      - q2: Priya Singh 是否是当前 rollout owner？
+      - q3: Elena 上周覆盖 EU rotation 是否足以确定她的 home region？
+      - q4: 如果 Elena 在 rollback 时离线，由谁接手？
+      - q5: 现在能否确定 Elena 的 home region？
+      - q6: 新加坡 drill traffic 是否足以确定 Elena 的 home region？
+      - q7: 已批准的 execution window 是什么？
+      - q8: Sunday fallback window 是否已经获批？
+
+      返回 JSON，对象字段必须且只能包含：
+      - task_result: {q1..q8}
+      - q1.v 只能是 "Elena Park"
+      - q2.v 只能是 "no"
+      - q3.v 只能是 "no"
+      - q4.v 只能是 "Marco Ruiz"
+      - q6.v 只能是 "no"
+      - q7.v 只能是 "2026-04-06 01:30 UTC"
+      - q8.v 只能是 "no"
+      - q5 若不是 answer，v 必须是 null
+      - evidence 只允许给 q1、q4、q7、q8 写最短引用
+      - unknowns 只记录 s=u 的题号
+      - violations: []
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 190
+  response_format: text
+  reasoning_mode: capture_if_available
+output_contract:
+  id: tolerant_json_v3
+  canonicalizer: tolerant_json_v3
+extractors:
+  answer: boundary_decision_v1
+  score: boundary_decision_score_v1
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+evaluation:
+  reference:
+    expected_task_result:
+      q1: {s: a, v: Elena Park}
+      q2: {s: a, v: "no"}
+      q3: {s: a, v: "no"}
+      q4: {s: a, v: Marco Ruiz}
+      q5: {s: u, v: null}
+      q6: {s: a, v: "no"}
+      q7: {s: a, v: "2026-04-06 01:30 UTC"}
+      q8: {s: a, v: "no"}
+required_capabilities: [chat_completions]
+weight_hint: 0.99
+tags: [v3_2, grounding, boundary, authority]
+risk_level: medium

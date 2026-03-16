@@ -15,6 +15,10 @@ from modelfingerprint.extractors.abstention import (
     extract_abstention_v3,
     score_abstention_v3,
 )
+from modelfingerprint.extractors.boundary_decision import (
+    extract_boundary_decision_v1,
+    score_boundary_decision_v1,
+)
 from modelfingerprint.extractors.base import (
     ExtractorDescriptor,
     ExtractorHandler,
@@ -34,10 +38,18 @@ from modelfingerprint.extractors.evidence_grounding import (
     extract_evidence_grounding_v3,
     score_evidence_grounding_v3,
 )
+from modelfingerprint.extractors.mention_classification import (
+    extract_mention_classification_v1,
+    score_mention_classification_v1,
+)
 from modelfingerprint.extractors.reasoning_trace import extract_reasoning_trace
 from modelfingerprint.extractors.representation_alignment import (
     extract_representation_alignment_v3,
     score_representation_alignment_v3,
+)
+from modelfingerprint.extractors.selection_boundary import (
+    extract_selection_boundary_v1,
+    score_selection_boundary_v1,
 )
 from modelfingerprint.extractors.state_tracking import (
     extract_state_tracking_v3,
@@ -172,6 +184,9 @@ def build_default_registry(directory: Path) -> ExtractorRegistry:
         "abstention_v3": extract_abstention_v3,
         "state_tracking_v3": extract_state_tracking_v3,
         "representation_alignment_v3": extract_representation_alignment_v3,
+        "boundary_decision_v1": extract_boundary_decision_v1,
+        "mention_classification_v1": extract_mention_classification_v1,
+        "selection_boundary_v1": extract_selection_boundary_v1,
         "reasoning_trace_v1": extract_reasoning_trace,
         "completion_metadata_v1": extract_completion_metadata,
         SURFACE_EXTRACTOR_NAME: extract_surface_contract,
@@ -182,6 +197,9 @@ def build_default_registry(directory: Path) -> ExtractorRegistry:
         "abstention_score_v3": score_abstention_v3,
         "state_tracking_score_v3": score_state_tracking_v3,
         "representation_alignment_score_v3": score_representation_alignment_v3,
+        "boundary_decision_score_v1": score_boundary_decision_v1,
+        "mention_classification_score_v1": score_mention_classification_v1,
+        "selection_boundary_score_v1": score_selection_boundary_v1,
     }
     return ExtractorRegistry.from_directory(
         directory,

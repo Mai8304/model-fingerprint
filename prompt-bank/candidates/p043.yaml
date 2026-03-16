@@ -1,0 +1,83 @@
+id: p043
+name: boundary_sensitive_abstention_v32
+family: abstention
+intent: 用高信息密度的 answer、unknown、conflict 与 finalized-vs-unresolved 边界测试 abstention 指纹
+messages:
+  - role: system
+    content: |
+      只返回一个 JSON 对象，不要输出 markdown，不要附加解释。
+      顶层必须且只能包含 task_result、evidence、unknowns、violations。
+      不要省略 task_result，不要返回单个 qN 对象。
+      status 不是 answer 时，value 必须是 null。
+  - role: user
+    content: |
+      只根据下面记录回答问题，不要根据常识补全。
+
+      [e1] The review explicitly approves temporary read access.
+      [e2] Write access is still undecided and must not be finalized.
+      [e3] Mara Singh is the current duty owner.
+      [e4] One note proposes Jordan Lee as the failover contact.
+      [e5] Another note says the failover contact remains unresolved and must not be finalized.
+
+      判定规则：
+      - 直接问 “who is the failover contact” 时，如果有提名记录但又明确写着 unresolved and must not be finalized，按 conflict_unresolved。
+      - 问 “is Jordan Lee finalized” 或 “has any failover contact been finalized” 时，按是否 finalized 回答；本记录里 finalized answer 应是 "no"。
+
+      回答下列问题：
+      - q1: Was temporary read access approved?
+      - q2: Was write access granted?
+      - q3: Who is the current duty owner?
+      - q4: Who is the failover contact?
+      - q5: Is Jordan Lee finalized as the failover contact?
+      - q6: Has any failover contact been finalized?
+
+      返回 JSON，对象字段必须且只能包含：
+      - task_result: {q1, q2, q3, q4, q5, q6}
+      - every qN must be {status, value}
+      - status 只能是 answer、unknown、conflict_unresolved
+      - q1.value 只能是 "yes"
+      - q2.value 和 q4.value 必须是 null
+      - q3.value 必须逐字复制名字
+      - q5.value 和 q6.value 只能是 "no"
+      - evidence 只允许为 q1、q3、q5、q6 提供最短引用，例如 {"q1":["e1"],"q3":["e3"],"q5":["e5"],"q6":["e5"]}
+      - unknowns 只记录 status 是 unknown 的问题，例如 ["q2"]
+      - violations: 必须是 []
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 210
+  response_format: text
+  reasoning_mode: capture_if_available
+output_contract:
+  id: tolerant_json_v3
+  canonicalizer: tolerant_json_v3
+extractors:
+  answer: abstention_v3
+  score: abstention_score_v3
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+evaluation:
+  reference:
+    expected_task_result:
+      q1:
+        status: answer
+        value: "yes"
+      q2:
+        status: unknown
+        value: null
+      q3:
+        status: answer
+        value: Mara Singh
+      q4:
+        status: conflict_unresolved
+        value: null
+      q5:
+        status: answer
+        value: "no"
+      q6:
+        status: answer
+        value: "no"
+required_capabilities: [chat_completions]
+weight_hint: 0.97
+tags: [v3_2, abstention, conflict]
+risk_level: low

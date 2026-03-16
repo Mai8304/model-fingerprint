@@ -59,7 +59,7 @@ retry_policy:
 
     result = runner.invoke(app, ["validate-prompts", "--root", str(ROOT)])
     assert result.exit_code == 0
-    assert "validated 5 prompt definitions and 2 suites" in result.stdout
+    assert "validated 15 prompt definitions and 6 suites" in result.stdout
 
     endpoint_result = runner.invoke(app, ["validate-endpoints", "--root", str(tmp_path)])
     assert endpoint_result.exit_code == 0
@@ -198,10 +198,12 @@ def test_show_run_and_show_profile_commands_print_coverage_fields(tmp_path: Path
     assert "capability_coverage_ratio: 0.7500" in show_run.stdout
     assert "protocol_status: incompatible_protocol" in show_run.stdout
     assert "runtime_execution_class: thinking" in show_run.stdout
-    assert "runtime_no_data_checkpoints: 60,90" in show_run.stdout
-    assert "runtime_progress_poll_interval_seconds: 10" in show_run.stdout
-    assert "runtime_total_deadline_seconds: 120" in show_run.stdout
-    assert "runtime_output_token_cap: 3000" in show_run.stdout
+    assert "runtime_default_intent: long_reasoning" in show_run.stdout
+    assert "runtime_default_attempt_count: 1" in show_run.stdout
+    assert "runtime_first_attempt_output_token_cap: 3000" in show_run.stdout
+    assert "runtime_first_attempt_first_byte_timeout_seconds: 90" in show_run.stdout
+    assert "runtime_first_attempt_idle_timeout_seconds: 10" in show_run.stdout
+    assert "runtime_first_attempt_total_deadline_seconds: 120" in show_run.stdout
 
     show_run_json = runner.invoke(app, ["show-run", str(run_path), "--json"])
     assert show_run_json.exit_code == 0
@@ -357,7 +359,11 @@ retry_policy:
     assert captured["runtime_policy"] is not None
     assert artifact.runtime_policy is not None
     assert artifact.runtime_policy.execution_class == "thinking"
-    assert artifact.runtime_policy.output_token_cap == 3000
+    assert artifact.runtime_policy.default_intent == "structured_extraction"
+    policy = artifact.runtime_policy.policy_for_intent("structured_extraction")
+    assert len(policy.attempts) == 3
+    assert policy.attempts[0].output_token_cap == 500
+    assert policy.attempts[-1].output_token_cap == 3000
 
 
 def test_run_suite_direct_live_mode_builds_ad_hoc_endpoint_and_serializes_it(
@@ -489,4 +495,8 @@ def test_run_suite_direct_live_mode_builds_ad_hoc_endpoint_and_serializes_it(
     assert artifact.endpoint_profile_id == endpoint.id
     assert artifact.runtime_policy is not None
     assert artifact.runtime_policy.execution_class == "non_thinking"
-    assert artifact.runtime_policy.no_data_checkpoints_seconds == [60]
+    assert artifact.runtime_policy.default_intent == "structured_extraction"
+    assert artifact.runtime_policy.no_data_checkpoints_seconds is None
+    policy = artifact.runtime_policy.policy_for_intent("structured_extraction")
+    assert len(policy.attempts) == 3
+    assert policy.attempts[0].output_token_cap == 500

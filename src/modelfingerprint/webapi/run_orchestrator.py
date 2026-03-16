@@ -10,7 +10,7 @@ from modelfingerprint.contracts.endpoint import EndpointProfile
 from modelfingerprint.contracts.profile import ProfileArtifact
 from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.contracts.run import RunArtifact
-from modelfingerprint.dialects.openai_chat import OpenAIChatDialectAdapter
+from modelfingerprint.dialects.base import build_protocol_family_adapter
 from modelfingerprint.services.capability_probe import probe_capabilities
 from modelfingerprint.services.comparison_artifact import build_comparison_artifact
 from modelfingerprint.services.endpoint_profiles import (
@@ -30,6 +30,7 @@ from modelfingerprint.webapi.contracts import (
     WebRunInput,
     WebRunPrompt,
     WebRunRecord,
+    WebRunResultCapabilityComparison,
     WebRunResult,
     WebRunResultCandidate,
     WebRunResultCoverage,
@@ -262,7 +263,24 @@ class RunOrchestrator:
             ),
             None,
         )
+        selected_profile = next(
+            (
+                profile
+                for profile in profiles
+                if profile.model_id == input.fingerprint_model_id
+            ),
+            None,
+        )
         blocking_reasons = _build_blocking_reasons(comparison)
+        range_gap, in_confidence_range = _range_gap(
+            similarity=(
+                None
+                if selected_candidate is None
+                else selected_candidate.overall_similarity
+            ),
+            low=calibration.same_model_stats.p05,
+            high=calibration.same_model_stats.p95,
+        )
 
         return WebRunResult(
             run_id=run_artifact.run_id,
@@ -280,6 +298,10 @@ class RunOrchestrator:
                     if selected_candidate is None
                     else selected_candidate.overall_similarity
                 ),
+                confidence_low=calibration.same_model_stats.p05,
+                confidence_high=calibration.same_model_stats.p95,
+                range_gap=range_gap,
+                in_confidence_range=in_confidence_range,
                 top_candidate_model_id=comparison.summary.top1_model,
                 top_candidate_label=display_model_label(comparison.summary.top1_model),
                 top_candidate_similarity=comparison.summary.top1_similarity,
@@ -350,17 +372,14 @@ class RunOrchestrator:
                     top_candidate_label=display_model_label(top_candidate.model_id),
                 ),
             ),
-            prompt_breakdown=[
-                WebRunResultPromptBreakdown(
-                    prompt_id=prompt.prompt_id,
-                    status=prompt.status,
-                    similarity=prompt.similarity,
-                    scoreable=prompt.scoreable,
-                    error_kind=prompt.error_kind,
-                    error_message=prompt.error_message,
-                )
-                for prompt in comparison.prompt_breakdown
-            ],
+            prompt_breakdown=_build_web_prompt_breakdown(
+                run_artifact=run_artifact,
+                selected_candidate=selected_candidate,
+            ),
+            capability_comparisons=_build_web_capability_comparisons(
+                run_artifact=run_artifact,
+                selected_profile=selected_profile,
+            ),
             thresholds_used=WebRunResultThresholds(
                 match=comparison.thresholds_used.match,
                 suspicious=comparison.thresholds_used.suspicious,
@@ -384,7 +403,7 @@ class RunOrchestrator:
     ) -> RunArtifact:
         runtime_policy = resolve_runtime_policy(
             capability_probe_payload=capability_probe_payload,
-            supports_output_token_cap=endpoint.capabilities.supports_output_token_cap,
+            endpoint=endpoint,
         )
         run_date = date.today()
         trace_dir = (
@@ -397,7 +416,7 @@ class RunOrchestrator:
             transport=LiveRunner(
                 endpoint=endpoint,
                 api_key=api_key,
-                dialect=OpenAIChatDialectAdapter(),
+                dialect=build_protocol_family_adapter(endpoint),
                 trace_dir=trace_dir,
                 runtime_policy=runtime_policy,
             ),
@@ -904,7 +923,13 @@ def _probe_summary_message(payload: dict[str, object]) -> str:
     if not isinstance(results, dict):
         return "capability probe completed"
     parts = []
-    for capability in ("thinking", "tools", "streaming", "image"):
+    for capability in (
+        "thinking",
+        "tools",
+        "streaming",
+        "image_generation",
+        "vision_understanding",
+    ):
         outcome = results.get(capability)
         if isinstance(outcome, dict):
             status = outcome.get("status")
@@ -913,6 +938,110 @@ def _probe_summary_message(payload: dict[str, object]) -> str:
     if not parts:
         return "capability probe completed"
     return "capability probe completed: " + ", ".join(parts)
+
+
+def _range_gap(
+    *,
+    similarity: float | None,
+    low: float | None,
+    high: float | None,
+) -> tuple[float | None, bool | None]:
+    if similarity is None or low is None or high is None:
+        return None, None
+    if similarity < low:
+        return low - similarity, False
+    if similarity > high:
+        return similarity - high, False
+    return 0.0, True
+
+
+def _build_web_prompt_breakdown(
+    *,
+    run_artifact: RunArtifact,
+    selected_candidate,
+) -> list[WebRunResultPromptBreakdown]:
+    prompt_scores = (
+        {}
+        if selected_candidate is None
+        else selected_candidate.prompt_scores
+    )
+    return [
+        WebRunResultPromptBreakdown(
+            prompt_id=prompt.prompt_id,
+            status=prompt.status,
+            similarity=prompt_scores.get(prompt.prompt_id),
+            scoreable=bool(prompt.features),
+            error_kind=None if prompt.error is None else prompt.error.kind,
+            error_message=None if prompt.error is None else prompt.error.message,
+        )
+        for prompt in run_artifact.prompts
+    ]
+
+
+def _build_web_capability_comparisons(
+    *,
+    run_artifact: RunArtifact,
+    selected_profile: ProfileArtifact | None,
+) -> list[WebRunResultCapabilityComparison]:
+    if run_artifact.capability_probe is None or selected_profile is None:
+        return []
+
+    capability_profile = selected_profile.capability_profile
+    if capability_profile is None:
+        return []
+
+    capability_order = {
+        "thinking": 0,
+        "tools": 1,
+        "streaming": 2,
+        "image_generation": 3,
+        "vision_understanding": 4,
+    }
+    comparisons: list[WebRunResultCapabilityComparison] = []
+    for capability, expected in capability_profile.capabilities.items():
+        observed = run_artifact.capability_probe.capabilities.get(capability)
+        observed_status = None if observed is None else observed.status
+        expected_status = _expected_capability_status(expected.distribution)
+        is_consistent = _capability_consistency(
+            observed_status=observed_status,
+            expected_status=expected_status,
+        )
+        comparisons.append(
+            WebRunResultCapabilityComparison(
+                capability=capability,
+                observed_status=observed_status,
+                expected_status=expected_status,
+                is_consistent=is_consistent,
+            )
+        )
+    comparisons.sort(
+        key=lambda item: (
+            capability_order.get(item.capability, 99),
+            item.capability,
+        )
+    )
+    return comparisons
+
+
+def _expected_capability_status(distribution: dict[str, float]) -> str | None:
+    if not distribution:
+        return None
+    return max(
+        distribution.items(),
+        key=lambda item: (item[1], item[0]),
+    )[0]
+
+
+def _capability_consistency(
+    *,
+    observed_status: str | None,
+    expected_status: str | None,
+) -> bool | None:
+    if observed_status is None or expected_status is None:
+        return None
+    if observed_status == "insufficient_evidence":
+        return None
+    return observed_status == expected_status
 
 
 def _build_blocking_reasons(comparison) -> list[str]:

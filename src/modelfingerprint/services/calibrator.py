@@ -39,6 +39,8 @@ CAPABILITY_WEIGHTS = {
     "tools": 0.30,
     "streaming": 0.20,
     "image": 0.15,
+    "image_generation": 0.15,
+    "vision_understanding": 0.15,
 }
 CAPABILITY_MATCH_SCORES: dict[str, dict[str, float]] = {
     "supported": {
@@ -121,16 +123,10 @@ class Calibrator:
         same_stats = build_stats(same_model_scores)
         cross_stats = build_stats(cross_model_scores)
         consistency_stats = build_stats(consistency_scores)
-        suspicious = max(
-            cross_stats.p95,
-            min(same_stats.p05, (same_stats.p05 + cross_stats.p95) / 2),
-        )
-        thresholds = CalibrationThresholds(
-            match=same_stats.p05,
-            suspicious=suspicious,
-            unknown=cross_stats.p95,
-            margin=max(0.01, same_stats.p05 - suspicious),
-            consistency=consistency_stats.p05,
+        thresholds = _derive_thresholds(
+            same_stats=same_stats,
+            cross_stats=cross_stats,
+            consistency_stats=consistency_stats,
         )
 
         return CalibrationArtifact(
@@ -153,6 +149,27 @@ class Calibrator:
             encoding="utf-8",
         )
         return output_path
+
+
+def _derive_thresholds(
+    *,
+    same_stats: SimilarityStats,
+    cross_stats: SimilarityStats,
+    consistency_stats: SimilarityStats,
+) -> CalibrationThresholds:
+    match = same_stats.p05
+    unknown = min(cross_stats.p95, match)
+    suspicious = max(
+        unknown,
+        min(match, (match + cross_stats.p95) / 2),
+    )
+    return CalibrationThresholds(
+        match=match,
+        suspicious=suspicious,
+        unknown=unknown,
+        margin=max(0.01, match - suspicious),
+        consistency=consistency_stats.p05,
+    )
 
 
 def score_run_against_profile(run: RunArtifact, profile: ProfileArtifact) -> ProfileMatchScore:

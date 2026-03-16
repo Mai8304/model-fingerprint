@@ -314,6 +314,58 @@ def test_probe_tools_retries_with_thinking_disabled_when_tool_choice_conflicts(
     assert outcome.evidence.get("probe_path") == "thinking_disabled_retry"
 
 
+def test_probe_tools_retries_openrouter_ignored_length_with_reasoning_excluded(
+    monkeypatch,
+) -> None:
+    calls: list[dict[str, object]] = []
+
+    def fake_post_json(
+        *,
+        url: str,
+        headers: dict[str, str],
+        body: dict[str, object],
+        timeout_seconds: int = 90,
+    ):
+        calls.append(body)
+        if len(calls) == 1:
+            return (
+                HttpProbeResponse(
+                    status_code=200,
+                    headers={"content-type": "application/json"},
+                    body=b'{"choices":[{"finish_reason":"length","message":{"content":""}}]}',
+                    latency_ms=12,
+                ),
+                None,
+            )
+        return (
+            HttpProbeResponse(
+                status_code=200,
+                headers={"content-type": "application/json"},
+                body=(
+                    b'{"choices":[{"finish_reason":"tool_calls","message":{"tool_calls":[{"id":"call_1","type":"function","function":{"name":"ping","arguments":"{}"}}]}}]}'
+                ),
+                latency_ms=18,
+            ),
+            None,
+        )
+
+    monkeypatch.setattr("modelfingerprint.services.capability_probe._post_json", fake_post_json)
+
+    outcome = probe_tools(
+        base_url="https://openrouter.ai/api/v1",
+        api_key="secret",
+        model="z-ai/glm-4.7",
+    )
+
+    assert outcome.status == "supported"
+    assert len(calls) == 2
+    assert calls[0]["max_tokens"] == 64
+    assert calls[1]["max_tokens"] == 256
+    assert calls[1]["thinking"] == {"type": "disabled"}
+    assert calls[1]["reasoning"] == {"effort": "minimal", "exclude": True}
+    assert outcome.evidence.get("probe_path") == "ignored_retry"
+
+
 def test_probe_streaming_adds_only_stream_delta(monkeypatch) -> None:
     captured: dict[str, Any] = {}
 

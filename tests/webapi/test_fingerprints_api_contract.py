@@ -42,19 +42,19 @@ def _write_profile(path: Path, model_id: str, suite_id: str) -> None:
 
 def test_list_fingerprint_models_returns_stable_v3_registry(tmp_path: Path) -> None:
     _write_profile(
-        tmp_path / "profiles" / "fingerprint-suite-v3" / "gpt-4.1-mini.json",
+        tmp_path / "profiles" / "fingerprint-suite-v32" / "gpt-4.1-mini.json",
         model_id="gpt-4.1-mini",
-        suite_id="fingerprint-suite-v3",
+        suite_id="fingerprint-suite-v32",
     )
     _write_profile(
-        tmp_path / "profiles" / "fingerprint-suite-v3" / "deepseek-chat.json",
+        tmp_path / "profiles" / "fingerprint-suite-v32" / "deepseek-chat.json",
         model_id="deepseek-chat",
-        suite_id="fingerprint-suite-v3",
+        suite_id="fingerprint-suite-v32",
     )
     _write_profile(
-        tmp_path / "profiles" / "fingerprint-suite-v3" / "glm-5.json",
+        tmp_path / "profiles" / "fingerprint-suite-v32" / "glm-5.json",
         model_id="glm-5",
-        suite_id="fingerprint-suite-v3",
+        suite_id="fingerprint-suite-v32",
     )
 
     items = list_fingerprint_models(RepositoryPaths(root=tmp_path))
@@ -63,19 +63,25 @@ def test_list_fingerprint_models_returns_stable_v3_registry(tmp_path: Path) -> N
         {
             "id": "deepseek-chat",
             "label": "DeepSeek Chat",
-            "suite_id": "fingerprint-suite-v3",
+            "suite_id": "fingerprint-suite-v32",
             "available": True,
+            "image_generation": None,
+            "vision_understanding": None,
         },
         {
             "id": "glm-5",
             "label": "GLM-5",
-            "suite_id": "fingerprint-suite-v3",
+            "suite_id": "fingerprint-suite-v32",
             "available": True,
+            "image_generation": None,
+            "vision_understanding": None,
         },
         {
             "id": "gpt-4.1-mini",
             "label": "GPT-4.1 Mini",
-            "suite_id": "fingerprint-suite-v3",
+            "suite_id": "fingerprint-suite-v32",
             "available": True,
+            "image_generation": None,
+            "vision_understanding": None,
         },
     ]

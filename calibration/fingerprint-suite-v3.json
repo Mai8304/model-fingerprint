@@ -4,30 +4,35 @@
     "reasoning_min": 0.0
   },
   "cross_model_stats": {
-    "mean": 0.8410056035513972,
-    "p05": 0.82852691412143,
-    "p50": 0.8505920507344782,
-    "p95": 0.8563501614683414
+    "mean": 0.7847087614830193,
+    "p05": 0.6584845242223878,
+    "p50": 0.7969125499535944,
+    "p95": 0.9310788205944271
   },
   "protocol_expectations": {
-    "issues": [],
+    "issues": [
+      "request did not complete before the total deadline",
+      "request did not complete before the total runtime deadline",
+      "response body must contain a JSON object",
+      "{\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"google/gemini-3-pro-preview is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations\",\"provider_name\":\"Google\",\"is_byok\":false}},\"user_id\":\"user_32jhL4wxiUrXk902RUDcHa5Uf6q\"}"
+    ],
     "required_capabilities": [
       "chat_completions"
     ],
     "satisfied": true
   },
   "same_model_stats": {
-    "mean": 0.9831116563360881,
-    "p05": 0.9720686983471074,
-    "p50": 0.9941546143250688,
-    "p95": 0.9941546143250688
+    "mean": 0.912190936499099,
+    "p05": 0.8252519211395168,
+    "p50": 0.948268967108929,
+    "p95": 1.0
   },
   "suite_id": "fingerprint-suite-v3",
   "thresholds": {
     "consistency": 1.0,
-    "margin": 0.05785926843938305,
-    "match": 0.9720686983471074,
-    "suspicious": 0.9142094299077244,
-    "unknown": 0.8563501614683414
+    "margin": 0.01,
+    "match": 0.8252519211395168,
+    "suspicious": 0.8252519211395168,
+    "unknown": 0.8252519211395168
   }
 }

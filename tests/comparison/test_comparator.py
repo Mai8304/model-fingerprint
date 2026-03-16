@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from modelfingerprint.contracts.calibration import CalibrationArtifact
 from modelfingerprint.contracts.profile import ProfileArtifact
 from modelfingerprint.contracts.run import RunArtifact
@@ -17,6 +19,8 @@ def build_run(
     p021_step_count: int | None,
     p021_reasoning_visible: bool,
     p023_char_len: int,
+    p021_latency_bucket_ms: int | None = None,
+    p021_extra_features: dict[str, object] | None = None,
     answer_coverage_ratio: float = 1.0,
     reasoning_coverage_ratio: float = 1.0,
     capability_probe: dict[str, object] | None = None,
@@ -28,6 +32,10 @@ def build_run(
     }
     if p021_step_count is not None:
         prompt1_features["reasoning.step_count"] = p021_step_count
+    if p021_latency_bucket_ms is not None:
+        prompt1_features["transport.latency_bucket_ms"] = p021_latency_bucket_ms
+    if p021_extra_features is not None:
+        prompt1_features.update(p021_extra_features)
 
     prompt1_completion = None
     if p021_reasoning_visible:
@@ -334,7 +342,8 @@ def test_comparator_scores_capability_similarity_when_probe_and_profile_exist() 
                     "thinking": {"distribution": {"supported": 1.0}},
                     "tools": {"distribution": {"supported": 1.0}},
                     "streaming": {"distribution": {"supported": 1.0}},
-                    "image": {"distribution": {"unsupported": 1.0}},
+                    "image_generation": {"distribution": {"supported": 1.0}},
+                    "vision_understanding": {"distribution": {"supported": 1.0}},
                 },
             },
             "prompts": [
@@ -358,13 +367,17 @@ def test_comparator_scores_capability_similarity_when_probe_and_profile_exist() 
             "reasoning_coverage_ratio": 0.0,
             "capability_probe": {
                 "probe_mode": "minimal",
-                "probe_version": "v1",
+                "probe_version": "v2",
                 "coverage_ratio": 1.0,
                 "capabilities": {
                     "thinking": {"status": "supported", "evidence": {}},
                     "tools": {"status": "supported", "evidence": {}},
                     "streaming": {"status": "supported", "evidence": {}},
-                    "image": {"status": "unsupported", "evidence": {}},
+                    "image_generation": {"status": "supported", "evidence": {}},
+                    "vision_understanding": {
+                        "status": "accepted_but_ignored",
+                        "evidence": {},
+                    },
                 },
             },
             "prompts": [
@@ -388,5 +401,140 @@ def test_comparator_scores_capability_similarity_when_probe_and_profile_exist() 
 
     result = compare_run(target, [profile])
 
-    assert result.capability_similarity == 1.0
+    assert result.capability_similarity == pytest.approx(0.9325)
     assert result.capability_coverage_ratio == 1.0
+
+
+def test_transport_latency_bucket_does_not_affect_identity_similarity() -> None:
+    profile = build_profile(
+        "gpt-5.3",
+        [
+            build_run(
+                run_id="gpt-1",
+                target_label="gpt-5.3",
+                claimed_model="gpt-5.3",
+                p021_char_len=40,
+                p021_step_count=2,
+                p021_reasoning_visible=True,
+                p021_latency_bucket_ms=1000,
+                p023_char_len=20,
+            ),
+            build_run(
+                run_id="gpt-2",
+                target_label="gpt-5.3",
+                claimed_model="gpt-5.3",
+                p021_char_len=42,
+                p021_step_count=2,
+                p021_reasoning_visible=True,
+                p021_latency_bucket_ms=2000,
+                p023_char_len=22,
+            ),
+        ],
+        prompt_weights={"p021": 0.9, "p023": 0.1},
+    )
+
+    fast_target = build_run(
+        run_id="suspect-fast",
+        target_label="suspect-fast",
+        claimed_model="gpt-5.3",
+        p021_char_len=41,
+        p021_step_count=2,
+        p021_reasoning_visible=True,
+        p021_latency_bucket_ms=1000,
+        p023_char_len=21,
+    )
+    slow_target = build_run(
+        run_id="suspect-slow",
+        target_label="suspect-slow",
+        claimed_model="gpt-5.3",
+        p021_char_len=41,
+        p021_step_count=2,
+        p021_reasoning_visible=True,
+        p021_latency_bucket_ms=120000,
+        p023_char_len=21,
+    )
+
+    fast_result = compare_run(fast_target, [profile])
+    slow_result = compare_run(slow_target, [profile])
+
+    assert fast_result.top1_similarity == pytest.approx(slow_result.top1_similarity)
+    assert fast_result.transport_similarity == pytest.approx(slow_result.transport_similarity)
+
+
+def test_removed_runtime_coupled_features_do_not_affect_identity_similarity() -> None:
+    profile = build_profile(
+        "gpt-5.3",
+        [
+            build_run(
+                run_id="gpt-1",
+                target_label="gpt-5.3",
+                claimed_model="gpt-5.3",
+                p021_char_len=40,
+                p021_step_count=2,
+                p021_reasoning_visible=True,
+                p023_char_len=20,
+                p021_extra_features={
+                    "transport.reasoning_tokens": 12,
+                    "transport.finish_reason": "stop",
+                    "surface.field_order_match": True,
+                    "surface.key_alias_normalized": False,
+                },
+            ),
+            build_run(
+                run_id="gpt-2",
+                target_label="gpt-5.3",
+                claimed_model="gpt-5.3",
+                p021_char_len=42,
+                p021_step_count=2,
+                p021_reasoning_visible=True,
+                p023_char_len=22,
+                p021_extra_features={
+                    "transport.reasoning_tokens": 18,
+                    "transport.finish_reason": "length",
+                    "surface.field_order_match": False,
+                    "surface.key_alias_normalized": True,
+                },
+            ),
+        ],
+        prompt_weights={"p021": 0.9, "p023": 0.1},
+    )
+
+    clean_target = build_run(
+        run_id="suspect-clean",
+        target_label="suspect-clean",
+        claimed_model="gpt-5.3",
+        p021_char_len=41,
+        p021_step_count=2,
+        p021_reasoning_visible=True,
+        p023_char_len=21,
+        p021_extra_features={
+            "transport.reasoning_tokens": 10,
+            "transport.finish_reason": "stop",
+            "surface.field_order_match": True,
+            "surface.key_alias_normalized": False,
+            "surface.had_markdown_fence": False,
+        },
+    )
+    noisy_target = build_run(
+        run_id="suspect-noisy",
+        target_label="suspect-noisy",
+        claimed_model="gpt-5.3",
+        p021_char_len=41,
+        p021_step_count=2,
+        p021_reasoning_visible=True,
+        p023_char_len=21,
+        p021_extra_features={
+            "transport.reasoning_tokens": 999,
+            "transport.finish_reason": "tool_calls",
+            "surface.field_order_match": False,
+            "surface.key_alias_normalized": True,
+            "surface.had_markdown_fence": True,
+        },
+    )
+
+    clean_result = compare_run(clean_target, [profile])
+    noisy_result = compare_run(noisy_target, [profile])
+
+    assert clean_result.top1_similarity == pytest.approx(noisy_result.top1_similarity)
+    assert clean_result.transport_similarity == pytest.approx(noisy_result.transport_similarity)
+    assert clean_result.surface_similarity == pytest.approx(noisy_result.surface_similarity)

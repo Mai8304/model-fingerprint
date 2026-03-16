@@ -102,7 +102,13 @@ class RecordingHttpClient:
     def __init__(self) -> None:
         self.calls: list[dict[str, object]] = []
 
-    def start(self, request, *, connect_timeout_seconds: int, read_timeout_seconds: int):
+    def _record_call(
+        self,
+        request,
+        *,
+        connect_timeout_seconds: int,
+        read_timeout_seconds: int,
+    ) -> None:
         self.calls.append(
             {
                 "url": request.url,
@@ -110,6 +116,43 @@ class RecordingHttpClient:
                 "connect_timeout_seconds": connect_timeout_seconds,
                 "read_timeout_seconds": read_timeout_seconds,
             }
+        )
+
+    def send(self, request, *, connect_timeout_seconds: int, read_timeout_seconds: int):
+        self._record_call(
+            request,
+            connect_timeout_seconds=connect_timeout_seconds,
+            read_timeout_seconds=read_timeout_seconds,
+        )
+        return (
+            {
+                "choices": [
+                    {
+                        "finish_reason": "stop",
+                        "message": {
+                            "content": (
+                                '{"task_result":{"owner":"Alice Wong"},'
+                                '"evidence":{"owner":["e1"]},"unknowns":{},"violations":[]}'
+                            ),
+                            "reasoning_content": "1. comply with the grounded protocol",
+                        },
+                    }
+                ],
+                "usage": {
+                    "prompt_tokens": 12,
+                    "completion_tokens": 18,
+                    "total_tokens": 54,
+                    "completion_tokens_details": {"reasoning_tokens": 24},
+                },
+            },
+            3210,
+        )
+
+    def start(self, request, *, connect_timeout_seconds: int, read_timeout_seconds: int):
+        self._record_call(
+            request,
+            connect_timeout_seconds=connect_timeout_seconds,
+            read_timeout_seconds=read_timeout_seconds,
         )
 
         class ImmediateHandle:
@@ -179,13 +222,16 @@ def test_live_runner_preserves_messages_and_output_token_cap_field_exactly() -> 
                     }
                 }
             },
-            supports_output_token_cap=True,
+            endpoint=build_endpoint(
+                supports_json_object_response=True,
+                output_token_cap_field="max_completion_tokens",
+            ),
         ),
     )
 
     runner.execute(prompt)
 
-    assert client.calls[0]["body"]["max_completion_tokens"] == 3000
-    assert client.calls[0]["read_timeout_seconds"] == 120
+    assert client.calls[0]["body"]["max_completion_tokens"] == 96
+    assert client.calls[0]["read_timeout_seconds"] == 90
     assert client.calls[0]["body"]["messages"] == original_messages
     assert [message.model_dump(mode="json") for message in prompt.messages] == original_messages

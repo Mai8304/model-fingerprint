@@ -19,9 +19,14 @@ export function TopBar() {
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-sky-100 text-sky-700 dark:bg-sky-500/12 dark:text-sky-300">
             <Fingerprint className="h-5 w-5" />
           </div>
-          <p className="truncate text-sm font-semibold tracking-tight text-slate-950 dark:text-slate-50">
-            {t("app.title")}
-          </p>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold tracking-tight text-slate-950 dark:text-slate-50">
+              {t("app.title")}
+            </p>
+            <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
+              {t("app.tagline")}
+            </p>
+          </div>
         </div>
 
         <div className="flex shrink-0 items-center gap-2">

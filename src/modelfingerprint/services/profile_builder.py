@@ -37,6 +37,20 @@ def build_profile(
     if len(suite_ids) != 1:
         raise ProfileBuildError("profile runs must all belong to the same suite")
 
+    full_suite_runs = [run for run in runs if run.run_kind == "full_suite"]
+    if not full_suite_runs:
+        raise ProfileBuildError("at least one full_suite run is required")
+
+    capability_runs = [
+        run
+        for run in runs
+        if run.run_kind == "capability_refresh" and run.capability_probe is not None
+    ]
+    if not capability_runs:
+        capability_runs = [
+            run for run in full_suite_runs if run.capability_probe is not None
+        ]
+
     prompt_feature_values: dict[str, dict[str, list[FeaturePrimitive]]] = defaultdict(
         lambda: defaultdict(list)
     )
@@ -44,7 +58,7 @@ def build_profile(
     prompt_reasoning_coverage: dict[str, list[float]] = defaultdict(list)
     prompt_reasoning_visible: dict[str, list[float]] = defaultdict(list)
 
-    for run in runs:
+    for run in full_suite_runs:
         for prompt in run.prompts:
             prompt_answer_coverage[prompt.prompt_id].append(
                 1.0 if prompt.status == "completed" and prompt.raw_output is not None else 0.0
@@ -78,19 +92,19 @@ def build_profile(
         for prompt_id, feature_map in sorted(prompt_feature_values.items())
     ]
 
-    protocol_expectations = _merge_protocol_expectations(runs)
-    capability_profile = _build_capability_profile(runs)
+    protocol_expectations = _merge_protocol_expectations(full_suite_runs)
+    capability_profile = _build_capability_profile(capability_runs)
 
     return ProfileArtifact(
         model_id=model_id,
         suite_id=next(iter(suite_ids)),
-        sample_count=len(runs),
+        sample_count=len(full_suite_runs),
         answer_coverage_ratio=mean(
             [
                 run.answer_coverage_ratio
                 if run.answer_coverage_ratio is not None
                 else _derive_answer_coverage(run)
-                for run in runs
+                for run in full_suite_runs
             ]
         ),
         reasoning_coverage_ratio=mean(
@@ -98,7 +112,7 @@ def build_profile(
                 run.reasoning_coverage_ratio
                 if run.reasoning_coverage_ratio is not None
                 else _derive_reasoning_coverage(run)
-                for run in runs
+                for run in full_suite_runs
             ]
         ),
         capability_profile=capability_profile,

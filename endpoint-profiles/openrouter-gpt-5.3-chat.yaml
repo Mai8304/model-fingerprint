@@ -1,0 +1,31 @@
+id: openrouter-gpt-5.3-chat
+dialect: openai_chat_v1
+base_url: https://openrouter.ai/api/v1
+model: openai/gpt-5.3-chat
+auth:
+  kind: bearer_env
+  env_var: MODEL_FINGERPRINT_API_KEY
+capabilities:
+  exposes_reasoning_text: false
+  supports_json_object_response: true
+  supports_temperature: true
+  supports_top_p: true
+  supports_output_token_cap: true
+request_mapping:
+  output_token_cap_field: max_tokens
+  json_response_shape:
+    type: json_object
+response_mapping:
+  answer_text_path: choices.0.message.content
+  finish_reason_path: choices.0.finish_reason
+  usage_paths:
+    prompt_tokens: usage.prompt_tokens
+    output_tokens: usage.completion_tokens
+    total_tokens: usage.total_tokens
+    reasoning_tokens: usage.completion_tokens_details.reasoning_tokens
+timeout_policy:
+  connect_seconds: 15
+  read_seconds: 180
+retry_policy:
+  max_attempts: 2
+  retryable_statuses: [408, 429, 500, 502, 503, 504]

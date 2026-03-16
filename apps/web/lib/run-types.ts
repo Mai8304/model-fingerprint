@@ -12,11 +12,18 @@ export type FingerprintOption = {
   label: string
 }
 
+export type FingerprintCapabilitySummary = {
+  status: string | null
+  confidence: number | null
+}
+
 export type FingerprintRegistryItem = {
   id: string
   label: string
   suite_id: string
   available: boolean
+  image_generation: FingerprintCapabilitySummary | null
+  vision_understanding: FingerprintCapabilitySummary | null
 }
 
 export type RunBrief = {
@@ -108,6 +115,8 @@ export type RunResultResource = {
     similarity_score: number | null
     confidence_low: number | null
     confidence_high: number | null
+    range_gap: number | null
+    in_confidence_range: boolean | null
     top_candidate_model_id: string | null
     top_candidate_label: string | null
     top_candidate_similarity: number | null
@@ -173,6 +182,12 @@ export type RunResultResource = {
     scoreable: boolean
     error_kind: string | null
     error_message: string | null
+  }>
+  capability_comparisons: Array<{
+    capability: string
+    observed_status: string | null
+    expected_status: string | null
+    is_consistent: boolean | null
   }>
   thresholds_used: {
     match: number

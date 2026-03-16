@@ -184,3 +184,25 @@ def test_suite_runner_keeps_running_when_one_prompt_transport_raises(tmp_path: P
         retryable=False,
         http_status=None,
     )
+
+
+def test_normalize_capability_probe_payload_accepts_extended_image_keys() -> None:
+    from modelfingerprint.services.suite_runner import _normalize_capability_probe_payload
+
+    normalized = _normalize_capability_probe_payload(
+        {
+            "probe_mode": "minimal",
+            "probe_version": "v1",
+            "coverage_ratio": 1.0,
+            "results": {
+                "thinking": {"status": "supported"},
+                "image_generation": {"status": "unsupported"},
+                "vision_understanding": {"status": "unsupported"},
+            },
+        }
+    )
+
+    assert normalized is not None
+    assert normalized.capabilities["thinking"].status == "supported"
+    assert normalized.capabilities["image_generation"].status == "unsupported"
+    assert normalized.capabilities["vision_understanding"].status == "unsupported"

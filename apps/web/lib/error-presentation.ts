@@ -1,6 +1,11 @@
+import { presentFailureMessage } from "@/lib/failure-presentation"
+import type { LocaleKey } from "@/lib/i18n/messages"
 import type { RunSnapshot } from "@/lib/run-types"
 
-export function deriveRemoteFieldErrors(run: RunSnapshot): Partial<Record<"apiKey" | "baseUrl" | "modelName" | "fingerprintModel", string>> {
+export function deriveRemoteFieldErrors(
+  run: RunSnapshot,
+  locale: LocaleKey = "en",
+): Partial<Record<"apiKey" | "baseUrl" | "modelName" | "fingerprintModel", string>> {
   if (run.status !== "configuration_error" && run.resultState !== "configuration_error") {
     return {}
   }
@@ -15,7 +20,12 @@ export function deriveRemoteFieldErrors(run: RunSnapshot): Partial<Record<"apiKe
   }
 
   return {
-    [field]: run.failureReason,
+    [field]: presentFailureMessage({
+      code: run.failureCode,
+      message: run.failureReason,
+      locale,
+      fallback: run.failureReason,
+    }),
   }
 }
 

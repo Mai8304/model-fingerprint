@@ -1,0 +1,49 @@
+{
+  "coverage_thresholds": {
+    "answer_min": 0.0,
+    "reasoning_min": 0.0
+  },
+  "cross_model_stats": {
+    "mean": 0.8115185402884113,
+    "p05": 0.27075,
+    "p50": 0.8703501650988352,
+    "p95": 0.9682272527182569
+  },
+  "protocol_expectations": {
+    "issues": [
+      "request timed out",
+      "response did not include answer text",
+      "{\"error\":{\"message\":\"Your account org-0c772eb2a74f45a69981a3417d7e893f / proj-5931a984c0f8400c95afca02074afd9f \\u003cak-f8quq4x13po111aczc5i\\u003e request reached organization TPD rate limit, current: 1500785, limit: 1500000\",\"type\":\"rate_limit_reached_error\"}}",
+      "{\"error\":{\"message\":\"Your account org-0c772eb2a74f45a69981a3417d7e893f / proj-5931a984c0f8400c95afca02074afd9f \\u003cak-f8quq4x13po111aczc5i\\u003e request reached organization TPD rate limit, current: 1500859, limit: 1500000\",\"type\":\"rate_limit_reached_error\"}}",
+      "{\"error\":{\"message\":\"Your account org-0c772eb2a74f45a69981a3417d7e893f / proj-5931a984c0f8400c95afca02074afd9f \\u003cak-f8quq4x13po111aczc5i\\u003e request reached organization TPD rate limit, current: 1500894, limit: 1500000\",\"type\":\"rate_limit_reached_error\"}}",
+      "{\"error\":{\"message\":\"Your account org-0c772eb2a74f45a69981a3417d7e893f / proj-5931a984c0f8400c95afca02074afd9f \\u003cak-f8quq4x13po111aczc5i\\u003e request reached organization TPD rate limit, current: 1501056, limit: 1500000\",\"type\":\"rate_limit_reached_error\"}}",
+      "{\"error\":{\"message\":\"Your account org-0c772eb2a74f45a69981a3417d7e893f / proj-5931a984c0f8400c95afca02074afd9f \\u003cak-f8quq4x13po111aczc5i\\u003e request reached organization TPD rate limit, current: 1501067, limit: 1500000\",\"type\":\"rate_limit_reached_error\"}}",
+      "{\"error\":{\"message\":\"Your account org-0c772eb2a74f45a69981a3417d7e893f / proj-5931a984c0f8400c95afca02074afd9f \\u003cak-f8quq4x13po111aczc5i\\u003e request reached organization TPD rate limit, current: 1501074, limit: 1500000\",\"type\":\"rate_limit_reached_error\"}}",
+      "{\"error\":{\"message\":\"Your account org-0c772eb2a74f45a69981a3417d7e893f / proj-5931a984c0f8400c95afca02074afd9f \\u003cak-f8quq4x13po111aczc5i\\u003e request reached organization TPD rate limit, current: 1501080, limit: 1500000\",\"type\":\"rate_limit_reached_error\"}}",
+      "{\"error\":{\"message\":\"Your account org-0c772eb2a74f45a69981a3417d7e893f / proj-5931a984c0f8400c95afca02074afd9f \\u003cak-f8quq4x13po111aczc5i\\u003e request reached organization TPD rate limit, current: 1501170, limit: 1500000\",\"type\":\"rate_limit_reached_error\"}}",
+      "{\"error\":{\"message\":\"Your account org-0c772eb2a74f45a69981a3417d7e893f / proj-5931a984c0f8400c95afca02074afd9f \\u003cak-f8quq4x13po111aczc5i\\u003e request reached organization TPD rate limit, current: 1501176, limit: 1500000\",\"type\":\"rate_limit_reached_error\"}}",
+      "{\"error\":{\"message\":\"Your account org-0c772eb2a74f45a69981a3417d7e893f / proj-5931a984c0f8400c95afca02074afd9f \\u003cak-f8quq4x13po111aczc5i\\u003e request reached organization TPD rate limit, current: 1501209, limit: 1500000\",\"type\":\"rate_limit_reached_error\"}}",
+      "{\"error\":{\"message\":\"Your account org-0c772eb2a74f45a69981a3417d7e893f / proj-5931a984c0f8400c95afca02074afd9f \\u003cak-f8quq4x13po111aczc5i\\u003e request reached organization TPD rate limit, current: 1501270, limit: 1500000\",\"type\":\"rate_limit_reached_error\"}}",
+      "{\"error\":{\"message\":\"Your account org-0c772eb2a74f45a69981a3417d7e893f / proj-5931a984c0f8400c95afca02074afd9f \\u003cak-f8quq4x13po111aczc5i\\u003e request reached organization TPD rate limit, current: 1501279, limit: 1500000\",\"type\":\"rate_limit_reached_error\"}}",
+      "{\"error\":{\"message\":\"Your account org-0c772eb2a74f45a69981a3417d7e893f / proj-5931a984c0f8400c95afca02074afd9f \\u003cak-f8quq4x13po111aczc5i\\u003e request reached organization TPD rate limit, current: 1501859, limit: 1500000\",\"type\":\"rate_limit_reached_error\"}}"
+    ],
+    "required_capabilities": [
+      "chat_completions"
+    ],
+    "satisfied": true
+  },
+  "same_model_stats": {
+    "mean": 0.9026415382221828,
+    "p05": 0.3,
+    "p50": 0.9805655695339708,
+    "p95": 0.9961864992539837
+  },
+  "suite_id": "fingerprint-suite-v32",
+  "thresholds": {
+    "consistency": 0.0,
+    "margin": 0.01,
+    "match": 0.3,
+    "suspicious": 0.9682272527182569,
+    "unknown": 0.9682272527182569
+  }
+}

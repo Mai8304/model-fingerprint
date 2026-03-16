@@ -376,6 +376,121 @@ def test_artifact_models_parse_capability_probe_sections() -> None:
     assert profile.capability_profile.capabilities["thinking"].distribution["supported"] == 1.0
 
 
+def test_capability_probe_accepts_split_image_and_vision_ids() -> None:
+    run = RunArtifact.model_validate(
+        {
+            "run_id": "run-20260311-capability-split",
+            "suite_id": "fingerprint-suite-v3",
+            "target_label": "suspect-capability-split",
+            "prompt_count_total": 1,
+            "prompt_count_completed": 1,
+            "prompt_count_scoreable": 1,
+            "answer_coverage_ratio": 1.0,
+            "reasoning_coverage_ratio": 0.0,
+            "capability_probe": {
+                "probe_mode": "minimal",
+                "probe_version": "v2",
+                "coverage_ratio": 1.0,
+                "capabilities": {
+                    "thinking": {"status": "supported"},
+                    "tools": {"status": "supported"},
+                    "streaming": {"status": "supported"},
+                    "image_generation": {"status": "supported"},
+                    "vision_understanding": {"status": "accepted_but_ignored"},
+                },
+            },
+            "prompts": [
+                {
+                    "prompt_id": "p024",
+                    "status": "completed",
+                    "raw_output": "{\"task_result\": {}}",
+                    "usage": {
+                        "input_tokens": 20,
+                        "output_tokens": 30,
+                        "reasoning_tokens": 0,
+                        "total_tokens": 50,
+                    },
+                    "features": {
+                        "score.value_accuracy": 1.0,
+                        "answer.filled_field_count": 2,
+                    },
+                }
+            ],
+        }
+    )
+
+    profile = ProfileArtifact.model_validate(
+        {
+            "model_id": "nano-banana",
+            "suite_id": "fingerprint-suite-v3",
+            "sample_count": 1,
+            "capability_profile": {
+                "coverage_ratio": 1.0,
+                "capabilities": {
+                    "image_generation": {"distribution": {"supported": 1.0}},
+                    "vision_understanding": {
+                        "distribution": {"accepted_but_ignored": 1.0}
+                    },
+                },
+            },
+            "prompts": [
+                {
+                    "prompt_id": "p024",
+                    "weight": 1.0,
+                    "features": {
+                        "score.value_accuracy": {"kind": "numeric", "median": 1.0, "mad": 0.1},
+                    },
+                }
+            ],
+        }
+    )
+
+    assert run.capability_probe is not None
+    assert run.capability_probe.capabilities["image_generation"].status == "supported"
+    assert profile.capability_profile is not None
+    assert (
+        profile.capability_profile.capabilities["vision_understanding"].distribution[
+            "accepted_but_ignored"
+        ]
+        == 1.0
+    )
+
+
+def test_capability_probe_rejects_legacy_image_id() -> None:
+    with pytest.raises(ValidationError):
+        RunArtifact.model_validate(
+            {
+                "run_id": "run-20260311-legacy-image",
+                "suite_id": "fingerprint-suite-v3",
+                "target_label": "legacy-image",
+                "capability_probe": {
+                    "probe_mode": "minimal",
+                    "probe_version": "v1",
+                    "coverage_ratio": 1.0,
+                    "capabilities": {
+                        "image": {"status": "supported"},
+                    },
+                },
+                "prompts": [
+                    {
+                        "prompt_id": "p024",
+                        "status": "completed",
+                        "raw_output": "{\"task_result\": {}}",
+                        "usage": {
+                            "input_tokens": 20,
+                            "output_tokens": 30,
+                            "reasoning_tokens": 0,
+                            "total_tokens": 50,
+                        },
+                        "features": {
+                            "score.value_accuracy": 1.0,
+                        },
+                    }
+                ],
+            }
+        )
+
+
 def test_invalid_prompt_family_is_rejected() -> None:
     with pytest.raises(ValidationError):
         PromptDefinition.model_validate(

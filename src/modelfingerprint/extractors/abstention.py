@@ -22,13 +22,17 @@ def extract_abstention_v3(canonical_output: object) -> FeatureMap:
     violations = shared_violations(payload)
 
     statuses = _status_mapping(task_result)
-    return {
+    features: FeatureMap = {
         "answered_count": sum(status == "answer" for status in statuses.values()),
         "unknown_count": sum(status == "unknown" for status in statuses.values()),
         "conflict_count": sum(status == "conflict_unresolved" for status in statuses.values()),
         "evidence_field_count": evidence_slot_count(evidence),
         "violation_count": len(violations),
     }
+    for name in sorted(task_result):
+        features[f"status_{name}"] = _status(task_result.get(name))
+        features[f"value_{name}"] = _normalized_value(task_result.get(name))
+    return features
 
 
 def score_abstention_v3(prompt: object, canonical_output: object) -> FeatureMap:
@@ -71,13 +75,19 @@ def score_abstention_v3(prompt: object, canonical_output: object) -> FeatureMap:
         and _value(task_result.get(name)) == _value(expected_task_result.get(name))
     )
 
-    return {
+    features: FeatureMap = {
         "answer_accuracy": ratio(answer_hits, len(answer_expected)),
         "unknown_accuracy": ratio(unknown_hits, len(unknown_expected)),
         "conflict_accuracy": ratio(conflict_hits, len(conflict_expected)),
         "evidence_alignment": ratio(evidence_hits, len(answer_expected)),
         "violation_free": len(violations) == 0,
     }
+    for name, expected in expected_task_result.items():
+        features[f"match_{name}"] = (
+            _status(task_result.get(name)) == _status(expected)
+            and _normalized_value(task_result.get(name)) == _normalized_value(expected)
+        )
+    return features
 
 
 def _status_mapping(task_result: dict[str, object]) -> dict[str, str]:
@@ -96,3 +106,10 @@ def _value(value: object) -> object:
     if isinstance(value, dict):
         return value.get("value")
     return None
+
+
+def _normalized_value(value: object) -> str:
+    raw_value = _value(value)
+    if raw_value is None:
+        return "__null__"
+    return str(raw_value)

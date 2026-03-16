@@ -1,0 +1,63 @@
+id: p032
+name: boundary_sensitive_context_retrieval_v31
+family: context_retrieval
+intent: 用当前有效实体、团队标签、区域 shard、禁用 shadow 和项目代号混合的边界案例测试检索、排除和精确 mention 复制能力
+messages:
+  - role: system
+    content: |
+      只返回 JSON 对象，不要输出 markdown，不要附加解释。
+  - role: user
+    content: |
+      阅读下面三段文本，找出当前有效的四个实体，并按首次被确认有效的顺序返回。
+      excluded_entities 必须且只能包含五个原始 mention：Arbor-review、Harbor shadow、Beacon Ops、Project Cinder、Drift-east。
+      这些 mention 必须逐字复制，不要改写成更短的词，也不要新增其他条目。
+      paragraph_map 只需要给 found_entities 的最终确认段落，值必须是单个段落 id（p1/p2/p3）。
+      顶层必须且只能包含 task_result、evidence、unknowns、violations。
+      task_result 必须同时包含 found_entities 和 excluded_entities。
+      evidence 必须且只能包含 paragraph_map。
+
+      [p1] Arbor-review was only a checklist title. Arbor became active after CAB sign-off. Harbor shadow remained disabled.
+      [p2] Beacon stayed live through the freeze. Beacon Ops is the rotation label, not the service entity. Cinder itself stayed approved. Project Cinder is only the migration codename.
+      [p3] Drift-east is only a regional shard; Drift is the active global service.
+
+      返回 JSON，对象字段必须且只能包含：
+      - task_result: {found_entities, excluded_entities}
+      - evidence: {paragraph_map}
+      - unknowns: {}
+      - violations
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 220
+  response_format: text
+  reasoning_mode: capture_if_available
+output_contract:
+  id: tolerant_json_v3
+  canonicalizer: tolerant_json_v3
+extractors:
+  answer: context_retrieval_v3
+  score: context_retrieval_score_v3
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+evaluation:
+  reference:
+    expected_task_result:
+      found_entities: [Arbor, Beacon, Cinder, Drift]
+      excluded_entities:
+        [
+          Arbor-review,
+          Harbor shadow,
+          Beacon Ops,
+          Project Cinder,
+          Drift-east,
+        ]
+    expected_evidence:
+      paragraph_map:
+        Arbor: p1
+        Beacon: p2
+        Cinder: p2
+        Drift: p3
+required_capabilities: [chat_completions]
+weight_hint: 0.95
+tags: [v3_1, retrieval, boundary, ordering]
+risk_level: low

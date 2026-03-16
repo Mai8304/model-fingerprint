@@ -1,0 +1,9 @@
+name: boundary_decision_v1
+family: boundary_decision
+version: 1
+features:
+  - answered_count
+  - unknown_count
+  - conflict_count
+  - evidence_field_count
+  - violation_count

@@ -5,6 +5,7 @@ model: z-ai/glm-5
 auth:
   kind: bearer_env
   env_var: MODEL_FINGERPRINT_API_KEY
+runtime_profile_id: reasoning_visible_structured_v1
 capabilities:
   exposes_reasoning_text: true
   supports_json_object_response: true
@@ -38,13 +39,5 @@ thinking_policy:
   retry_on_finish_reasons: [length]
   retry_on_empty_answer: true
   attempts:
-    - output_token_cap: 2400
-      request_body_overrides:
-        reasoning:
-          effort: minimal
-          exclude: true
-    - output_token_cap: 900
-      request_body_overrides:
-        reasoning:
-          effort: none
-          exclude: true
+    - output_token_cap: 1500
+    - output_token_cap: 3000

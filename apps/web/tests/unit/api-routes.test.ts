@@ -34,6 +34,14 @@ test("GET /api/v1/fingerprints returns the V3 fingerprint registry", async () =>
         label: "GLM-5",
         suite_id: "fingerprint-suite-v3",
         available: true,
+        image_generation: {
+          status: "unsupported",
+          confidence: 1,
+        },
+        vision_understanding: {
+          status: "unsupported",
+          confidence: 1,
+        },
       },
     ],
   })
@@ -48,6 +56,14 @@ test("GET /api/v1/fingerprints returns the V3 fingerprint registry", async () =>
         label: "GLM-5",
         suite_id: "fingerprint-suite-v3",
         available: true,
+        image_generation: {
+          status: "unsupported",
+          confidence: 1,
+        },
+        vision_understanding: {
+          status: "unsupported",
+          confidence: 1,
+        },
       },
     ],
   })

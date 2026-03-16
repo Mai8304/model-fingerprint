@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 import json
 import math
+from dataclasses import dataclass
 from pathlib import Path
 
+from modelfingerprint.canonicalizers.base import CanonicalizationError
+from modelfingerprint.canonicalizers.tolerant_json import canonicalize_tolerant_json
 from modelfingerprint.contracts.endpoint import EndpointProfile
 from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.contracts.run import (
@@ -11,14 +15,24 @@ from modelfingerprint.contracts.run import (
     PromptAttemptSummary,
     PromptExecutionError,
     PromptRequestSnapshot,
+    RuntimeAttemptPolicy,
     RuntimePolicySnapshot,
+    RuntimeRequestIntent,
 )
-from modelfingerprint.dialects.base import DialectAdapter, HttpRequestSpec
+from modelfingerprint.dialects.base import (
+    DialectAdapter,
+    HttpRequestSpec,
+    build_protocol_family_adapter,
+)
 from modelfingerprint.services.feature_pipeline import (
     PromptExecutionResult,
     PromptExecutionStatus,
 )
 from modelfingerprint.storage.filesystem import ensure_directories
+from modelfingerprint.services.runtime_policy import (
+    resolve_output_token_cap,
+    resolve_runtime_attempts,
+)
 from modelfingerprint.transports.http_client import (
     HttpClient,
     HttpClientError,
@@ -28,6 +42,19 @@ from modelfingerprint.transports.http_client import (
     StandardHttpClient,
 )
 
+PROMPT_SPECIFIC_OPENROUTER_HIGH_BUDGET_IDS = frozenset({"p031", "p032", "p033", "p034"})
+PROMPT_SPECIFIC_OPENROUTER_OUTPUT_TOKEN_CAP = 3000
+
+
+@dataclass(frozen=True)
+class _RuntimeAttemptOutcome:
+    status: PromptExecutionStatus
+    raw_output: str | None = None
+    usage: object | None = None
+    completion: NormalizedCompletion | None = None
+    error: PromptExecutionError | None = None
+    attempt_summary: PromptAttemptSummary | None = None
+
 
 class LiveRunner:
     def __init__(
@@ -35,14 +62,14 @@ class LiveRunner:
         *,
         endpoint: EndpointProfile,
         api_key: str,
-        dialect: DialectAdapter,
+        dialect: DialectAdapter | None = None,
         http_client: HttpClient | None = None,
         trace_dir: Path | None = None,
         runtime_policy: RuntimePolicySnapshot | None = None,
     ) -> None:
         self.endpoint = endpoint
         self._api_key = api_key
-        self._dialect = dialect
+        self._dialect = dialect or build_protocol_family_adapter(endpoint)
         self._http_client = http_client or StandardHttpClient()
         self.trace_dir = trace_dir
         self._runtime_policy = runtime_policy
@@ -93,9 +120,7 @@ class LiveRunner:
             if transport_error is not None:
                 return PromptExecutionResult(
                     prompt=prompt,
-                    status="timeout"
-                    if transport_error.kind == "timeout"
-                    else "transport_error",
+                    status="timeout" if _is_timeout_error_kind(transport_error.kind) else "transport_error",
                     request_snapshot=request_snapshot,
                     error=transport_error,
                 )
@@ -142,201 +167,120 @@ class LiveRunner:
         request_snapshot: PromptRequestSnapshot,
     ) -> PromptExecutionResult:
         assert self._runtime_policy is not None
-        output_token_cap = self._runtime_policy.output_token_cap
-        request = self._dialect.build_request(
-            prompt,
-            self.endpoint,
-            self._api_key,
-            output_token_cap=output_token_cap,
-            body_overrides=None,
+        runtime_intent, attempt_policies = resolve_runtime_attempts(
+            runtime_policy=self._runtime_policy,
+            prompt=prompt,
         )
-        request_trace_path, response_trace_path = self._trace_paths(prompt.id, 1)
-        if request_trace_path is not None:
-            self._write_request_trace(request_trace_path, request)
+        attempt_summaries: list[PromptAttemptSummary] = []
+        last_outcome: _RuntimeAttemptOutcome | None = None
 
-        if not _should_monitor_request(request):
-            return self._execute_blocking_runtime_request(
+        for tier_index, attempt_policy in enumerate(attempt_policies):
+            output_token_cap = resolve_output_token_cap(
                 prompt=prompt,
-                request_snapshot=request_snapshot,
-                request=request,
+                endpoint=self.endpoint,
+                attempt=attempt_policy,
+            )
+            output_token_cap = _apply_prompt_specific_output_cap(
+                prompt=prompt,
+                endpoint=self.endpoint,
                 output_token_cap=output_token_cap,
-                response_trace_path=response_trace_path,
             )
-
-        handle, start_error = self._start_request(
-            request,
-            read_timeout_seconds=self._runtime_policy.total_deadline_seconds,
-        )
-        if start_error is not None:
-            return PromptExecutionResult(
-                prompt=prompt,
-                status=_transport_error_status(start_error),
-                request_snapshot=request_snapshot,
-                attempts=[
-                    PromptAttemptSummary(
-                        request_attempt_index=1,
-                        read_timeout_seconds=self._runtime_policy.total_deadline_seconds,
-                        output_token_cap=output_token_cap,
-                        status=_transport_error_status(start_error),
-                        error_kind=start_error.kind,
-                        http_status=start_error.http_status,
-                        answer_text_present=False,
-                        reasoning_visible=None,
-                        bytes_received=0,
-                        completed=False,
-                    )
-                ],
-                error=start_error,
+            body_overrides = _merge_request_body_overrides(
+                attempt_policy.request_body_overrides or None,
+                _prompt_specific_request_body_overrides(
+                    prompt=prompt,
+                    endpoint=self.endpoint,
+                ),
             )
-        assert handle is not None
-
-        terminal, snapshot, abort_reason = self._monitor_inflight_request(handle)
-        if terminal is None:
-            timeout_error = PromptExecutionError(
-                kind=abort_reason or "request_monitor_timeout",
-                message=_abort_reason_message(abort_reason),
-                retryable=False,
-            )
-            return PromptExecutionResult(
-                prompt=prompt,
-                status="timeout",
-                request_snapshot=request_snapshot,
-                attempts=[
-                    _build_attempt_summary(
-                        request_attempt_index=1,
-                        read_timeout_seconds=self._runtime_policy.total_deadline_seconds,
-                        output_token_cap=output_token_cap,
-                        status="timeout",
-                        error=timeout_error,
-                        snapshot=snapshot,
-                    )
-                ],
-                error=timeout_error,
-            )
-
-        if terminal.error is not None:
-            transport_error = PromptExecutionError(
-                kind=terminal.error.kind,
-                message=terminal.error.message,
-                retryable=False,
-                http_status=terminal.error.status_code,
-            )
-            status = _transport_error_status(transport_error)
-            return PromptExecutionResult(
-                prompt=prompt,
-                status=status,
-                request_snapshot=request_snapshot,
-                attempts=[
-                    _build_attempt_summary(
-                        request_attempt_index=1,
-                        read_timeout_seconds=self._runtime_policy.total_deadline_seconds,
-                        output_token_cap=output_token_cap,
-                        status=status,
-                        error=transport_error,
-                        snapshot=snapshot,
-                        latency_ms=terminal.latency_ms,
-                    )
-                ],
-                error=transport_error,
-            )
-
-        assert terminal.payload is not None
-        if response_trace_path is not None:
-            response_trace_path.write_text(
-                json.dumps(terminal.payload, indent=2, sort_keys=True) + "\n",
-                encoding="utf-8",
-            )
-
-        try:
-            completion = self._dialect.parse_response(
+            request = self._dialect.build_request(
+                prompt,
                 self.endpoint,
-                terminal.payload,
-                latency_ms=terminal.latency_ms,
-                raw_response_path=None if response_trace_path is None else str(response_trace_path),
+                self._api_key,
+                output_token_cap=output_token_cap,
+                body_overrides=body_overrides,
             )
-        except Exception as exc:
-            parse_error = PromptExecutionError(
-                kind="response_parse_error",
-                message=str(exc) or "response parsing failed",
-                retryable=False,
+            request_trace_path, response_trace_path = self._trace_paths(
+                prompt.id,
+                attempt_policy.attempt_index,
             )
-            return PromptExecutionResult(
-                prompt=prompt,
-                status="invalid_response",
-                request_snapshot=request_snapshot,
-                attempts=[
-                    _build_attempt_summary(
-                        request_attempt_index=1,
-                        read_timeout_seconds=self._runtime_policy.total_deadline_seconds,
-                        output_token_cap=output_token_cap,
-                        status="invalid_response",
-                        error=parse_error,
-                        snapshot=snapshot,
-                        latency_ms=terminal.latency_ms,
-                        completed=True,
-                    )
-                ],
-                error=parse_error,
-            )
+            if request_trace_path is not None:
+                self._write_request_trace(request_trace_path, request)
 
-        completion_status, completion_error = _classify_completion(prompt, completion)
+            if not _should_monitor_request(request):
+                outcome = self._execute_blocking_runtime_request(
+                    prompt=prompt,
+                    request=request,
+                    runtime_intent=runtime_intent,
+                    runtime_tier_index=tier_index,
+                    attempt_policy=attempt_policy,
+                    output_token_cap=output_token_cap,
+                    response_trace_path=response_trace_path,
+                )
+            else:
+                outcome = self._execute_streaming_runtime_request(
+                    prompt=prompt,
+                    request=request,
+                    runtime_intent=runtime_intent,
+                    runtime_tier_index=tier_index,
+                    attempt_policy=attempt_policy,
+                    output_token_cap=output_token_cap,
+                    response_trace_path=response_trace_path,
+                )
+
+            assert outcome.attempt_summary is not None
+            attempt_summaries.append(outcome.attempt_summary)
+            last_outcome = outcome
+            if not _should_retry_runtime_attempt(
+                attempt_policy=attempt_policy,
+                outcome=outcome,
+                has_next_attempt=tier_index + 1 < len(attempt_policies),
+            ):
+                break
+
+        assert last_outcome is not None
         return PromptExecutionResult(
             prompt=prompt,
-            status=completion_status,
-            raw_output=completion.answer_text,
-            usage=completion.usage,
+            status=last_outcome.status,
+            raw_output=last_outcome.raw_output,
+            usage=last_outcome.usage,
             request_snapshot=request_snapshot,
-            completion=completion,
-            attempts=[
-                _build_attempt_summary(
-                    request_attempt_index=1,
-                    read_timeout_seconds=self._runtime_policy.total_deadline_seconds,
-                    output_token_cap=output_token_cap,
-                    status=completion_status,
-                    error=completion_error,
-                    snapshot=snapshot,
-                    latency_ms=completion.latency_ms,
-                    finish_reason=completion.finish_reason,
-                    answer_text_present=completion.answer_text.strip() != "",
-                    reasoning_visible=completion.reasoning_visible,
-                    completed=True,
-                )
-            ],
-            error=completion_error,
+            completion=last_outcome.completion,
+            attempts=attempt_summaries,
+            error=last_outcome.error,
         )
 
     def _execute_blocking_runtime_request(
         self,
         *,
         prompt: PromptDefinition,
-        request_snapshot: PromptRequestSnapshot,
         request: HttpRequestSpec,
+        runtime_intent: RuntimeRequestIntent,
+        runtime_tier_index: int,
+        attempt_policy: RuntimeAttemptPolicy,
         output_token_cap: int | None,
         response_trace_path: Path | None,
-    ) -> PromptExecutionResult:
-        assert self._runtime_policy is not None
+    ) -> _RuntimeAttemptOutcome:
         payload, latency_ms, transport_error = self._send_request(
             request,
-            read_timeout_seconds=self._runtime_policy.total_deadline_seconds,
+            connect_timeout_seconds=attempt_policy.connect_timeout_seconds,
+            read_timeout_seconds=attempt_policy.total_deadline_seconds,
         )
         if transport_error is not None:
             status = _transport_error_status(transport_error)
-            return PromptExecutionResult(
-                prompt=prompt,
+            return _RuntimeAttemptOutcome(
                 status=status,
-                request_snapshot=request_snapshot,
-                attempts=[
-                    _build_blocking_attempt_summary(
-                        request_attempt_index=1,
-                        read_timeout_seconds=self._runtime_policy.total_deadline_seconds,
-                        output_token_cap=output_token_cap,
-                        status=status,
-                        error=transport_error,
-                        answer_text_present=False,
-                        completed=False,
-                    )
-                ],
                 error=transport_error,
+                attempt_summary=_build_blocking_attempt_summary(
+                    request_attempt_index=attempt_policy.attempt_index,
+                    runtime_intent=runtime_intent,
+                    runtime_tier_index=runtime_tier_index,
+                    attempt_policy=attempt_policy,
+                    output_token_cap=output_token_cap,
+                    status=status,
+                    error=transport_error,
+                    answer_text_present=False,
+                    completed=False,
+                ),
             )
         assert payload is not None
 
@@ -359,47 +303,203 @@ class LiveRunner:
                 message=str(exc) or "response parsing failed",
                 retryable=False,
             )
-            return PromptExecutionResult(
-                prompt=prompt,
+            return _RuntimeAttemptOutcome(
                 status="invalid_response",
-                request_snapshot=request_snapshot,
-                attempts=[
-                    _build_blocking_attempt_summary(
-                        request_attempt_index=1,
-                        read_timeout_seconds=self._runtime_policy.total_deadline_seconds,
-                        output_token_cap=output_token_cap,
-                        status="invalid_response",
-                        error=parse_error,
-                        latency_ms=latency_ms,
-                        completed=True,
-                    )
-                ],
                 error=parse_error,
+                attempt_summary=_build_blocking_attempt_summary(
+                    request_attempt_index=attempt_policy.attempt_index,
+                    runtime_intent=runtime_intent,
+                    runtime_tier_index=runtime_tier_index,
+                    attempt_policy=attempt_policy,
+                    output_token_cap=output_token_cap,
+                    status="invalid_response",
+                    error=parse_error,
+                    latency_ms=latency_ms,
+                    completed=True,
+                ),
             )
 
         completion_status, completion_error = _classify_completion(prompt, completion)
-        return PromptExecutionResult(
+        completion_status, completion_error = _validate_runtime_completion(
             prompt=prompt,
+            completion=completion,
+            status=completion_status,
+            error=completion_error,
+        )
+        return _RuntimeAttemptOutcome(
             status=completion_status,
             raw_output=completion.answer_text,
             usage=completion.usage,
-            request_snapshot=request_snapshot,
             completion=completion,
-            attempts=[
-                _build_blocking_attempt_summary(
-                    request_attempt_index=1,
-                    read_timeout_seconds=self._runtime_policy.total_deadline_seconds,
-                    output_token_cap=output_token_cap,
-                    status=completion_status,
-                    error=completion_error,
-                    latency_ms=completion.latency_ms,
-                    finish_reason=completion.finish_reason,
-                    answer_text_present=completion.answer_text.strip() != "",
-                    reasoning_visible=completion.reasoning_visible,
-                    completed=True,
-                )
-            ],
             error=completion_error,
+            attempt_summary=_build_blocking_attempt_summary(
+                request_attempt_index=attempt_policy.attempt_index,
+                runtime_intent=runtime_intent,
+                runtime_tier_index=runtime_tier_index,
+                attempt_policy=attempt_policy,
+                output_token_cap=output_token_cap,
+                status=completion_status,
+                error=completion_error,
+                latency_ms=completion.latency_ms,
+                finish_reason=completion.finish_reason,
+                answer_text_present=completion.answer_text.strip() != "",
+                reasoning_visible=completion.reasoning_visible,
+                completed=True,
+            ),
+        )
+
+    def _execute_streaming_runtime_request(
+        self,
+        *,
+        prompt: PromptDefinition,
+        request: HttpRequestSpec,
+        runtime_intent: RuntimeRequestIntent,
+        runtime_tier_index: int,
+        attempt_policy: RuntimeAttemptPolicy,
+        output_token_cap: int | None,
+        response_trace_path: Path | None,
+    ) -> _RuntimeAttemptOutcome:
+        handle, start_error = self._start_request(
+            request,
+            attempt_policy=attempt_policy,
+        )
+        if start_error is not None:
+            status = _transport_error_status(start_error)
+            return _RuntimeAttemptOutcome(
+                status=status,
+                error=start_error,
+                attempt_summary=_build_attempt_summary(
+                    request_attempt_index=attempt_policy.attempt_index,
+                    runtime_intent=runtime_intent,
+                    runtime_tier_index=runtime_tier_index,
+                    attempt_policy=attempt_policy,
+                    output_token_cap=output_token_cap,
+                    status=status,
+                    error=start_error,
+                    snapshot=HttpProgressSnapshot(
+                        bytes_received=0,
+                        has_any_data=False,
+                        elapsed_ms=0,
+                        completed=False,
+                    ),
+                ),
+            )
+        assert handle is not None
+
+        terminal, snapshot, abort_reason = self._monitor_inflight_request(
+            handle,
+            attempt_policy=attempt_policy,
+        )
+        if terminal is None:
+            timeout_error = PromptExecutionError(
+                kind=abort_reason or "request_monitor_timeout",
+                message=_abort_reason_message(abort_reason),
+                retryable=False,
+            )
+            return _RuntimeAttemptOutcome(
+                status="timeout",
+                error=timeout_error,
+                attempt_summary=_build_attempt_summary(
+                    request_attempt_index=attempt_policy.attempt_index,
+                    runtime_intent=runtime_intent,
+                    runtime_tier_index=runtime_tier_index,
+                    attempt_policy=attempt_policy,
+                    output_token_cap=output_token_cap,
+                    status="timeout",
+                    error=timeout_error,
+                    snapshot=snapshot,
+                ),
+            )
+
+        if terminal.error is not None:
+            transport_error = PromptExecutionError(
+                kind=terminal.error.kind,
+                message=terminal.error.message,
+                retryable=False,
+                http_status=terminal.error.status_code,
+            )
+            status = _transport_error_status(transport_error)
+            return _RuntimeAttemptOutcome(
+                status=status,
+                error=transport_error,
+                attempt_summary=_build_attempt_summary(
+                    request_attempt_index=attempt_policy.attempt_index,
+                    runtime_intent=runtime_intent,
+                    runtime_tier_index=runtime_tier_index,
+                    attempt_policy=attempt_policy,
+                    output_token_cap=output_token_cap,
+                    status=status,
+                    error=transport_error,
+                    snapshot=snapshot,
+                    latency_ms=terminal.latency_ms,
+                ),
+            )
+
+        assert terminal.payload is not None
+        if response_trace_path is not None:
+            response_trace_path.write_text(
+                json.dumps(terminal.payload, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+
+        try:
+            completion = self._dialect.parse_response(
+                self.endpoint,
+                terminal.payload,
+                latency_ms=terminal.latency_ms,
+                raw_response_path=None if response_trace_path is None else str(response_trace_path),
+            )
+        except Exception as exc:
+            parse_error = PromptExecutionError(
+                kind="response_parse_error",
+                message=str(exc) or "response parsing failed",
+                retryable=False,
+            )
+            return _RuntimeAttemptOutcome(
+                status="invalid_response",
+                error=parse_error,
+                attempt_summary=_build_attempt_summary(
+                    request_attempt_index=attempt_policy.attempt_index,
+                    runtime_intent=runtime_intent,
+                    runtime_tier_index=runtime_tier_index,
+                    attempt_policy=attempt_policy,
+                    output_token_cap=output_token_cap,
+                    status="invalid_response",
+                    error=parse_error,
+                    snapshot=snapshot,
+                    latency_ms=terminal.latency_ms,
+                    completed=True,
+                ),
+            )
+
+        completion_status, completion_error = _classify_completion(prompt, completion)
+        completion_status, completion_error = _validate_runtime_completion(
+            prompt=prompt,
+            completion=completion,
+            status=completion_status,
+            error=completion_error,
+        )
+        return _RuntimeAttemptOutcome(
+            status=completion_status,
+            raw_output=completion.answer_text,
+            usage=completion.usage,
+            completion=completion,
+            error=completion_error,
+            attempt_summary=_build_attempt_summary(
+                request_attempt_index=attempt_policy.attempt_index,
+                runtime_intent=runtime_intent,
+                runtime_tier_index=runtime_tier_index,
+                attempt_policy=attempt_policy,
+                output_token_cap=output_token_cap,
+                status=completion_status,
+                error=completion_error,
+                snapshot=snapshot,
+                latency_ms=completion.latency_ms,
+                finish_reason=completion.finish_reason,
+                answer_text_present=completion.answer_text.strip() != "",
+                reasoning_visible=completion.reasoning_visible,
+                completed=True,
+            ),
         )
 
     def _write_request_trace(self, path: Path, request: HttpRequestSpec) -> None:
@@ -417,6 +517,7 @@ class LiveRunner:
         self,
         request: HttpRequestSpec,
         *,
+        connect_timeout_seconds: int | None = None,
         read_timeout_seconds: int | None = None,
     ) -> tuple[dict[str, object] | None, int | None, PromptExecutionError | None]:
         last_error: PromptExecutionError | None = None
@@ -424,7 +525,11 @@ class LiveRunner:
             try:
                 payload, latency_ms = self._http_client.send(
                     request,
-                    connect_timeout_seconds=self.endpoint.timeout_policy.connect_seconds,
+                    connect_timeout_seconds=(
+                        self.endpoint.timeout_policy.connect_seconds
+                        if connect_timeout_seconds is None
+                        else connect_timeout_seconds
+                    ),
                     read_timeout_seconds=(
                         self.endpoint.timeout_policy.read_seconds
                         if read_timeout_seconds is None
@@ -459,7 +564,7 @@ class LiveRunner:
         self,
         request: HttpRequestSpec,
         *,
-        read_timeout_seconds: int,
+        attempt_policy: RuntimeAttemptPolicy,
     ) -> tuple[InFlightHttpRequest | None, PromptExecutionError | None]:
         start = getattr(self._http_client, "start", None)
         if not callable(start):
@@ -474,8 +579,8 @@ class LiveRunner:
         try:
             handle = start(
                 request,
-                connect_timeout_seconds=self.endpoint.timeout_policy.connect_seconds,
-                read_timeout_seconds=read_timeout_seconds,
+                connect_timeout_seconds=attempt_policy.connect_timeout_seconds,
+                read_timeout_seconds=attempt_policy.total_deadline_seconds,
             )
             return handle, None
         except HttpClientError as exc:
@@ -501,45 +606,45 @@ class LiveRunner:
     def _monitor_inflight_request(
         self,
         handle: InFlightHttpRequest,
+        *,
+        attempt_policy: RuntimeAttemptPolicy,
     ) -> tuple[HttpTerminalResult | None, HttpProgressSnapshot, str | None]:
-        assert self._runtime_policy is not None
-        elapsed_checkpoint_seconds = 0
-
-        for checkpoint_seconds in self._runtime_policy.no_data_checkpoints_seconds:
-            wait_seconds = max(checkpoint_seconds - elapsed_checkpoint_seconds, 0)
-            terminal = handle.wait_until_terminal(float(wait_seconds))
-            snapshot = handle.snapshot()
-            if terminal is not None:
-                return terminal, snapshot, None
-            if snapshot.has_any_data:
-                return self._poll_inflight_progress(handle)
-            elapsed_checkpoint_seconds = checkpoint_seconds
-
+        terminal = handle.wait_until_terminal(float(attempt_policy.first_byte_timeout_seconds))
+        snapshot = handle.snapshot()
+        if terminal is not None:
+            return terminal, snapshot, None
+        if snapshot.has_any_data:
+            return self._poll_inflight_progress(handle, attempt_policy=attempt_policy)
         self._cancel_inflight_request(handle)
-        return None, handle.snapshot(), "no_data_checkpoint_exceeded"
+        return None, handle.snapshot(), "first_byte_timeout"
 
     def _poll_inflight_progress(
         self,
         handle: InFlightHttpRequest,
+        *,
+        attempt_policy: RuntimeAttemptPolicy,
     ) -> tuple[HttpTerminalResult | None, HttpProgressSnapshot, str | None]:
-        assert self._runtime_policy is not None
-
         while True:
             snapshot = handle.snapshot()
             remaining_seconds = (
-                self._runtime_policy.total_deadline_seconds - snapshot.elapsed_ms / 1000.0
+                attempt_policy.total_deadline_seconds - snapshot.elapsed_ms / 1000.0
             )
             if remaining_seconds <= 0:
                 self._cancel_inflight_request(handle)
                 return None, handle.snapshot(), "total_deadline_exceeded"
 
             terminal = handle.wait_until_terminal(
-                float(min(self._runtime_policy.progress_poll_interval_seconds, remaining_seconds))
+                float(min(attempt_policy.idle_timeout_seconds, remaining_seconds))
             )
             snapshot = handle.snapshot()
             if terminal is not None:
                 return terminal, snapshot, None
-            if snapshot.elapsed_ms >= self._runtime_policy.total_deadline_seconds * 1000:
+            last_progress_ms = snapshot.last_progress_latency_ms or snapshot.first_byte_latency_ms
+            if last_progress_ms is not None:
+                if snapshot.elapsed_ms - last_progress_ms >= attempt_policy.idle_timeout_seconds * 1000:
+                    self._cancel_inflight_request(handle)
+                    return None, handle.snapshot(), "idle_timeout"
+            if snapshot.elapsed_ms >= attempt_policy.total_deadline_seconds * 1000:
                 self._cancel_inflight_request(handle)
                 return None, handle.snapshot(), "total_deadline_exceeded"
 
@@ -635,31 +740,29 @@ def _should_retry_with_thinking_fallback(
     return False
 
 
-def _should_retry_runtime_result(
-    *,
-    status: PromptExecutionStatus,
-    error: PromptExecutionError | None,
-) -> bool:
-    if status in {"timeout", "transport_error"}:
-        return error is not None and error.retryable
-    if status == "truncated":
-        return True
-    if status == "invalid_response" and error is not None and error.kind == "missing_answer_text":
-        return True
-    return False
-
-
 def _transport_error_status(error: PromptExecutionError) -> PromptExecutionStatus:
-    if error.kind == "timeout":
+    if _is_timeout_error_kind(error.kind):
         return "timeout"
     if error.kind == "invalid_json":
         return "invalid_response"
     return "transport_error"
 
 
+def _is_timeout_error_kind(kind: str) -> bool:
+    return kind in {
+        "timeout",
+        "connect_timeout",
+        "first_byte_timeout",
+        "idle_timeout",
+        "total_deadline_exceeded",
+    }
+
+
 def _abort_reason_message(abort_reason: str | None) -> str:
-    if abort_reason == "no_data_checkpoint_exceeded":
-        return "no response data arrived before the final no-data checkpoint"
+    if abort_reason == "first_byte_timeout":
+        return "response did not arrive before the first byte deadline"
+    if abort_reason == "idle_timeout":
+        return "response stream was idle past the idle timeout"
     if abort_reason == "total_deadline_exceeded":
         return "request did not complete before the total runtime deadline"
     return "request monitoring timed out"
@@ -675,7 +778,9 @@ def _should_monitor_request(request: HttpRequestSpec) -> bool:
 def _build_attempt_summary(
     *,
     request_attempt_index: int,
-    read_timeout_seconds: int,
+    runtime_intent: RuntimeRequestIntent,
+    runtime_tier_index: int,
+    attempt_policy: RuntimeAttemptPolicy,
     output_token_cap: int | None,
     status: PromptExecutionStatus,
     error: PromptExecutionError | None,
@@ -688,8 +793,15 @@ def _build_attempt_summary(
 ) -> PromptAttemptSummary:
     return PromptAttemptSummary(
         request_attempt_index=request_attempt_index,
-        read_timeout_seconds=read_timeout_seconds,
+        read_timeout_seconds=attempt_policy.total_deadline_seconds,
+        runtime_intent=runtime_intent,
+        runtime_tier_index=runtime_tier_index,
         output_token_cap=output_token_cap,
+        connect_timeout_seconds=attempt_policy.connect_timeout_seconds,
+        write_timeout_seconds=attempt_policy.write_timeout_seconds,
+        first_byte_timeout_seconds=attempt_policy.first_byte_timeout_seconds,
+        idle_timeout_seconds=attempt_policy.idle_timeout_seconds,
+        total_deadline_seconds=attempt_policy.total_deadline_seconds,
         status=status,
         error_kind=None if error is None else error.kind,
         http_status=None if error is None else error.http_status,
@@ -708,7 +820,9 @@ def _build_attempt_summary(
 def _build_blocking_attempt_summary(
     *,
     request_attempt_index: int,
-    read_timeout_seconds: int,
+    runtime_intent: RuntimeRequestIntent,
+    runtime_tier_index: int,
+    attempt_policy: RuntimeAttemptPolicy,
     output_token_cap: int | None,
     status: PromptExecutionStatus,
     error: PromptExecutionError | None,
@@ -720,8 +834,15 @@ def _build_blocking_attempt_summary(
 ) -> PromptAttemptSummary:
     return PromptAttemptSummary(
         request_attempt_index=request_attempt_index,
-        read_timeout_seconds=read_timeout_seconds,
+        read_timeout_seconds=attempt_policy.total_deadline_seconds,
+        runtime_intent=runtime_intent,
+        runtime_tier_index=runtime_tier_index,
         output_token_cap=output_token_cap,
+        connect_timeout_seconds=attempt_policy.connect_timeout_seconds,
+        write_timeout_seconds=attempt_policy.write_timeout_seconds,
+        first_byte_timeout_seconds=attempt_policy.first_byte_timeout_seconds,
+        idle_timeout_seconds=attempt_policy.idle_timeout_seconds,
+        total_deadline_seconds=attempt_policy.total_deadline_seconds,
         status=status,
         error_kind=None if error is None else error.kind,
         http_status=None if error is None else error.http_status,
@@ -735,6 +856,273 @@ def _build_blocking_attempt_summary(
         completed=completed,
         abort_reason=None if error is None or status != "timeout" else error.kind,
     )
+
+
+def _validate_runtime_completion(
+    *,
+    prompt: PromptDefinition,
+    completion: NormalizedCompletion,
+    status: PromptExecutionStatus,
+    error: PromptExecutionError | None,
+) -> tuple[PromptExecutionStatus, PromptExecutionError | None]:
+    if status != "completed":
+        return status, error
+    if _requires_structured_output(prompt):
+        try:
+            canonical_output, _ = canonicalize_tolerant_json(completion.answer_text)
+            _validate_prompt_specific_shape(prompt, canonical_output.payload)
+        except CanonicalizationError:
+            return (
+                "invalid_response",
+                PromptExecutionError(
+                    kind="invalid_structured_output",
+                    message="response did not contain valid structured output",
+                    retryable=False,
+                ),
+            )
+        except ValueError as exc:
+            return (
+                "invalid_response",
+                PromptExecutionError(
+                    kind="invalid_structured_output",
+                    message=str(exc),
+                    retryable=False,
+                ),
+            )
+    return status, error
+
+
+def _requires_structured_output(prompt: PromptDefinition) -> bool:
+    return (
+        prompt.generation.response_format == "json_object"
+        or prompt.output_contract.canonicalizer == "tolerant_json_v3"
+    )
+
+
+def _validate_prompt_specific_shape(prompt: PromptDefinition, payload: Mapping[str, object]) -> None:
+    if prompt.id == "p031":
+        task_result = _require_mapping(payload.get("task_result"), field_name="task_result")
+        evidence = _require_mapping(payload.get("evidence"), field_name="evidence")
+        unknowns = _require_mapping(payload.get("unknowns"), field_name="unknowns")
+        for field_name in ("owner", "role", "region", "change_window"):
+            if field_name not in task_result:
+                raise ValueError(
+                    "response did not contain valid structured output: "
+                    f"missing task_result.{field_name}"
+                )
+            if field_name not in evidence:
+                raise ValueError(
+                    "response did not contain valid structured output: "
+                    f"missing evidence.{field_name}"
+                )
+        if "region" not in unknowns:
+            raise ValueError(
+                "response did not contain valid structured output: missing unknowns.region"
+            )
+        return
+    if prompt.id == "p032":
+        task_result = _require_mapping(payload.get("task_result"), field_name="task_result")
+        for field_name in ("found_entities", "excluded_entities"):
+            if field_name not in task_result:
+                raise ValueError(
+                    "response did not contain valid structured output: "
+                    f"missing task_result.{field_name}"
+                )
+        evidence = _require_mapping(payload.get("evidence", {}), field_name="evidence")
+        _require_mapping(
+            evidence.get("paragraph_map"),
+            field_name="evidence.paragraph_map",
+        )
+        return
+    if prompt.id == "p033":
+        task_result = _require_mapping(payload.get("task_result"), field_name="task_result")
+        for question_id in ("q1", "q2", "q3", "q4"):
+            answer = _require_mapping(
+                task_result.get(question_id),
+                field_name=f"task_result.{question_id}",
+            )
+            for field_name in ("status", "value"):
+                if field_name not in answer:
+                    raise ValueError(
+                        "response did not contain valid structured output: "
+                        f"missing task_result.{question_id}.{field_name}"
+                    )
+        _require_mapping(payload.get("evidence", {}), field_name="evidence")
+        return
+    if prompt.id == "p034":
+        task_result = _require_mapping(payload.get("task_result"), field_name="task_result")
+        for object_id in ("ticket_a", "worker_x"):
+            snapshot = _require_mapping(
+                task_result.get(object_id),
+                field_name=f"task_result.{object_id}",
+            )
+            for field_name in ("status", "owner", "priority"):
+                if field_name not in snapshot:
+                    raise ValueError(
+                        "response did not contain valid structured output: "
+                        f"missing task_result.{object_id}.{field_name}"
+                    )
+        evidence = _require_mapping(payload.get("evidence", {}), field_name="evidence")
+        derivation_codes = _require_mapping(
+            evidence.get("derivation_codes"),
+            field_name="evidence.derivation_codes",
+        )
+        for object_id in ("ticket_a", "worker_x"):
+            if object_id not in derivation_codes:
+                raise ValueError(
+                    "response did not contain valid structured output: "
+                    f"missing evidence.derivation_codes.{object_id}"
+                )
+        if "defaults_used" not in evidence:
+            raise ValueError(
+                "response did not contain valid structured output: missing evidence.defaults_used"
+            )
+        return
+    if prompt.id == "p035":
+        task_result = _require_mapping(payload.get("task_result"), field_name="task_result")
+        for field_name in ("canonical_entities", "alias_map", "ambiguous_mentions", "rejected_items"):
+            if field_name not in task_result:
+                raise ValueError(
+                    "response did not contain valid structured output: "
+                    f"missing task_result.{field_name}"
+                )
+        alias_map = _require_mapping(task_result.get("alias_map"), field_name="task_result.alias_map")
+        allowed_mentions = {
+            "OpenWhale Control Plane",
+            "OW Control",
+            "Atlas East DB",
+            "atlas-db-east",
+            "OW",
+            "Atlas",
+            "Project Mercury",
+            "mercury-cutover",
+            "control",
+            "staging-note",
+        }
+        allowed_entity_ids = {"openwhale_control", "atlas_db_east"}
+        canonical_entities = task_result.get("canonical_entities")
+        if not isinstance(canonical_entities, list) or not all(
+            isinstance(item, str) and item in allowed_entity_ids for item in canonical_entities
+        ):
+            raise ValueError(
+                "response did not contain valid structured output: "
+                "task_result.canonical_entities must use allowed entity ids"
+            )
+        for mention, entity_id in alias_map.items():
+            if mention not in allowed_mentions:
+                raise ValueError(
+                    "response did not contain valid structured output: "
+                    "task_result.alias_map must use original mentions"
+                )
+            if not isinstance(entity_id, str) or entity_id not in allowed_entity_ids:
+                raise ValueError(
+                    "response did not contain valid structured output: "
+                    "task_result.alias_map must use allowed entity ids"
+                )
+        for field_name in ("ambiguous_mentions", "rejected_items"):
+            values = task_result.get(field_name)
+            if not isinstance(values, list) or not all(
+                isinstance(item, str) and item in allowed_mentions for item in values
+            ):
+                raise ValueError(
+                    "response did not contain valid structured output: "
+                    f"task_result.{field_name} must use original mentions"
+                )
+
+
+def _require_mapping(value: object, *, field_name: str) -> Mapping[str, object]:
+    if not isinstance(value, Mapping):
+        raise ValueError(
+            f"response did not contain valid structured output: {field_name} must be an object"
+        )
+    return value
+
+
+def _apply_prompt_specific_output_cap(
+    *,
+    prompt: PromptDefinition,
+    endpoint: EndpointProfile,
+    output_token_cap: int | None,
+) -> int | None:
+    base_url = str(endpoint.base_url)
+    if (
+        prompt.id in PROMPT_SPECIFIC_OPENROUTER_HIGH_BUDGET_IDS
+        and "openrouter.ai" in base_url
+    ):
+        if output_token_cap is None:
+            return PROMPT_SPECIFIC_OPENROUTER_OUTPUT_TOKEN_CAP
+        return max(output_token_cap, PROMPT_SPECIFIC_OPENROUTER_OUTPUT_TOKEN_CAP)
+    return output_token_cap
+
+
+def _prompt_specific_request_body_overrides(
+    *,
+    prompt: PromptDefinition,
+    endpoint: EndpointProfile,
+) -> dict[str, object] | None:
+    base_url = str(endpoint.base_url)
+    if (
+        prompt.id in PROMPT_SPECIFIC_OPENROUTER_HIGH_BUDGET_IDS
+        and "openrouter.ai" in base_url
+    ):
+        return {
+            "reasoning": {
+                "effort": "minimal",
+                "exclude": True,
+            }
+        }
+    return None
+
+
+def _merge_request_body_overrides(
+    base: Mapping[str, object] | None,
+    extra: Mapping[str, object] | None,
+) -> dict[str, object] | None:
+    if not base and not extra:
+        return None
+    merged: dict[str, object] = {}
+    if base:
+        merged.update(base)
+    if extra:
+        merged.update(extra)
+    return merged
+
+
+def _should_retry_runtime_attempt(
+    *,
+    attempt_policy: RuntimeAttemptPolicy,
+    outcome: _RuntimeAttemptOutcome,
+    has_next_attempt: bool,
+) -> bool:
+    if not has_next_attempt:
+        return False
+    retry_signals = _runtime_retry_signals(
+        status=outcome.status,
+        completion=outcome.completion,
+        error=outcome.error,
+    )
+    return any(signal in attempt_policy.escalate_on for signal in retry_signals)
+
+
+def _runtime_retry_signals(
+    *,
+    status: PromptExecutionStatus,
+    completion: NormalizedCompletion | None,
+    error: PromptExecutionError | None,
+) -> set[str]:
+    signals: set[str] = set()
+    if status == "truncated" and completion is not None and completion.finish_reason == "length":
+        signals.add("finish_reason_length")
+    if error is not None:
+        if error.kind == "missing_answer_text":
+            signals.add("missing_answer_text")
+        if error.kind == "invalid_structured_output":
+            signals.add("invalid_structured_output")
+        if error.kind == "missing_reasoning_text":
+            signals.add("missing_reasoning_text")
+        if status in {"timeout", "transport_error"} and error.retryable:
+            signals.add("retryable_transport_error")
+    return signals
 
 
 def _output_token_cap_for_attempt(

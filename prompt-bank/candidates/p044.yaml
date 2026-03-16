@@ -1,0 +1,85 @@
+id: p044
+name: authority_boundary_matrix_v32
+family: boundary_decision
+intent: 用 owner、approver、acting、default、override、close/suspend 的混合规则测试高信息密度边界判断
+messages:
+  - role: system
+    content: |
+      只返回 JSON 对象，不要输出 markdown，不要附加解释。
+      顶层必须且只能包含 task_result、evidence、unknowns、violations。
+      task_result 必须包含 q1 到 q7。
+      每个 qN 必须且只能是 {"s","v"}。
+      s 只能是 a、u、c，分别表示 answer、unknown、conflict_unresolved。
+      s 不是 a 时，v 必须是 null。
+  - role: user
+    content: |
+      根据下面规则和记录回答问题。
+
+      规则：
+      - create 时默认 priority 是 p2。
+      - override 会覆盖默认 priority。
+      - approver 不等于最终 owner，除非有显式 transfer。
+      - acting owner 只在 handoff 窗口内生效，不自动成为最终 owner。
+      - close 会保留最后一个最终 owner。
+      - suspend 会保留最后一个最终 owner。
+
+      记录：
+      - [r1] create ticket_a owner=ops
+      - [r2] override ticket_a priority=p1
+      - [r3] Priya approved ticket_a
+      - [r4] Elena acted as owner during handoff
+      - [r5] close ticket_a
+      - [r6] create worker_x owner=ops
+      - [r7] update worker_x priority=p1
+      - [r8] another note says worker_x priority remains p3 pending verification
+      - [r9] suspend worker_x
+      - [r10] no explicit transfer to Priya or Elena was recorded
+
+      回答：
+      - q1: ticket_a 的最终 owner 是谁？
+      - q2: Priya 是否是 ticket_a 的最终 owner？
+      - q3: Elena 是否是 ticket_a 的最终 owner？
+      - q4: ticket_a 的最终 priority 来自 default 还是 override？
+      - q5: close 之后是否保留最终 owner？
+      - q6: worker_x 的最终 priority 是否能确定？
+      - q7: worker_x 的 region 是否能确定？
+
+      返回 JSON：
+      - q1.v 只能是 "ops"
+      - q2.v 和 q3.v 只能是 "no"
+      - q4.v 只能是 "override"
+      - q5.v 只能是 "yes"
+      - q6 必须是 {"s":"c","v":null}
+      - q7 必须是 {"s":"u","v":null}
+      - q6 和 q7 若不是 answer，v 必须是 null
+      - evidence 必须且只能是 {"q1":["r1","r5"],"q4":["r2"],"q5":["r5"],"q6":["r7","r8"]}
+      - unknowns 必须且只能是 ["q7"]
+      - violations 必须是 []
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  max_output_tokens: 220
+  response_format: text
+  reasoning_mode: capture_if_available
+output_contract:
+  id: tolerant_json_v3
+  canonicalizer: tolerant_json_v3
+extractors:
+  answer: boundary_decision_v1
+  score: boundary_decision_score_v1
+  reasoning: reasoning_trace_v1
+  transport: completion_metadata_v1
+evaluation:
+  reference:
+    expected_task_result:
+      q1: {s: a, v: ops}
+      q2: {s: a, v: "no"}
+      q3: {s: a, v: "no"}
+      q4: {s: a, v: override}
+      q5: {s: a, v: "yes"}
+      q6: {s: c, v: null}
+      q7: {s: u, v: null}
+required_capabilities: [chat_completions]
+weight_hint: 0.99
+tags: [v3_2, boundary, authority, defaults, exceptions]
+risk_level: medium

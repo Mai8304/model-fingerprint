@@ -6,8 +6,8 @@ import yaml
 
 from modelfingerprint.contracts.prompt import PromptDefinition, SuiteDefinition
 
-FINGERPRINT_SUITE_ID = "fingerprint-suite-v3"
-QUICK_CHECK_SUITE_ID = "quick-check-v3"
+FINGERPRINT_SUITE_ID = "fingerprint-suite-v32"
+QUICK_CHECK_SUITE_ID = "quick-check-v32"
 
 KNOWN_EXTRACTOR_IDS = frozenset(
     {
@@ -16,11 +16,17 @@ KNOWN_EXTRACTOR_IDS = frozenset(
         "abstention_v3",
         "state_tracking_v3",
         "representation_alignment_v3",
+        "boundary_decision_v1",
+        "mention_classification_v1",
+        "selection_boundary_v1",
         "evidence_grounding_score_v3",
         "context_retrieval_score_v3",
         "abstention_score_v3",
         "state_tracking_score_v3",
         "representation_alignment_score_v3",
+        "boundary_decision_score_v1",
+        "mention_classification_score_v1",
+        "selection_boundary_score_v1",
         "reasoning_trace_v1",
         "completion_metadata_v1",
     }

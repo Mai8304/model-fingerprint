@@ -3,6 +3,7 @@ import { messages, type LocaleKey, type MessageKey } from "@/lib/i18n/messages"
 export type MessageValues = Record<string, string | number | undefined>
 
 export type TranslationHelpers = {
+  locale: LocaleKey
   t: (key: MessageKey) => string
   format: (key: MessageKey, values?: MessageValues) => string
 }
@@ -37,6 +38,7 @@ export function createTranslationHelpers(locale: LocaleKey): TranslationHelpers 
   const dictionary = getMessages(locale)
 
   return {
+    locale,
     t: (key) => dictionary[key],
     format: (key, values) => formatMessage(dictionary[key], values),
   }

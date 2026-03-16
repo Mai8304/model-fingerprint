@@ -248,7 +248,7 @@ def test_orchestrator_execute_suite_reuses_repository_endpoint_profile(
         fingerprint_model_id="glm-5",
     )
     captured: dict[str, object] = {}
-    output_path = tmp_path / "runs" / "2026-03-11" / "run_profile.fingerprint-suite-v3.json"
+    output_path = tmp_path / "runs" / "2026-03-11" / "run_profile.fingerprint-suite-v32.json"
     output_path.parent.mkdir(parents=True)
     output_path.write_text(
         json.dumps(
@@ -303,7 +303,7 @@ def test_orchestrator_execute_suite_reuses_repository_endpoint_profile(
     )
 
     endpoint = captured["endpoint"]
-    assert artifact.suite_id == "fingerprint-suite-v3"
+    assert artifact.suite_id == "fingerprint-suite-v32"
     assert artifact.claimed_model == "glm-5"
     assert endpoint.id == "openrouter-glm-5"
     assert str(endpoint.base_url) == "https://openrouter.ai/api/v1"
@@ -319,7 +319,7 @@ def test_orchestrator_execute_suite_reuses_repository_endpoint_profile(
     assert endpoint.response_mapping.reasoning_text_path == "choices.0.message.reasoning"
     assert endpoint.thinking_policy is not None
     assert captured["api_key"] == "secret-key"
-    assert captured["run_suite_kwargs"]["suite_id"] == "fingerprint-suite-v3"
+    assert captured["run_suite_kwargs"]["suite_id"] == "fingerprint-suite-v32"
     assert captured["run_suite_kwargs"]["claimed_model"] == "glm-5"
     assert captured["run_suite_kwargs"]["target_label"] == "run_profile"
 
@@ -340,11 +340,11 @@ def _build_matching_v3_artifact(
     protocol_satisfied: bool = True,
 ) -> RunArtifact:
     suites = load_suites(paths.prompt_bank_dir / "suites")
-    suite = suites["fingerprint-suite-v3"]
+    suite = suites["fingerprint-suite-v32"]
     profile = ProfileArtifact.model_validate(
         json.loads(
             (
-                paths.profiles_dir / "fingerprint-suite-v3" / f"{claimed_model}.json"
+                paths.profiles_dir / "fingerprint-suite-v32" / f"{claimed_model}.json"
             ).read_text()
         )
     )
@@ -373,8 +373,8 @@ def _build_matching_v3_artifact(
 
     return RunArtifact.model_validate(
         {
-            "run_id": f"{target_label}.fingerprint-suite-v3",
-            "suite_id": "fingerprint-suite-v3",
+            "run_id": f"{target_label}.fingerprint-suite-v32",
+            "suite_id": "fingerprint-suite-v32",
             "target_label": target_label,
             "claimed_model": claimed_model,
             "prompt_count_total": len(prompts),

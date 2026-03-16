@@ -52,6 +52,16 @@ def build_run(
                         "detail": "tool_calls returned",
                         "evidence": {"field": "tool_calls"},
                     },
+                    "image_generation": {
+                        "status": "supported",
+                        "detail": "image returned",
+                        "evidence": {"asset_field": "choices.0.message.images.0.image_url.url"},
+                    },
+                    "vision_understanding": {
+                        "status": "accepted_but_ignored",
+                        "detail": "recognized grounded answer: red",
+                        "evidence": {"normalized_answer": "red"},
+                    },
                 },
             },
             "protocol_compatibility": {
@@ -225,6 +235,12 @@ def test_build_comparison_artifact_emits_ranked_candidates_and_breakdowns() -> N
     assert artifact.prompt_breakdown[0].prompt_id == "p021"
     assert artifact.prompt_breakdown[0].status == "completed"
     assert artifact.prompt_breakdown[0].similarity is not None
-    assert artifact.capability_breakdown[0].capability == "thinking"
+    capability_names = [item.capability for item in artifact.capability_breakdown]
+    assert capability_names[:4] == [
+        "thinking",
+        "tools",
+        "image_generation",
+        "vision_understanding",
+    ]
     assert artifact.capability_breakdown[0].observed_status == "supported"
     assert artifact.thresholds_used.match == 0.82

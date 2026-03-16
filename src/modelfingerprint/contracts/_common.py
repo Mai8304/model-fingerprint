@@ -10,6 +10,9 @@ PromptFamily = Literal[
     "abstention",
     "state_tracking",
     "representation_alignment",
+    "boundary_decision",
+    "mention_classification",
+    "selection_boundary",
 ]
 ExtractorFamily = PromptFamily | Literal["strict_format"]
 
@@ -25,7 +28,14 @@ CapabilityId = Literal[
     "function_calling",
     "tool_calling",
 ]
-ProbeCapabilityId = Literal["thinking", "tools", "streaming", "image"]
+ProbeCapabilityId = Literal[
+    "thinking",
+    "tools",
+    "streaming",
+    "image",
+    "image_generation",
+    "vision_understanding",
+]
 ProbeCapabilityStatus = Literal[
     "supported",
     "accepted_but_ignored",

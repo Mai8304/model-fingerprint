@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import pytest
+
 from modelfingerprint.contracts.endpoint import EndpointProfile
 from modelfingerprint.contracts.prompt import PromptDefinition
+from modelfingerprint.dialects.base import build_protocol_family_adapter
 from modelfingerprint.dialects.openai_chat import OpenAIChatDialectAdapter
 from modelfingerprint.http_defaults import DEFAULT_BROWSER_USER_AGENT
 
@@ -89,6 +92,59 @@ def build_endpoint() -> EndpointProfile:
             },
         }
     )
+
+
+@pytest.mark.parametrize(
+    ("endpoint_updates", "expected_model"),
+    [
+        ({}, "Pro/zai-org/GLM-5"),
+        (
+            {
+                "provider_id": "moonshot",
+                "base_url": "https://api.moonshot.ai/v1",
+                "model": "kimi-k2.5",
+            },
+            "kimi-k2.5",
+        ),
+        (
+            {
+                "provider_id": "openrouter",
+                "base_url": "https://openrouter.ai/api/v1",
+                "model": "moonshotai/kimi-k2.5",
+            },
+            "moonshotai/kimi-k2.5",
+        ),
+    ],
+)
+def test_protocol_family_adapter_routes_openai_compatible_profiles_to_standard_adapter(
+    endpoint_updates: dict[str, object],
+    expected_model: str,
+) -> None:
+    endpoint = EndpointProfile.model_validate(
+        {
+            **build_endpoint().model_dump(mode="json"),
+            **endpoint_updates,
+            "protocol_family": "openai_compatible",
+        }
+    )
+
+    adapter = build_protocol_family_adapter(endpoint)
+    request = adapter.build_request(build_prompt(), endpoint, api_key="test-key")
+
+    assert isinstance(adapter, OpenAIChatDialectAdapter)
+    assert request.body["model"] == expected_model
+
+
+def test_protocol_family_adapter_rejects_unsupported_protocol_families() -> None:
+    endpoint = EndpointProfile.model_validate(
+        {
+            **build_endpoint().model_dump(mode="json"),
+            "protocol_family": "anthropic_messages",
+        }
+    )
+
+    with pytest.raises(ValueError, match="unsupported protocol family"):
+        build_protocol_family_adapter(endpoint)
 
 
 def test_openai_chat_adapter_builds_wire_request_without_mutating_semantic_values() -> None:
@@ -244,6 +300,25 @@ def test_openai_chat_adapter_omits_unsupported_sampling_fields() -> None:
     assert "top_p" not in request.body
     assert request.body["max_tokens"] == 96
     assert request.body["model"] == "kimi-k2.5"
+
+
+def test_openai_chat_adapter_applies_quirks_to_omit_sampling_fields() -> None:
+    adapter = OpenAIChatDialectAdapter()
+    endpoint = EndpointProfile.model_validate(
+        {
+            **build_endpoint().model_dump(mode="json"),
+            "provider_id": "moonshot",
+            "base_url": "https://api.moonshot.ai/v1",
+            "model": "kimi-k2.5",
+            "quirks": ["omit_temperature", "omit_top_p"],
+        }
+    )
+
+    request = adapter.build_request(build_prompt(), endpoint, api_key="test-key")
+
+    assert "temperature" not in request.body
+    assert "top_p" not in request.body
+    assert request.body["max_tokens"] == 96
 
 
 def test_openai_chat_adapter_recovers_answer_from_reasoning_when_content_is_null() -> None:

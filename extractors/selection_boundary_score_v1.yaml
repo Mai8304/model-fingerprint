@@ -1,0 +1,20 @@
+name: selection_boundary_score_v1
+family: selection_boundary
+version: 1
+features:
+  - classification_accuracy
+  - selection_accuracy
+  - ambiguity_accuracy
+  - variant_accuracy
+  - rejection_accuracy
+  - violation_free
+  - match_m1
+  - match_m2
+  - match_m3
+  - match_m4
+  - match_m5
+  - match_m6
+  - match_m7
+  - match_m8
+  - match_m9
+  - match_m10
