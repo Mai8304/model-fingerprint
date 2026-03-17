@@ -257,7 +257,7 @@ const workbenchCopy: Record<LocaleKey, WorkbenchCopy> = {
         similarity: "Similarity",
         scoreable: "Scoreable",
         error: "Error",
-        summary: "Summary",
+        summary: "Evaluation Focus",
       },
       statuses: {
         pending: "Pending",
@@ -445,7 +445,7 @@ const workbenchCopy: Record<LocaleKey, WorkbenchCopy> = {
         similarity: "相似度",
         scoreable: "是否可计分",
         error: "错误/异常",
-        summary: "简短说明",
+        summary: "测评重点",
       },
       statuses: {
         pending: "待开始",
@@ -638,7 +638,7 @@ const workbenchCopy: Record<LocaleKey, WorkbenchCopy> = {
         similarity: "類似度",
         scoreable: "採点可否",
         error: "エラー",
-        summary: "要約",
+        summary: "評価重点",
       },
       statuses: {
         pending: "未開始",

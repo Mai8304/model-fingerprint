@@ -71,7 +71,7 @@ test("renders the reduced prompt probe columns", () => {
     "Similarity",
     "Scoreable",
     "Error",
-    "Summary",
+    "Evaluation Focus",
   ])
 
   const cells = within(promptProbe as HTMLElement).getAllByRole("cell")

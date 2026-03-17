@@ -17,8 +17,8 @@ const exactMessages: Record<LocaleKey, Record<string, string>> = {
       "Resolve the blocking prompt failures and rerun to reach at least 3 scoreable prompts.",
     "Verify provider latency, endpoint reachability, and rate limits before rerunning.":
       "Verify provider latency, endpoint reachability, and rate limits before rerunning.",
-    "Verify the endpoint can return stable structured JSON for the V3 prompt suite.":
-      "Verify the endpoint can return stable structured JSON for the V3 prompt suite.",
+    "Verify the endpoint can return stable structured JSON for the current fingerprint prompt suite.":
+      "Verify the endpoint can return stable structured JSON for the current fingerprint prompt suite.",
   },
   "zh-CN": {
     "reasoning coverage is below the profile expectation": "推理覆盖度低于指纹画像的预期值。",
@@ -30,8 +30,8 @@ const exactMessages: Record<LocaleKey, Record<string, string>> = {
       "请先解决阻塞的 Prompt 失败问题，再重新检测，至少拿到 3 道可计分题。",
     "Verify provider latency, endpoint reachability, and rate limits before rerunning.":
       "重新检测前，请检查供应商延迟、接口可达性和限流状态。",
-    "Verify the endpoint can return stable structured JSON for the V3 prompt suite.":
-      "请确认该接口能为 V3 Prompt 套件稳定返回结构化 JSON。",
+    "Verify the endpoint can return stable structured JSON for the current fingerprint prompt suite.":
+      "请确认该接口能为当前指纹 Prompt 套件稳定返回结构化 JSON。",
   },
   ja: {
     "reasoning coverage is below the profile expectation":
@@ -45,8 +45,8 @@ const exactMessages: Record<LocaleKey, Record<string, string>> = {
       "阻害している Prompt の失敗を解消し、採点可能な問題が 3 問以上になるよう再実行してください。",
     "Verify provider latency, endpoint reachability, and rate limits before rerunning.":
       "再実行前に、プロバイダ遅延、エンドポイント到達性、レート制限を確認してください。",
-    "Verify the endpoint can return stable structured JSON for the V3 prompt suite.":
-      "エンドポイントが V3 Prompt スイートに対して安定した構造化 JSON を返せることを確認してください。",
+    "Verify the endpoint can return stable structured JSON for the current fingerprint prompt suite.":
+      "エンドポイントが現在の指紋 Prompt スイートに対して安定した構造化 JSON を返せることを確認してください。",
   },
 }
 

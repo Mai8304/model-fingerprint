@@ -8,6 +8,7 @@ from modelfingerprint.services.runtime_policy import (
     HIGH_BUDGET_OUTPUT_TOKEN_CAP,
     LONG_REASONING_OUTPUT_TOKEN_CAP,
     STANDARD_STRUCTURED_OUTPUT_TOKEN_CAP,
+    ULTRA_HIGH_BUDGET_OUTPUT_TOKEN_CAP,
     resolve_prompt_runtime_intent,
     resolve_runtime_policy,
 )
@@ -329,6 +330,34 @@ def test_resolve_runtime_policy_supports_high_budget_disable_thinking_profile() 
     assert [attempt.request_body_overrides for attempt in structured.attempts] == [
         {"thinking": {"type": "disabled"}},
     ]
+
+
+def test_resolve_runtime_policy_supports_reasoning_visible_high_budget_profile() -> None:
+    resolved = resolve_runtime_policy(
+        capability_probe_payload={
+            "results": {
+                "thinking": {
+                    "status": "supported",
+                }
+            }
+        },
+        endpoint=build_endpoint(
+            endpoint_id="openrouter-kimi-k2-thinking",
+            provider_id="openrouter",
+            model="moonshotai/kimi-k2-thinking",
+            runtime_profile_id="reasoning_visible_structured_high_budget_v1",
+            read_seconds=300,
+        ),
+    )
+
+    structured = resolved.intent_policies[0]
+    assert [attempt.output_token_cap for attempt in structured.attempts] == [
+        ULTRA_HIGH_BUDGET_OUTPUT_TOKEN_CAP,
+    ]
+    assert [attempt.request_body_overrides for attempt in structured.attempts] == [
+        {"reasoning": {"effort": "minimal", "exclude": False}},
+    ]
+    assert [attempt.total_deadline_seconds for attempt in structured.attempts] == [300]
 
 
 def test_resolve_prompt_runtime_intent_prefers_prompt_contract_over_thinking_probe() -> None:

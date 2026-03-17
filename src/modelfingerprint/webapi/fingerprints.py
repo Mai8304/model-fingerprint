@@ -1,35 +1,36 @@
 from __future__ import annotations
 
-import json
-
-from modelfingerprint.contracts.profile import ProfileArtifact
 from modelfingerprint.settings import RepositoryPaths
+from modelfingerprint.webapi.fingerprint_chain import (
+    WEB_FINGERPRINT_SUITE_ID,
+    load_web_fingerprint_chain,
+)
 from modelfingerprint.webapi.contracts import WebFingerprintModel
-
-WEB_FINGERPRINT_SUITE_ID = "fingerprint-suite-v32"
 
 LABEL_OVERRIDES = {
     "deepseek-chat": "DeepSeek Chat",
+    "glm-4.7": "GLM-4.7",
     "glm-5": "GLM-5",
     "gpt-4.1-mini": "GPT-4.1 Mini",
+    "gpt-5.3-chat": "GPT-5.3 Chat",
+    "gpt-5.3-codex": "GPT-5.3 Codex",
+    "gpt-5.4": "GPT-5.4",
+    "minimax-m2.5": "MiniMax M2.5",
 }
 
 
 def list_fingerprint_models(paths: RepositoryPaths) -> list[WebFingerprintModel]:
-    profile_dir = paths.profiles_dir / WEB_FINGERPRINT_SUITE_ID
-    if not profile_dir.exists():
-        return []
-
+    chain = load_web_fingerprint_chain(paths)
     items: list[WebFingerprintModel] = []
-    for path in sorted(profile_dir.glob("*.json")):
-        payload = json.loads(path.read_text(encoding="utf-8"))
-        profile = ProfileArtifact.model_validate(payload)
+    for profile in chain.profiles:
         items.append(
             WebFingerprintModel(
                 id=profile.model_id,
                 label=display_model_label(profile.model_id),
                 suite_id=profile.suite_id,
                 available=True,
+                image_generation=_capability_summary(profile, "image_generation"),
+                vision_understanding=_capability_summary(profile, "vision_understanding"),
             )
         )
 
@@ -44,3 +45,20 @@ def display_model_label(model_id: str) -> str:
         part.upper() if part.isupper() else part.title()
         for part in model_id.split("-")
     )
+
+
+def _capability_summary(profile: ProfileArtifact, capability: str):
+    capability_profile = profile.capability_profile
+    if capability_profile is None:
+        return None
+    distribution = capability_profile.capabilities.get(capability)
+    if distribution is None:
+        return None
+    status, confidence = max(
+        distribution.distribution.items(),
+        key=lambda item: (item[1], item[0]),
+    )
+    return {
+        "status": status,
+        "confidence": confidence,
+    }

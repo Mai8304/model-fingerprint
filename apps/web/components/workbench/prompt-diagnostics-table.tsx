@@ -26,52 +26,12 @@ function promptStatusLabel(
   return labels[status] ?? status
 }
 
-function formatElapsed(valueMs: number | null | undefined, valueSeconds: number | null | undefined) {
-  const milliseconds =
-    valueMs ??
-    (valueSeconds === null || valueSeconds === undefined
-      ? null
-      : Math.round(valueSeconds * 1000))
-  if (milliseconds === null) {
-    return null
-  }
-  if (milliseconds < 1000) {
-    return `${milliseconds}ms`
-  }
-  return `${(milliseconds / 1000).toFixed(1)}s`
-}
-
-function fillTemplate(template: string, value: string) {
-  return template.replace("{elapsed}", value)
-}
-
-function getLiveSummary(
-  prompt: RunSnapshot["prompts"][number],
-  copy: ReturnType<typeof getWorkbenchCopy>,
+function getPromptFocus(
+  promptId: string,
+  locale: ReturnType<typeof useLocale>["locale"],
 ) {
-  const failureText = prompt.error_detail ?? prompt.error_kind ?? prompt.error_code
-  if (failureText) {
-    return failureText
-  }
-
-  const elapsed = formatElapsed(prompt.elapsed_ms, prompt.elapsed_seconds)
-  if (prompt.status === "running") {
-    return elapsed === null
-      ? copy.promptProbe.summaries.running
-      : fillTemplate(copy.promptProbe.summaries.runningWithElapsed, elapsed)
-  }
-  if (prompt.status === "completed") {
-    return elapsed === null
-      ? copy.promptProbe.summaries.completed
-      : fillTemplate(copy.promptProbe.summaries.completedWithElapsed, elapsed)
-  }
-  if (prompt.status === "failed") {
-    return copy.promptProbe.summaries.failed
-  }
-  if (prompt.status === "stopped") {
-    return copy.promptProbe.summaries.stopped
-  }
-  return copy.promptProbe.summaries.waiting
+  const display = getPromptDisplayInfo(promptId, locale)
+  return display.focus ?? display.title
 }
 
 function buildPromptRows(
@@ -111,13 +71,9 @@ function buildPromptRows(
     const summary =
       terminalPrompt === null
         ? livePrompt === null
-          ? copy.promptProbe.summaries.waiting
-          : getLiveSummary(livePrompt, copy)
-        : terminalPrompt.error_message ??
-          terminalPrompt.error_kind ??
-          (terminalPrompt.scoreable
-            ? `${copy.promptProbe.columns.similarity}: ${formatScore(terminalPrompt.similarity, copy.shared.unavailable)}`
-            : copy.promptProbe.columns.scoreable)
+          ? display.focus ?? display.title
+          : getPromptFocus(promptId, locale)
+        : display.focus ?? display.title
 
     return {
       promptId,
@@ -188,9 +144,11 @@ export function PromptDiagnosticsTable({ run }: { run: RunSnapshot }) {
                   <tr key={prompt.promptId}>
                     <td className="border-b border-slate-100 px-3 py-3 align-middle dark:border-slate-800">
                       <div className="font-medium text-slate-900 dark:text-slate-100">{prompt.title}</div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">
-                        {prompt.stepLabel}
-                      </div>
+                      {prompt.stepLabel ? (
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          {prompt.stepLabel}
+                        </div>
+                      ) : null}
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3 align-middle text-slate-700 dark:border-slate-800 dark:text-slate-300">
                       {promptStatusLabel(prompt.status, copy.promptProbe.statuses)}

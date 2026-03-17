@@ -19,7 +19,6 @@ from modelfingerprint.services.endpoint_profiles import (
     resolve_or_build_endpoint_profile,
 )
 from modelfingerprint.services.feature_pipeline import PromptExecutionResult
-from modelfingerprint.services.prompt_bank import load_suites
 from modelfingerprint.services.runtime_policy import resolve_runtime_policy
 from modelfingerprint.services.suite_runner import SuiteRunner
 from modelfingerprint.settings import RepositoryPaths
@@ -41,10 +40,11 @@ from modelfingerprint.webapi.contracts import (
     WebRunResultSummary,
     WebRunResultThresholds,
 )
-from modelfingerprint.webapi.fingerprints import (
+from modelfingerprint.webapi.fingerprint_chain import (
     WEB_FINGERPRINT_SUITE_ID,
-    display_model_label,
+    load_web_fingerprint_chain,
 )
+from modelfingerprint.webapi.fingerprints import display_model_label
 from modelfingerprint.webapi.run_store import RunStore
 
 ProbeCapabilitiesFn = Callable[..., dict[str, object]]
@@ -432,8 +432,8 @@ class RunOrchestrator:
         return RunArtifact.model_validate(json.loads(output_path.read_text(encoding="utf-8")))
 
     def _ensure_selected_fingerprint_exists(self, model_id: str) -> None:
-        profile_path = self._paths.profiles_dir / WEB_FINGERPRINT_SUITE_ID / f"{model_id}.json"
-        if not profile_path.exists():
+        chain = load_web_fingerprint_chain(self._paths)
+        if model_id not in chain.model_ids:
             raise WebRunConfigurationError(
                 code="UNKNOWN_FINGERPRINT_MODEL",
                 message=f"unknown fingerprint model: {model_id}",
@@ -456,19 +456,25 @@ class RunOrchestrator:
             ) from exc
 
     def _load_web_suite(self):
-        suites = load_suites(self._paths.prompt_bank_dir / "suites")
-        return suites[WEB_FINGERPRINT_SUITE_ID]
+        return load_web_fingerprint_chain(self._paths).suite
 
     def _load_profiles(self, suite_id: str) -> list[ProfileArtifact]:
-        profile_dir = self._paths.profiles_dir / suite_id
-        return [
-            ProfileArtifact.model_validate(json.loads(path.read_text(encoding="utf-8")))
-            for path in sorted(profile_dir.glob("*.json"))
-        ]
+        chain = load_web_fingerprint_chain(self._paths)
+        if suite_id != chain.suite.id:
+            raise WebRunConfigurationError(
+                code="UNKNOWN_FINGERPRINT_MODEL",
+                message=f"unknown fingerprint suite: {suite_id}",
+            )
+        return chain.profiles
 
     def _load_calibration(self, suite_id: str) -> CalibrationArtifact:
-        path = self._paths.calibration_dir / f"{suite_id}.json"
-        return CalibrationArtifact.model_validate(json.loads(path.read_text(encoding="utf-8")))
+        chain = load_web_fingerprint_chain(self._paths)
+        if suite_id != chain.suite.id:
+            raise WebRunConfigurationError(
+                code="UNKNOWN_FINGERPRINT_MODEL",
+                message=f"unknown fingerprint suite: {suite_id}",
+            )
+        return chain.calibration
 
     def _build_failure(self, exc: WebRunConfigurationError) -> WebRunFailure:
         return WebRunFailure(
@@ -1090,7 +1096,7 @@ def _build_recommendations(
     if "parse" in joined or "canonicalization" in joined or "truncated" in joined:
         recommendations.append(
             "Verify the endpoint can return stable structured JSON for the "
-            "V3 prompt suite."
+            "current fingerprint prompt suite."
         )
     if result_state in {"formal_result", "provisional"} and selected_rank not in (None, 1):
         recommendations.append(

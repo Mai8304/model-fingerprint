@@ -826,6 +826,71 @@ def test_live_runner_escalates_structured_extraction_tiers_only_after_explicit_f
     assert result.attempts[2].runtime_tier_index == 2
 
 
+def test_live_runner_retries_timeout_into_next_structured_extraction_tier() -> None:
+    client = ScriptedBlockingSequenceHttpClient(
+        [
+            (
+                successful_terminal(
+                    answer_text=(
+                        '{"task_result":{"owner":"Alice Wong"},"evidence":{"owner":["e1"]},"unknowns":{},"violations":[]}'
+                    ),
+                    latency_ms=2100,
+                ).payload,
+                2100,
+            ),
+        ]
+    )
+
+    class TimeoutThenSuccessHttpClient:
+        def __init__(self, fallback: ScriptedBlockingSequenceHttpClient) -> None:
+            self.calls: list[dict[str, object]] = []
+            self._fallback = fallback
+            self._timeout_count = 0
+
+        def send(self, request, *, connect_timeout_seconds: int, read_timeout_seconds: int):
+            self.calls.append(
+                {
+                    "url": request.url,
+                    "headers": dict(request.headers),
+                    "body": dict(request.body),
+                    "connect_timeout_seconds": connect_timeout_seconds,
+                    "read_timeout_seconds": read_timeout_seconds,
+                }
+            )
+            if self._timeout_count < 3:
+                self._timeout_count += 1
+                raise HttpClientError(
+                    kind="total_deadline_exceeded",
+                    message="request did not complete before the total deadline",
+                )
+            return self._fallback.send(
+                request,
+                connect_timeout_seconds=connect_timeout_seconds,
+                read_timeout_seconds=read_timeout_seconds,
+            )
+
+    http_client = TimeoutThenSuccessHttpClient(client)
+    runner = LiveRunner(
+        endpoint=build_endpoint(),
+        api_key="secret-key",
+        dialect=OpenAIChatDialectAdapter(),
+        http_client=http_client,
+        trace_dir=None,
+        runtime_policy=build_runtime_policy("accepted_but_ignored"),
+    )
+
+    result = runner.execute(build_prompt())
+
+    assert result.status == "completed"
+    assert [call["body"]["max_tokens"] for call in http_client.calls] == [500, 500, 500, 1500]
+    assert [call["read_timeout_seconds"] for call in http_client.calls] == [90, 90, 90, 120]
+    assert len(result.attempts) == 2
+    assert result.attempts[0].status == "timeout"
+    assert result.attempts[0].error_kind == "total_deadline_exceeded"
+    assert result.attempts[1].status == "completed"
+    assert result.attempts[1].runtime_tier_index == 1
+
+
 def test_live_runner_retries_p033_when_partial_payload_omits_task_result(
     tmp_path: Path,
 ) -> None:

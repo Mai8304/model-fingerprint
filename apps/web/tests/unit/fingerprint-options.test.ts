@@ -2,7 +2,7 @@ import { expect, test } from "vitest"
 
 import { fingerprintOptions } from "@/lib/fingerprint-options"
 
-test("fallback fingerprint options stay aligned with the supported V3 registry", () => {
+test("fallback fingerprint options stay aligned with the supported v32 registry", () => {
   expect(fingerprintOptions).toEqual([
     { value: "claude-haiku-4.5", label: "Claude Haiku 4.5" },
     { value: "claude-opus-4.1", label: "Claude Opus 4.1" },
@@ -18,6 +18,8 @@ test("fallback fingerprint options stay aligned with the supported V3 registry",
     { value: "gpt-5.3-chat", label: "GPT-5.3 Chat" },
     { value: "gpt-5.3-codex", label: "GPT-5.3 Codex" },
     { value: "gpt-5.4", label: "GPT-5.4" },
+    { value: "kimi-k2.5", label: "Kimi K2.5" },
+    { value: "kimi-k2-thinking", label: "Kimi K2 Thinking" },
     { value: "minimax-m2.5", label: "MiniMax M2.5" },
     { value: "nano-banana", label: "Nano Banana" },
     { value: "nano-banana-pro", label: "Nano Banana Pro" },

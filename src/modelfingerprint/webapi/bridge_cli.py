@@ -10,6 +10,7 @@ from pydantic import ValidationError
 
 from modelfingerprint.settings import RepositoryPaths
 from modelfingerprint.webapi.contracts import WebRunInput, WebRunResult
+from modelfingerprint.webapi.fingerprint_chain import FingerprintChainError
 from modelfingerprint.webapi.fingerprints import display_model_label, list_fingerprint_models
 from modelfingerprint.webapi.run_orchestrator import RunOrchestrator, WebRunConfigurationError
 from modelfingerprint.webapi.run_projection import project_run_snapshot
@@ -93,6 +94,12 @@ def main(argv: list[str] | None = None) -> int:
             code=exc.code,
             message=exc.message,
             status=404 if exc.code == "UNKNOWN_FINGERPRINT_MODEL" else 400,
+        )
+    except FingerprintChainError as exc:
+        return _emit_error(
+            code="FINGERPRINT_CHAIN_INVALID",
+            message=str(exc),
+            status=500,
         )
     except ValidationError as exc:
         return _emit_error(

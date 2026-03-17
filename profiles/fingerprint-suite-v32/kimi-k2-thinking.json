@@ -1,15 +1,10 @@
 {
-  "model_id": "kimi-k2-thinking",
-  "suite_id": "fingerprint-suite-v32",
-  "sample_count": 1,
-  "answer_coverage_ratio": 0.4,
-  "reasoning_coverage_ratio": 0.4,
+  "answer_coverage_ratio": 1.0,
   "capability_profile": {
-    "coverage_ratio": 0.8,
     "capabilities": {
       "image_generation": {
         "distribution": {
-          "insufficient_evidence": 1.0
+          "unsupported": 1.0
         }
       },
       "streaming": {
@@ -32,126 +27,365 @@
           "unsupported": 1.0
         }
       }
-    }
+    },
+    "coverage_ratio": 1.0
   },
-  "protocol_expectations": {
-    "satisfied": true,
-    "required_capabilities": [
-      "chat_completions"
-    ],
-    "issues": [
-      "request timed out",
-      "{\"error\":{\"message\":\"Your account org-0c772eb2a74f45a69981a3417d7e893f / proj-5931a984c0f8400c95afca02074afd9f \\u003cak-f8quq4x13po111aczc5i\\u003e request reached organization TPD rate limit, current: 1500785, limit: 1500000\",\"type\":\"rate_limit_reached_error\"}}",
-      "{\"error\":{\"message\":\"Your account org-0c772eb2a74f45a69981a3417d7e893f / proj-5931a984c0f8400c95afca02074afd9f \\u003cak-f8quq4x13po111aczc5i\\u003e request reached organization TPD rate limit, current: 1500894, limit: 1500000\",\"type\":\"rate_limit_reached_error\"}}"
-    ]
-  },
+  "model_id": "kimi-k2-thinking",
   "prompts": [
     {
-      "prompt_id": "p042",
-      "weight": 0.96,
       "answer_coverage_ratio": 1.0,
+      "expected_reasoning_visible": 1.0,
+      "features": {
+        "answer.answered_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 7.0
+        },
+        "answer.conflict_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "answer.evidence_field_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 4.0
+        },
+        "answer.status_q1": {
+          "distribution": {
+            "a": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.status_q2": {
+          "distribution": {
+            "a": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.status_q3": {
+          "distribution": {
+            "a": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.status_q4": {
+          "distribution": {
+            "a": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.status_q5": {
+          "distribution": {
+            "u": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.status_q6": {
+          "distribution": {
+            "a": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.status_q7": {
+          "distribution": {
+            "a": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.status_q8": {
+          "distribution": {
+            "a": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.unknown_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "answer.value_q1": {
+          "distribution": {
+            "Elena Park": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.value_q2": {
+          "distribution": {
+            "no": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.value_q3": {
+          "distribution": {
+            "no": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.value_q4": {
+          "distribution": {
+            "Marco Ruiz": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.value_q6": {
+          "distribution": {
+            "no": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.value_q7": {
+          "distribution": {
+            "2026-04-06 01:30 UTC": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.value_q8": {
+          "distribution": {
+            "no": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.violation_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "reasoning.backtrack_markers": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "reasoning.hedge_density": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0008442380751371887
+        },
+        "reasoning.step_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 174.0
+        },
+        "reasoning.uses_numbered_outline": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "score.boundary_accuracy": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "score.decision_accuracy": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "score.evidence_alignment": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "score.match_q1": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "score.match_q2": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "score.match_q3": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "score.match_q4": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "score.match_q5": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "score.match_q6": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "score.match_q7": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "score.match_q8": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "score.violation_free": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "surface.constraint_retention": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "surface.field_order_match": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "surface.had_markdown_fence": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_prefix_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_suffix_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.key_alias_normalized": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.parse_repaired": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.repair_event_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "transport.finish_reason": {
+          "distribution": {
+            "stop": 1.0
+          },
+          "kind": "enum"
+        },
+        "transport.latency_bucket_ms": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 78000.0
+        },
+        "transport.reasoning_tokens": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 4116.0
+        },
+        "transport.reasoning_visible": {
+          "kind": "boolean",
+          "p_true": 1.0
+        }
+      },
+      "prompt_id": "p041",
       "reasoning_coverage_ratio": 1.0,
+      "weight": 0.99
+    },
+    {
+      "answer_coverage_ratio": 1.0,
       "expected_reasoning_visible": 1.0,
       "features": {
         "answer.ambiguous_count": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "answer.include_count": {
           "kind": "numeric",
-          "median": 4.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 4.0
         },
         "answer.label_m1": {
-          "kind": "enum",
           "distribution": {
             "I": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.label_m10": {
-          "kind": "enum",
           "distribution": {
             "V": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.label_m2": {
-          "kind": "enum",
           "distribution": {
             "R": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.label_m3": {
-          "kind": "enum",
           "distribution": {
             "I": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.label_m4": {
-          "kind": "enum",
           "distribution": {
             "R": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.label_m5": {
-          "kind": "enum",
           "distribution": {
             "I": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.label_m6": {
-          "kind": "enum",
           "distribution": {
             "R": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.label_m7": {
-          "kind": "enum",
           "distribution": {
             "I": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.label_m8": {
-          "kind": "enum",
           "distribution": {
             "V": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.label_m9": {
-          "kind": "enum",
           "distribution": {
             "A": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.rejected_count": {
           "kind": "numeric",
-          "median": 3.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 3.0
         },
         "answer.variant_count": {
           "kind": "numeric",
-          "median": 2.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 2.0
         },
         "answer.violation_count": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "reasoning.backtrack_markers": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "reasoning.hedge_density": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "reasoning.step_count": {
           "kind": "numeric",
-          "median": 36.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 31.0
         },
         "reasoning.uses_numbered_outline": {
           "kind": "boolean",
@@ -159,13 +393,13 @@
         },
         "score.ambiguity_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.classification_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.match_m1": {
           "kind": "boolean",
@@ -209,18 +443,18 @@
         },
         "score.rejection_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.selection_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.variant_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.violation_free": {
           "kind": "boolean",
@@ -260,168 +494,168 @@
         },
         "surface.repair_event_count": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "transport.finish_reason": {
-          "kind": "enum",
           "distribution": {
             "stop": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "transport.latency_bucket_ms": {
           "kind": "numeric",
-          "median": 23000.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 11000.0
         },
         "transport.reasoning_tokens": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 450.0
         },
         "transport.reasoning_visible": {
           "kind": "boolean",
           "p_true": 1.0
         }
-      }
+      },
+      "prompt_id": "p042",
+      "reasoning_coverage_ratio": 1.0,
+      "weight": 0.96
     },
     {
-      "prompt_id": "p043",
-      "weight": 0.97,
       "answer_coverage_ratio": 1.0,
-      "reasoning_coverage_ratio": 1.0,
       "expected_reasoning_visible": 1.0,
       "features": {
         "answer.answered_count": {
           "kind": "numeric",
-          "median": 4.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 4.0
         },
         "answer.conflict_count": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "answer.evidence_field_count": {
           "kind": "numeric",
-          "median": 4.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 4.0
         },
         "answer.status_q1": {
-          "kind": "enum",
           "distribution": {
             "answer": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q2": {
-          "kind": "enum",
           "distribution": {
             "unknown": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q3": {
-          "kind": "enum",
           "distribution": {
             "answer": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q4": {
-          "kind": "enum",
           "distribution": {
             "conflict_unresolved": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q5": {
-          "kind": "enum",
           "distribution": {
             "answer": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q6": {
-          "kind": "enum",
           "distribution": {
             "answer": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.unknown_count": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "answer.value_q1": {
-          "kind": "enum",
           "distribution": {
             "yes": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.value_q2": {
-          "kind": "enum",
           "distribution": {
             "__null__": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.value_q3": {
-          "kind": "enum",
           "distribution": {
             "Mara Singh": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.value_q4": {
-          "kind": "enum",
           "distribution": {
             "__null__": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.value_q5": {
-          "kind": "enum",
           "distribution": {
             "no": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.value_q6": {
-          "kind": "enum",
           "distribution": {
             "no": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.violation_count": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "reasoning.backtrack_markers": {
           "kind": "numeric",
-          "median": 2.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 2.0
         },
         "reasoning.hedge_density": {
           "kind": "numeric",
-          "median": 0.000925925925925926,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "reasoning.step_count": {
           "kind": "numeric",
-          "median": 112.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 149.0
         },
         "reasoning.uses_numbered_outline": {
           "kind": "boolean",
-          "p_true": 0.0
+          "p_true": 1.0
         },
         "score.answer_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.conflict_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.evidence_alignment": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.match_q1": {
           "kind": "boolean",
@@ -449,8 +683,8 @@
         },
         "score.unknown_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.violation_free": {
           "kind": "boolean",
@@ -490,30 +724,401 @@
         },
         "surface.repair_event_count": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "transport.finish_reason": {
-          "kind": "enum",
           "distribution": {
             "stop": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "transport.latency_bucket_ms": {
           "kind": "numeric",
-          "median": 109000.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 90000.0
         },
         "transport.reasoning_tokens": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 2090.0
         },
         "transport.reasoning_visible": {
           "kind": "boolean",
           "p_true": 1.0
         }
-      }
+      },
+      "prompt_id": "p043",
+      "reasoning_coverage_ratio": 1.0,
+      "weight": 0.97
+    },
+    {
+      "answer_coverage_ratio": 1.0,
+      "expected_reasoning_visible": 1.0,
+      "features": {
+        "answer.answered_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 5.0
+        },
+        "answer.conflict_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "answer.evidence_field_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 4.0
+        },
+        "answer.status_q1": {
+          "distribution": {
+            "a": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.status_q2": {
+          "distribution": {
+            "a": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.status_q3": {
+          "distribution": {
+            "a": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.status_q4": {
+          "distribution": {
+            "a": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.status_q5": {
+          "distribution": {
+            "a": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.status_q6": {
+          "distribution": {
+            "c": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.status_q7": {
+          "distribution": {
+            "u": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.unknown_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "answer.value_q1": {
+          "distribution": {
+            "ops": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.value_q2": {
+          "distribution": {
+            "no": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.value_q3": {
+          "distribution": {
+            "no": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.value_q4": {
+          "distribution": {
+            "override": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.value_q5": {
+          "distribution": {
+            "yes": 1.0
+          },
+          "kind": "enum"
+        },
+        "answer.violation_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "reasoning.backtrack_markers": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "reasoning.hedge_density": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "reasoning.step_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 48.0
+        },
+        "reasoning.uses_numbered_outline": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "score.boundary_accuracy": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "score.decision_accuracy": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "score.evidence_alignment": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "score.match_q1": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "score.match_q2": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "score.match_q3": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "score.match_q4": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "score.match_q5": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "score.match_q6": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "score.match_q7": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "score.violation_free": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "surface.constraint_retention": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "surface.field_order_match": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "surface.had_markdown_fence": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_prefix_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_suffix_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.key_alias_normalized": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.parse_repaired": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.repair_event_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "transport.finish_reason": {
+          "distribution": {
+            "stop": 1.0
+          },
+          "kind": "enum"
+        },
+        "transport.latency_bucket_ms": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 51000.0
+        },
+        "transport.reasoning_tokens": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 792.0
+        },
+        "transport.reasoning_visible": {
+          "kind": "boolean",
+          "p_true": 1.0
+        }
+      },
+      "prompt_id": "p044",
+      "reasoning_coverage_ratio": 1.0,
+      "weight": 0.99
+    },
+    {
+      "answer_coverage_ratio": 1.0,
+      "expected_reasoning_visible": 1.0,
+      "features": {
+        "answer.ambiguous_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 3.0
+        },
+        "answer.canonical_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 4.0
+        },
+        "answer.rejected_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 5.0
+        },
+        "answer.violation_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "reasoning.backtrack_markers": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "reasoning.hedge_density": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "reasoning.step_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 47.0
+        },
+        "reasoning.uses_numbered_outline": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "score.ambiguity_accuracy": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "score.classification_accuracy": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "score.rejection_accuracy": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "score.threshold_accuracy": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 1.0
+        },
+        "score.violation_free": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "surface.constraint_retention": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "surface.field_order_match": {
+          "kind": "boolean",
+          "p_true": 1.0
+        },
+        "surface.had_markdown_fence": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_prefix_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_suffix_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.has_extra_text": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.key_alias_normalized": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.parse_repaired": {
+          "kind": "boolean",
+          "p_true": 0.0
+        },
+        "surface.repair_event_count": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 0.0
+        },
+        "transport.finish_reason": {
+          "distribution": {
+            "stop": 1.0
+          },
+          "kind": "enum"
+        },
+        "transport.latency_bucket_ms": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 10000.0
+        },
+        "transport.reasoning_tokens": {
+          "kind": "numeric",
+          "mad": 0.0,
+          "median": 546.0
+        },
+        "transport.reasoning_visible": {
+          "kind": "boolean",
+          "p_true": 1.0
+        }
+      },
+      "prompt_id": "p045",
+      "reasoning_coverage_ratio": 1.0,
+      "weight": 0.98
     }
-  ]
+  ],
+  "protocol_expectations": {
+    "issues": [],
+    "required_capabilities": [
+      "chat_completions"
+    ],
+    "satisfied": true
+  },
+  "reasoning_coverage_ratio": 1.0,
+  "sample_count": 1,
+  "suite_id": "fingerprint-suite-v32"
 }

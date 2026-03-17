@@ -1,0 +1,239 @@
+{
+  "baseline_runs": [
+    {
+      "model_id": "claude-haiku-4.5",
+      "path": "runs/2026-03-17/claude-haiku-4.5-v32-r1.fingerprint-suite-v32.json",
+      "sha256": "6f285ab30f72c405c02bfa7f75444c14196f380b8c0bc9e7a14759074fc0afa7"
+    },
+    {
+      "model_id": "claude-opus-4.1",
+      "path": "runs/2026-03-17/claude-opus-4.1-v32-r2.fingerprint-suite-v32.json",
+      "sha256": "228fb74cd4418b7dce075514816737ae1028361014cb0472ec93ae5567a81a54"
+    },
+    {
+      "model_id": "claude-opus-4.6",
+      "path": "runs/2026-03-17/claude-opus-4.6-v32-r1.fingerprint-suite-v32.json",
+      "sha256": "3f90e10fe86c0e856abb133d3e69303da18b5029a376ce69802b789baaa912d3"
+    },
+    {
+      "model_id": "claude-sonnet-4.6",
+      "path": "runs/2026-03-17/claude-sonnet-4.6-v32-r1.fingerprint-suite-v32.json",
+      "sha256": "2ea8461ddd0c735c36a05507895ae321fd82b4257b0646312ec71294335a01f9"
+    },
+    {
+      "model_id": "deepseek-chat",
+      "path": "runs/2026-03-17/deepseek-chat-v32-r1.fingerprint-suite-v32.json",
+      "sha256": "c5ec2913fed2503569dfc816aa675ffaacb53293ba764a1adca61609857fed08"
+    },
+    {
+      "model_id": "gemini-2.5-flash-lite",
+      "path": "runs/2026-03-17/gemini-2.5-flash-lite-v32-r1.fingerprint-suite-v32.json",
+      "sha256": "b7182ba2459e83b8927aa3b6e6f9b6cb0991a1e7ef023e8689bb27dd48650dcc"
+    },
+    {
+      "model_id": "gemini-3-flash-preview",
+      "path": "runs/2026-03-17/gemini-3-flash-preview-v32-r1.fingerprint-suite-v32.json",
+      "sha256": "2cd86452a92908dc432a97c72ae16b9bcfa61a9eca506185b4bc453337a10bb5"
+    },
+    {
+      "model_id": "gemini-3-pro-preview",
+      "path": "runs/2026-03-17/gemini-3-pro-preview-v32-r2.fingerprint-suite-v32.json",
+      "sha256": "eb0da1a94d09a88f6f9f7f9ab8192b2a3f2d656713de9f3227757980199b5b62"
+    },
+    {
+      "model_id": "gemini-3.1-pro-preview",
+      "path": "runs/2026-03-17/gemini-3.1-pro-preview-v32-r1.fingerprint-suite-v32.json",
+      "sha256": "5cb8450ab288e044a79c2e600088676345e671dad7e4dea03d5f3bd7986ca21c"
+    },
+    {
+      "model_id": "glm-4.7",
+      "path": "runs/2026-03-17/glm-4.7-v32-r1.fingerprint-suite-v32.json",
+      "sha256": "865f28782cd8294f26e48e30b020f26df5e1d6a595d1695f3403aa482384be56"
+    },
+    {
+      "model_id": "glm-5",
+      "path": "runs/2026-03-17/glm-5-v32-r1.fingerprint-suite-v32.json",
+      "sha256": "69f1f1ae3656d81fb9a2b303349a24a6d9d54081fff4f39b58aee83618a5c554"
+    },
+    {
+      "model_id": "gpt-5.3-chat",
+      "path": "runs/2026-03-17/gpt-5.3-chat-v32-r1.fingerprint-suite-v32.json",
+      "sha256": "4f64aaf4e9d3737bf9b2bafedb5b1bd8eb5e4cb3becf1988f30859554b098575"
+    },
+    {
+      "model_id": "gpt-5.3-codex",
+      "path": "runs/2026-03-17/gpt-5.3-codex-v32-r2.fingerprint-suite-v32.json",
+      "sha256": "ae6ae6de47651aa235daa978e8556ce175ad6ee02f65775ea9190bdaeaead77e"
+    },
+    {
+      "model_id": "gpt-5.4",
+      "path": "runs/2026-03-17/gpt-5.4-v32-r1.fingerprint-suite-v32.json",
+      "sha256": "3aca58202b4dfc66f2ea48b2730aa4c40764d35d05893ef535adc58760b34877"
+    },
+    {
+      "model_id": "kimi-k2-thinking",
+      "path": "runs/2026-03-17/kimi-k2-thinking-v32-r3.fingerprint-suite-v32.json",
+      "sha256": "f109b52a4e8fbe7890aa5bd86c06cc93ce7f4e08f165b66829dc97d6e83f2279"
+    },
+    {
+      "model_id": "kimi-k2.5",
+      "path": "runs/2026-03-17/kimi-k2.5-v32-r1.fingerprint-suite-v32.json",
+      "sha256": "040d1efb39165ff73270bcf01ef012b0dc7b5389bdf5a283d779d32b479c8a3b"
+    },
+    {
+      "model_id": "minimax-m2.5",
+      "path": "runs/2026-03-17/minimax-m2.5-v32-r1.fingerprint-suite-v32.json",
+      "sha256": "6001f215ce7fc16353c615249d98321837c14715a79cf5f874cd1c18c8b83690"
+    },
+    {
+      "model_id": "nano-banana",
+      "path": "runs/2026-03-17/nano-banana-v32-r1.fingerprint-suite-v32.json",
+      "sha256": "7700c8a8dbb7c270903e51e10c6666c9bb68ed3266d7162ae3cf64404b3b0cd6"
+    },
+    {
+      "model_id": "nano-banana-pro",
+      "path": "runs/2026-03-17/nano-banana-pro-v32-r1.fingerprint-suite-v32.json",
+      "sha256": "c4129449398fffb56c2d4070724dc0dcfc281597f2bac9d8be591e5d31a43ba6"
+    }
+  ],
+  "calibration": {
+    "path": "calibration/fingerprint-suite-v32.json",
+    "sha256": "d843be8382881c2c8898d4f73ccedf61ac9e0f1dcc040b7e4380fb3541ca1561"
+  },
+  "profiles": [
+    {
+      "model_id": "claude-haiku-4.5",
+      "path": "profiles/fingerprint-suite-v32/claude-haiku-4.5.json",
+      "sha256": "f2871773100cef4755df5187aea33f70e8467f51a97f83070c6f1241fed58b03"
+    },
+    {
+      "model_id": "claude-opus-4.1",
+      "path": "profiles/fingerprint-suite-v32/claude-opus-4.1.json",
+      "sha256": "aa291c0ed6857642ac0db4d1b6d878816cfb6f82740406b09fc5aabe57f0239b"
+    },
+    {
+      "model_id": "claude-opus-4.6",
+      "path": "profiles/fingerprint-suite-v32/claude-opus-4.6.json",
+      "sha256": "c854de44c9b3d117d8becd8da44917811218b1c470dcf3aafbf13be0b7c2e38f"
+    },
+    {
+      "model_id": "claude-sonnet-4.6",
+      "path": "profiles/fingerprint-suite-v32/claude-sonnet-4.6.json",
+      "sha256": "9183843cdd52ff0e1b0f3836dd3b72b72f5cd9f175f75d1d0870300f7ef9200d"
+    },
+    {
+      "model_id": "deepseek-chat",
+      "path": "profiles/fingerprint-suite-v32/deepseek-chat.json",
+      "sha256": "43f6eba7b4e8bb199e181d48c7d985eeec406cee4f499bb87c95fd9f57446283"
+    },
+    {
+      "model_id": "gemini-2.5-flash-lite",
+      "path": "profiles/fingerprint-suite-v32/gemini-2.5-flash-lite.json",
+      "sha256": "8f9858d4b74701284e38d39c3a4cfec13ea1b7d2a664835e2f00cd798f959d18"
+    },
+    {
+      "model_id": "gemini-3-flash-preview",
+      "path": "profiles/fingerprint-suite-v32/gemini-3-flash-preview.json",
+      "sha256": "ef2800fd4fd3610696dcdea1fb920bf2dd3f306fc7367976678a5747c473b50a"
+    },
+    {
+      "model_id": "gemini-3-pro-preview",
+      "path": "profiles/fingerprint-suite-v32/gemini-3-pro-preview.json",
+      "sha256": "e208cd59df2818be4b7d1537870b080f96bb39adb123d1cb0983da1f483e227a"
+    },
+    {
+      "model_id": "gemini-3.1-pro-preview",
+      "path": "profiles/fingerprint-suite-v32/gemini-3.1-pro-preview.json",
+      "sha256": "37cc2305128f3339885d973c8ebd064dee4f7bc0c68931afa0beca107afabc19"
+    },
+    {
+      "model_id": "glm-4.7",
+      "path": "profiles/fingerprint-suite-v32/glm-4.7.json",
+      "sha256": "2ade2bab50ac021f14a9dc2764eb7fa7ffe04e0322616bbc773714c81498cea5"
+    },
+    {
+      "model_id": "glm-5",
+      "path": "profiles/fingerprint-suite-v32/glm-5.json",
+      "sha256": "0729bc9bae3f6206df49c8606e53c82ee5ce4c422b35f1d3cde8b718361971e6"
+    },
+    {
+      "model_id": "gpt-5.3-chat",
+      "path": "profiles/fingerprint-suite-v32/gpt-5.3-chat.json",
+      "sha256": "fe6b427f10b15cf96d7de15f4b09cdfe24ca12eccf0aaae9da125536d6cdb3e6"
+    },
+    {
+      "model_id": "gpt-5.3-codex",
+      "path": "profiles/fingerprint-suite-v32/gpt-5.3-codex.json",
+      "sha256": "93c032d76dd168056774fb4394ab071020e51b8cc3118c5e97341eff4426bf19"
+    },
+    {
+      "model_id": "gpt-5.4",
+      "path": "profiles/fingerprint-suite-v32/gpt-5.4.json",
+      "sha256": "8a4a66de2314e06d7c5a462cac05a94c8c2de77c57b11e14123dd72d8e2407ea"
+    },
+    {
+      "model_id": "kimi-k2-thinking",
+      "path": "profiles/fingerprint-suite-v32/kimi-k2-thinking.json",
+      "sha256": "04fdc242216955809de8cea9cf356167de71113185c825dabc7d2b91bc9b73de"
+    },
+    {
+      "model_id": "kimi-k2.5",
+      "path": "profiles/fingerprint-suite-v32/kimi-k2.5.json",
+      "sha256": "a2088a92780ef2272ae9981686444df37f87b990714af0d8f4a9f9284a300291"
+    },
+    {
+      "model_id": "minimax-m2.5",
+      "path": "profiles/fingerprint-suite-v32/minimax-m2.5.json",
+      "sha256": "f39fbac82820fa3c4b0835748a83e455085b4d8d13bed63b0a489ae57e2b8eb4"
+    },
+    {
+      "model_id": "nano-banana-pro",
+      "path": "profiles/fingerprint-suite-v32/nano-banana-pro.json",
+      "sha256": "2c596bacc539cf36abb74192ce572dc4366a6bf764625cc66ca8756fdda846e2"
+    },
+    {
+      "model_id": "nano-banana",
+      "path": "profiles/fingerprint-suite-v32/nano-banana.json",
+      "sha256": "91ac6c9df92c80b93c614aa00abd5b2ad2f65559477553a50a6d6df07b814188"
+    }
+  ],
+  "prompt_files": [
+    {
+      "path": "prompt-bank/candidates/p041.yaml",
+      "prompt_id": "p041",
+      "sha256": "16e6f03ce7d89763ba4841f3cb634866f4c8eb82aa425cf757ee20f4c174556b"
+    },
+    {
+      "path": "prompt-bank/candidates/p042.yaml",
+      "prompt_id": "p042",
+      "sha256": "f3ac59bc6625d9ee704691c4c49ea3eeef4a68830e2122db74b66693b1ea675a"
+    },
+    {
+      "path": "prompt-bank/candidates/p043.yaml",
+      "prompt_id": "p043",
+      "sha256": "a1a2d7d47f8c3fe375d8d52856c1d13bb2dc0934211a52f4f78bc49c65875c79"
+    },
+    {
+      "path": "prompt-bank/candidates/p044.yaml",
+      "prompt_id": "p044",
+      "sha256": "d4cf1aafd177366ccd2eefdbb45df81dccbd63bf2b2841337f751a5dfe7f78dc"
+    },
+    {
+      "path": "prompt-bank/candidates/p045.yaml",
+      "prompt_id": "p045",
+      "sha256": "930771b9ea20351b79661447793f37f3aaa174167f5d254ec4d38d1241ef96b0"
+    }
+  ],
+  "suite_definition": {
+    "path": "prompt-bank/suites/fingerprint-suite-v32.yaml",
+    "prompt_ids": [
+      "p041",
+      "p042",
+      "p043",
+      "p044",
+      "p045"
+    ],
+    "sha256": "fc6c4f234b2cecee6595d3fe655dde5579f5209778fc3134e2e0b390ad2b7c5a"
+  },
+  "suite_id": "fingerprint-suite-v32"
+}

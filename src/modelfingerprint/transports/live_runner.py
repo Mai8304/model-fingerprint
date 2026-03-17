@@ -715,7 +715,7 @@ def _can_accept_length_terminated_output(
 
 
 def _is_retryable(error: HttpClientError, retryable_statuses: list[int]) -> bool:
-    if error.kind in {"timeout", "network"}:
+    if _is_timeout_error_kind(error.kind) or error.kind == "network":
         return True
     if error.kind == "http_status" and error.status_code in retryable_statuses:
         return True

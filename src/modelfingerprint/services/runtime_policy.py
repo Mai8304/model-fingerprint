@@ -28,8 +28,12 @@ STRUCTURED_EXTRACTION_DISABLE_THINKING_HIGH_BUDGET_PROFILE_ID = (
     "structured_extraction_disable_thinking_high_budget_v1"
 )
 REASONING_VISIBLE_STRUCTURED_PROFILE_ID = "reasoning_visible_structured_v1"
+REASONING_VISIBLE_STRUCTURED_HIGH_BUDGET_PROFILE_ID = (
+    "reasoning_visible_structured_high_budget_v1"
+)
 STANDARD_STRUCTURED_OUTPUT_TOKEN_CAP = 500
 HIGH_BUDGET_OUTPUT_TOKEN_CAP = 3000
+ULTRA_HIGH_BUDGET_OUTPUT_TOKEN_CAP = 6000
 LONG_REASONING_OUTPUT_TOKEN_CAP = 1500
 CAPABILITY_PROBE_OUTPUT_TOKEN_CAP = 256
 
@@ -186,6 +190,25 @@ def _build_structured_extraction_attempts(
                 total_deadline_seconds=180,
                 escalate_on=[],
             ),
+        ]
+
+    if runtime_profile_id == REASONING_VISIBLE_STRUCTURED_HIGH_BUDGET_PROFILE_ID:
+        return [
+            _build_attempt(
+                endpoint=endpoint,
+                attempt_index=1,
+                output_token_cap=ULTRA_HIGH_BUDGET_OUTPUT_TOKEN_CAP,
+                request_body_overrides={
+                    "reasoning": {
+                        "effort": "minimal",
+                        "exclude": False,
+                    }
+                },
+                first_byte_timeout_seconds=90,
+                idle_timeout_seconds=45,
+                total_deadline_seconds=300,
+                escalate_on=[],
+            )
         ]
 
     if runtime_profile_id == STRUCTURED_EXTRACTION_DISABLE_THINKING_TWO_TIER_PROFILE_ID:

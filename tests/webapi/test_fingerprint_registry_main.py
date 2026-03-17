@@ -8,7 +8,7 @@ from modelfingerprint.webapi.fingerprints import list_fingerprint_models
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_main_repo_v3_registry_exposes_expected_models() -> None:
+def test_main_repo_v32_registry_exposes_expected_models() -> None:
     items = list_fingerprint_models(RepositoryPaths(root=ROOT))
 
     assert [item.id for item in items] == [
@@ -26,6 +26,8 @@ def test_main_repo_v3_registry_exposes_expected_models() -> None:
         "gpt-5.3-chat",
         "gpt-5.3-codex",
         "gpt-5.4",
+        "kimi-k2-thinking",
+        "kimi-k2.5",
         "minimax-m2.5",
         "nano-banana",
         "nano-banana-pro",
@@ -45,6 +47,8 @@ def test_main_repo_v3_registry_exposes_expected_models() -> None:
         "GPT-5.3 Chat",
         "GPT-5.3 Codex",
         "GPT-5.4",
+        "Kimi K2 Thinking",
+        "Kimi K2.5",
         "MiniMax M2.5",
         "Nano Banana",
         "Nano Banana Pro",

@@ -1,11 +1,6 @@
 {
-  "model_id": "nano-banana-pro",
-  "suite_id": "fingerprint-suite-v32",
-  "sample_count": 1,
   "answer_coverage_ratio": 1.0,
-  "reasoning_coverage_ratio": 1.0,
   "capability_profile": {
-    "coverage_ratio": 1.0,
     "capabilities": {
       "image_generation": {
         "distribution": {
@@ -29,155 +24,147 @@
       },
       "vision_understanding": {
         "distribution": {
-          "accepted_but_ignored": 1.0
+          "supported": 1.0
         }
       }
-    }
+    },
+    "coverage_ratio": 1.0
   },
-  "protocol_expectations": {
-    "satisfied": true,
-    "required_capabilities": [
-      "chat_completions"
-    ],
-    "issues": []
-  },
+  "model_id": "nano-banana-pro",
   "prompts": [
     {
-      "prompt_id": "p041",
-      "weight": 0.99,
       "answer_coverage_ratio": 1.0,
-      "reasoning_coverage_ratio": 1.0,
       "expected_reasoning_visible": 1.0,
       "features": {
         "answer.answered_count": {
           "kind": "numeric",
-          "median": 7.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 7.0
         },
         "answer.conflict_count": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "answer.evidence_field_count": {
           "kind": "numeric",
-          "median": 4.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 4.0
         },
         "answer.status_q1": {
-          "kind": "enum",
           "distribution": {
             "a": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q2": {
-          "kind": "enum",
           "distribution": {
             "a": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q3": {
-          "kind": "enum",
           "distribution": {
             "a": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q4": {
-          "kind": "enum",
           "distribution": {
             "a": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q5": {
-          "kind": "enum",
           "distribution": {
             "u": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q6": {
-          "kind": "enum",
           "distribution": {
             "a": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q7": {
-          "kind": "enum",
           "distribution": {
             "a": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q8": {
-          "kind": "enum",
           "distribution": {
             "a": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.unknown_count": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "answer.value_q1": {
-          "kind": "enum",
           "distribution": {
             "Elena Park": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.value_q2": {
-          "kind": "enum",
           "distribution": {
             "no": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.value_q3": {
-          "kind": "enum",
           "distribution": {
             "no": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.value_q4": {
-          "kind": "enum",
           "distribution": {
             "Marco Ruiz": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.value_q6": {
-          "kind": "enum",
           "distribution": {
             "no": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.value_q7": {
-          "kind": "enum",
           "distribution": {
             "2026-04-06 01:30 UTC": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.value_q8": {
-          "kind": "enum",
           "distribution": {
             "no": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.violation_count": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "reasoning.backtrack_markers": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "reasoning.hedge_density": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "reasoning.step_count": {
           "kind": "numeric",
-          "median": 21.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 47.0
         },
         "reasoning.uses_numbered_outline": {
           "kind": "boolean",
@@ -185,18 +172,18 @@
         },
         "score.boundary_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.decision_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.evidence_alignment": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.match_q1": {
           "kind": "boolean",
@@ -268,137 +255,137 @@
         },
         "surface.repair_event_count": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "transport.finish_reason": {
-          "kind": "enum",
           "distribution": {
             "stop": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "transport.latency_bucket_ms": {
           "kind": "numeric",
-          "median": 37000.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 36000.0
         },
         "transport.reasoning_tokens": {
           "kind": "numeric",
-          "median": 2560.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 2560.0
         },
         "transport.reasoning_visible": {
           "kind": "boolean",
           "p_true": 1.0
         }
-      }
+      },
+      "prompt_id": "p041",
+      "reasoning_coverage_ratio": 1.0,
+      "weight": 0.99
     },
     {
-      "prompt_id": "p042",
-      "weight": 0.96,
       "answer_coverage_ratio": 1.0,
-      "reasoning_coverage_ratio": 1.0,
       "expected_reasoning_visible": 1.0,
       "features": {
         "answer.ambiguous_count": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "answer.include_count": {
           "kind": "numeric",
-          "median": 4.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 4.0
         },
         "answer.label_m1": {
-          "kind": "enum",
           "distribution": {
             "I": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.label_m10": {
-          "kind": "enum",
           "distribution": {
             "V": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.label_m2": {
-          "kind": "enum",
           "distribution": {
             "R": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.label_m3": {
-          "kind": "enum",
           "distribution": {
             "I": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.label_m4": {
-          "kind": "enum",
           "distribution": {
             "R": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.label_m5": {
-          "kind": "enum",
           "distribution": {
             "I": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.label_m6": {
-          "kind": "enum",
           "distribution": {
             "R": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.label_m7": {
-          "kind": "enum",
           "distribution": {
             "I": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.label_m8": {
-          "kind": "enum",
           "distribution": {
             "V": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.label_m9": {
-          "kind": "enum",
           "distribution": {
             "A": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.rejected_count": {
           "kind": "numeric",
-          "median": 3.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 3.0
         },
         "answer.variant_count": {
           "kind": "numeric",
-          "median": 2.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 2.0
         },
         "answer.violation_count": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "reasoning.backtrack_markers": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "reasoning.hedge_density": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "reasoning.step_count": {
           "kind": "numeric",
-          "median": 8.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 8.0
         },
         "reasoning.uses_numbered_outline": {
           "kind": "boolean",
@@ -406,13 +393,13 @@
         },
         "score.ambiguity_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.classification_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.match_m1": {
           "kind": "boolean",
@@ -456,18 +443,18 @@
         },
         "score.rejection_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.selection_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.variant_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.violation_free": {
           "kind": "boolean",
@@ -507,149 +494,149 @@
         },
         "surface.repair_event_count": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "transport.finish_reason": {
-          "kind": "enum",
           "distribution": {
             "stop": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "transport.latency_bucket_ms": {
           "kind": "numeric",
-          "median": 13000.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 16000.0
         },
         "transport.reasoning_tokens": {
           "kind": "numeric",
-          "median": 769.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 769.0
         },
         "transport.reasoning_visible": {
           "kind": "boolean",
           "p_true": 1.0
         }
-      }
+      },
+      "prompt_id": "p042",
+      "reasoning_coverage_ratio": 1.0,
+      "weight": 0.96
     },
     {
-      "prompt_id": "p043",
-      "weight": 0.97,
       "answer_coverage_ratio": 1.0,
-      "reasoning_coverage_ratio": 1.0,
       "expected_reasoning_visible": 1.0,
       "features": {
         "answer.answered_count": {
           "kind": "numeric",
-          "median": 4.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 4.0
         },
         "answer.conflict_count": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "answer.evidence_field_count": {
           "kind": "numeric",
-          "median": 4.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 4.0
         },
         "answer.status_q1": {
-          "kind": "enum",
           "distribution": {
             "answer": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q2": {
-          "kind": "enum",
           "distribution": {
             "unknown": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q3": {
-          "kind": "enum",
           "distribution": {
             "answer": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q4": {
-          "kind": "enum",
           "distribution": {
             "conflict_unresolved": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q5": {
-          "kind": "enum",
           "distribution": {
             "answer": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q6": {
-          "kind": "enum",
           "distribution": {
             "answer": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.unknown_count": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "answer.value_q1": {
-          "kind": "enum",
           "distribution": {
             "yes": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.value_q2": {
-          "kind": "enum",
           "distribution": {
             "__null__": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.value_q3": {
-          "kind": "enum",
           "distribution": {
             "Mara Singh": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.value_q4": {
-          "kind": "enum",
           "distribution": {
             "__null__": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.value_q5": {
-          "kind": "enum",
           "distribution": {
             "no": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.value_q6": {
-          "kind": "enum",
           "distribution": {
             "no": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.violation_count": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "reasoning.backtrack_markers": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "reasoning.hedge_density": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "reasoning.step_count": {
           "kind": "numeric",
-          "median": 13.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 12.0
         },
         "reasoning.uses_numbered_outline": {
           "kind": "boolean",
@@ -657,18 +644,18 @@
         },
         "score.answer_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.conflict_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.evidence_alignment": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.match_q1": {
           "kind": "boolean",
@@ -696,8 +683,8 @@
         },
         "score.unknown_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.violation_free": {
           "kind": "boolean",
@@ -737,149 +724,149 @@
         },
         "surface.repair_event_count": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "transport.finish_reason": {
-          "kind": "enum",
           "distribution": {
             "stop": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "transport.latency_bucket_ms": {
           "kind": "numeric",
-          "median": 20000.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 20000.0
         },
         "transport.reasoning_tokens": {
           "kind": "numeric",
-          "median": 1476.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1476.0
         },
         "transport.reasoning_visible": {
           "kind": "boolean",
           "p_true": 1.0
         }
-      }
+      },
+      "prompt_id": "p043",
+      "reasoning_coverage_ratio": 1.0,
+      "weight": 0.97
     },
     {
-      "prompt_id": "p044",
-      "weight": 0.99,
       "answer_coverage_ratio": 1.0,
-      "reasoning_coverage_ratio": 1.0,
       "expected_reasoning_visible": 1.0,
       "features": {
         "answer.answered_count": {
           "kind": "numeric",
-          "median": 5.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 5.0
         },
         "answer.conflict_count": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "answer.evidence_field_count": {
           "kind": "numeric",
-          "median": 4.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 4.0
         },
         "answer.status_q1": {
-          "kind": "enum",
           "distribution": {
             "a": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q2": {
-          "kind": "enum",
           "distribution": {
             "a": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q3": {
-          "kind": "enum",
           "distribution": {
             "a": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q4": {
-          "kind": "enum",
           "distribution": {
             "a": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q5": {
-          "kind": "enum",
           "distribution": {
             "a": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q6": {
-          "kind": "enum",
           "distribution": {
             "c": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.status_q7": {
-          "kind": "enum",
           "distribution": {
             "u": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.unknown_count": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "answer.value_q1": {
-          "kind": "enum",
           "distribution": {
             "ops": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.value_q2": {
-          "kind": "enum",
           "distribution": {
             "no": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.value_q3": {
-          "kind": "enum",
           "distribution": {
             "no": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.value_q4": {
-          "kind": "enum",
           "distribution": {
             "override": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.value_q5": {
-          "kind": "enum",
           "distribution": {
             "yes": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "answer.violation_count": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "reasoning.backtrack_markers": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "reasoning.hedge_density": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "reasoning.step_count": {
           "kind": "numeric",
-          "median": 15.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 46.0
         },
         "reasoning.uses_numbered_outline": {
           "kind": "boolean",
@@ -887,18 +874,18 @@
         },
         "score.boundary_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.decision_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.evidence_alignment": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.match_q1": {
           "kind": "boolean",
@@ -966,72 +953,72 @@
         },
         "surface.repair_event_count": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "transport.finish_reason": {
-          "kind": "enum",
           "distribution": {
             "stop": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "transport.latency_bucket_ms": {
           "kind": "numeric",
-          "median": 27000.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 27000.0
         },
         "transport.reasoning_tokens": {
           "kind": "numeric",
-          "median": 2051.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 2051.0
         },
         "transport.reasoning_visible": {
           "kind": "boolean",
           "p_true": 1.0
         }
-      }
+      },
+      "prompt_id": "p044",
+      "reasoning_coverage_ratio": 1.0,
+      "weight": 0.99
     },
     {
-      "prompt_id": "p045",
-      "weight": 0.98,
       "answer_coverage_ratio": 1.0,
-      "reasoning_coverage_ratio": 1.0,
       "expected_reasoning_visible": 1.0,
       "features": {
         "answer.ambiguous_count": {
           "kind": "numeric",
-          "median": 3.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 3.0
         },
         "answer.canonical_count": {
           "kind": "numeric",
-          "median": 4.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 4.0
         },
         "answer.rejected_count": {
           "kind": "numeric",
-          "median": 5.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 5.0
         },
         "answer.violation_count": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "reasoning.backtrack_markers": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "reasoning.hedge_density": {
           "kind": "numeric",
-          "median": 0.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 0.0
         },
         "reasoning.step_count": {
           "kind": "numeric",
-          "median": 8.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 8.0
         },
         "reasoning.uses_numbered_outline": {
           "kind": "boolean",
@@ -1039,23 +1026,23 @@
         },
         "score.ambiguity_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.classification_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.rejection_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.threshold_accuracy": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "score.violation_free": {
           "kind": "boolean",
@@ -1095,30 +1082,43 @@
         },
         "surface.repair_event_count": {
           "kind": "numeric",
-          "median": 1.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 1.0
         },
         "transport.finish_reason": {
-          "kind": "enum",
           "distribution": {
             "stop": 1.0
-          }
+          },
+          "kind": "enum"
         },
         "transport.latency_bucket_ms": {
           "kind": "numeric",
-          "median": 13000.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 12000.0
         },
         "transport.reasoning_tokens": {
           "kind": "numeric",
-          "median": 866.0,
-          "mad": 0.0
+          "mad": 0.0,
+          "median": 866.0
         },
         "transport.reasoning_visible": {
           "kind": "boolean",
           "p_true": 1.0
         }
-      }
+      },
+      "prompt_id": "p045",
+      "reasoning_coverage_ratio": 1.0,
+      "weight": 0.98
     }
-  ]
+  ],
+  "protocol_expectations": {
+    "issues": [],
+    "required_capabilities": [
+      "chat_completions"
+    ],
+    "satisfied": true
+  },
+  "reasoning_coverage_ratio": 1.0,
+  "sample_count": 1,
+  "suite_id": "fingerprint-suite-v32"
 }
