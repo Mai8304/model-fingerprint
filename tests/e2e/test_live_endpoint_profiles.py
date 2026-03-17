@@ -10,7 +10,9 @@ from typer.testing import CliRunner
 
 from modelfingerprint.cli import app
 from modelfingerprint.contracts.run import RunArtifact
-from modelfingerprint.services.prompt_bank import load_candidate_prompts
+from modelfingerprint.services.endpoint_profiles import load_endpoint_profiles
+from modelfingerprint.services.prompt_bank import FINGERPRINT_SUITE_ID, load_candidate_prompts
+from modelfingerprint.services.runtime_policy import resolve_output_token_cap, resolve_runtime_attempts
 from modelfingerprint.transports.http_client import HttpProgressSnapshot, HttpTerminalResult
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -283,9 +285,11 @@ def test_run_suite_live_smoke_matches_direct_protocol_baseline(
     )
     prompt_bank = load_candidate_prompts(tmp_path / "prompt-bank" / "candidates")
     prompt = prompt_bank[baseline.request_prompt_id]
+    endpoint = load_endpoint_profiles(tmp_path / "endpoint-profiles")[endpoint_profile_id]
 
     assert artifact.endpoint_profile_id == baseline.endpoint_profile_id
     assert artifact.capability_probe is not None
+    assert artifact.runtime_policy is not None
     assert artifact.capability_probe.probe_version == "v2"
     assert artifact.prompt_count_completed == 3
     assert all(prompt_result.status == "completed" for prompt_result in artifact.prompts)
@@ -299,7 +303,16 @@ def test_run_suite_live_smoke_matches_direct_protocol_baseline(
     assert request_trace["headers"]["Authorization"] == "Bearer ***REDACTED***"
     _assert_mapping_contains_subset(request_trace["headers"], baseline.expected_request_headers)
     _assert_mapping_contains_subset(request_trace["body"], baseline.expected_request_body_subset)
-    assert request_trace["body"]["max_tokens"] == prompt.generation.max_output_tokens
+    _, attempt_policies = resolve_runtime_attempts(
+        runtime_policy=artifact.runtime_policy,
+        prompt=prompt,
+    )
+    expected_output_token_cap = resolve_output_token_cap(
+        prompt=prompt,
+        endpoint=endpoint,
+        attempt=attempt_policies[0],
+    )
+    assert request_trace["body"]["max_tokens"] == expected_output_token_cap
     for forbidden_key in baseline.forbidden_request_body_keys:
         assert forbidden_key not in request_trace["body"]
 
@@ -587,7 +600,7 @@ def test_refresh_capabilities_command_uses_endpoint_profiles(
         tmp_path
         / "runs"
         / "2026-03-11"
-        / "glm-5-refresh.fingerprint-suite-v3.capability-refresh.json"
+        / f"glm-5-refresh.{FINGERPRINT_SUITE_ID}.capability-refresh.json"
     )
     artifact = RunArtifact.model_validate(json.loads(output_path.read_text(encoding="utf-8")))
     assert artifact.run_kind == "capability_refresh"

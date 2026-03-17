@@ -3,7 +3,11 @@ from __future__ import annotations
 from modelfingerprint.contracts.endpoint import EndpointProfile
 from modelfingerprint.contracts.prompt import PromptDefinition
 from modelfingerprint.dialects.openai_chat import OpenAIChatDialectAdapter
-from modelfingerprint.services.runtime_policy import resolve_runtime_policy
+from modelfingerprint.services.runtime_policy import (
+    resolve_output_token_cap,
+    resolve_runtime_attempts,
+    resolve_runtime_policy,
+)
 from modelfingerprint.transports.http_client import HttpProgressSnapshot, HttpTerminalResult
 from modelfingerprint.transports.live_runner import LiveRunner
 
@@ -205,33 +209,38 @@ def test_live_runner_preserves_messages_and_output_token_cap_field_exactly() -> 
     prompt = build_prompt()
     original_messages = [message.model_dump(mode="json") for message in prompt.messages]
     client = RecordingHttpClient()
+    endpoint = build_endpoint(
+        supports_json_object_response=True,
+        output_token_cap_field="max_completion_tokens",
+    )
+    runtime_policy = resolve_runtime_policy(
+        capability_probe_payload={
+            "results": {
+                "thinking": {
+                    "status": "accepted_but_ignored",
+                }
+            }
+        },
+        endpoint=endpoint,
+    )
     runner = LiveRunner(
-        endpoint=build_endpoint(
-            supports_json_object_response=True,
-            output_token_cap_field="max_completion_tokens",
-        ),
+        endpoint=endpoint,
         api_key="secret-key",
         dialect=OpenAIChatDialectAdapter(),
         http_client=client,
         trace_dir=None,
-        runtime_policy=resolve_runtime_policy(
-            capability_probe_payload={
-                "results": {
-                    "thinking": {
-                        "status": "accepted_but_ignored",
-                    }
-                }
-            },
-            endpoint=build_endpoint(
-                supports_json_object_response=True,
-                output_token_cap_field="max_completion_tokens",
-            ),
-        ),
+        runtime_policy=runtime_policy,
     )
 
     runner.execute(prompt)
 
-    assert client.calls[0]["body"]["max_completion_tokens"] == 96
+    _, attempt_policies = resolve_runtime_attempts(runtime_policy=runtime_policy, prompt=prompt)
+    expected_output_token_cap = resolve_output_token_cap(
+        prompt=prompt,
+        endpoint=endpoint,
+        attempt=attempt_policies[0],
+    )
+    assert client.calls[0]["body"]["max_completion_tokens"] == expected_output_token_cap
     assert client.calls[0]["read_timeout_seconds"] == 90
     assert client.calls[0]["body"]["messages"] == original_messages
     assert [message.model_dump(mode="json") for message in prompt.messages] == original_messages

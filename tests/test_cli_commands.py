@@ -273,13 +273,14 @@ retry_policy:
     def fake_probe_capabilities(*, base_url: str, api_key: str, model: str):
         return {
             "probe_mode": "minimal",
-            "probe_version": "v1",
+            "probe_version": "v2",
             "coverage_ratio": 1.0,
             "results": {
                 "thinking": {"status": "supported"},
                 "tools": {"status": "supported"},
                 "streaming": {"status": "supported"},
-                "image": {"status": "unsupported"},
+                "image_generation": {"status": "unsupported"},
+                "vision_understanding": {"status": "unsupported"},
             },
         }
 
@@ -385,13 +386,14 @@ def test_run_suite_direct_live_mode_builds_ad_hoc_endpoint_and_serializes_it(
         }
         return {
             "probe_mode": "minimal",
-            "probe_version": "v1",
+            "probe_version": "v2",
             "coverage_ratio": 1.0,
             "results": {
                 "thinking": {"status": "accepted_but_ignored"},
                 "tools": {"status": "accepted_but_ignored"},
                 "streaming": {"status": "supported"},
-                "image": {"status": "unsupported"},
+                "image_generation": {"status": "unsupported"},
+                "vision_understanding": {"status": "unsupported"},
             },
         }
 

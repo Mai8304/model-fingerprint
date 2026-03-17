@@ -32,7 +32,6 @@ ProbeCapabilityId = Literal[
     "thinking",
     "tools",
     "streaming",
-    "image",
     "image_generation",
     "vision_understanding",
 ]

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "modelfingerprint"
 version = "0.1.0"
-description = "Standalone file-based model fingerprinting toolkit"
+description = "Developer-facing model identity verification toolkit with CLI and web console"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

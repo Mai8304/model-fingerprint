@@ -1,0 +1,908 @@
+{
+  "answer_coverage_ratio": 1.0,
+  "capability_probe": {
+    "capabilities": {
+      "image_generation": {
+        "detail": "{\"error\":{\"message\":\"No endpoints found that support the requested output modalities: image, text\",\"code\":404}}",
+        "evidence": {
+          "http_status": 404
+        },
+        "http_status": 404,
+        "latency_ms": 1976,
+        "status": "unsupported"
+      },
+      "streaming": {
+        "detail": "response used SSE event chunks",
+        "evidence": {
+          "content_type": "",
+          "http_status": 200
+        },
+        "http_status": 200,
+        "latency_ms": 2750,
+        "status": "supported"
+      },
+      "thinking": {
+        "detail": "reasoning field is populated",
+        "evidence": {
+          "field": "reasoning",
+          "http_status": 200
+        },
+        "http_status": 200,
+        "latency_ms": 2322,
+        "status": "supported"
+      },
+      "tools": {
+        "detail": "response contains tool_calls",
+        "evidence": {
+          "finish_reason": "tool_calls",
+          "http_status": 200,
+          "tool_call_count": 1
+        },
+        "http_status": 200,
+        "latency_ms": 6653,
+        "status": "supported"
+      },
+      "vision_understanding": {
+        "detail": "recognized grounded answer: red",
+        "evidence": {
+          "http_status": 200,
+          "normalized_answer": "red",
+          "probe_path": "remote_image_primary"
+        },
+        "http_status": 200,
+        "latency_ms": 3253,
+        "status": "supported"
+      }
+    },
+    "coverage_ratio": 1.0,
+    "probe_mode": "minimal",
+    "probe_version": "v2"
+  },
+  "claimed_model": "kimi-k2.5",
+  "endpoint_profile_id": "openrouter-kimi-k2.5",
+  "prompt_count_completed": 5,
+  "prompt_count_scoreable": 5,
+  "prompt_count_total": 5,
+  "prompts": [
+    {
+      "attempts": [
+        {
+          "abort_reason": null,
+          "answer_text_present": true,
+          "bytes_received": null,
+          "completed": true,
+          "connect_timeout_seconds": 15,
+          "error_kind": null,
+          "finish_reason": "length",
+          "first_byte_latency_ms": null,
+          "first_byte_timeout_seconds": 45,
+          "http_attempt_index": null,
+          "http_status": null,
+          "idle_timeout_seconds": 20,
+          "last_progress_latency_ms": null,
+          "latency_ms": 42420,
+          "output_token_cap": 1500,
+          "read_timeout_seconds": 120,
+          "reasoning_visible": true,
+          "request_attempt_index": 1,
+          "round_index": null,
+          "runtime_intent": "structured_extraction",
+          "runtime_tier_index": 0,
+          "status": "completed",
+          "total_deadline_seconds": 120,
+          "window_index": null,
+          "write_timeout_seconds": 15
+        }
+      ],
+      "canonical_output": {
+        "format_id": "tolerant_json_v3",
+        "payload": {
+          "q1": [
+            "e2"
+          ],
+          "q4": [
+            "e7"
+          ],
+          "q7": [
+            "e8"
+          ],
+          "q8": [
+            "e1"
+          ]
+        }
+      },
+      "canonicalization_events": [],
+      "completion": {
+        "answer_text": "{\n    \"q1\": [\"e2\"],\n    \"q4\": [\"e7\"],\n    \"q7\": [\"e8\"],\n    \"q8\": [\"e1\"]\n  }",
+        "finish_reason": "length",
+        "latency_ms": 42420,
+        "raw_response_path": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-17/kimi-k2.5-v32-r1.fingerprint-suite-v32/p041.response.json",
+        "reasoning_text": "\u7528\u6237\u8981\u6c42\u6839\u636e\u63d0\u4f9b\u7684\u8bc1\u636e\u56de\u7b54 q1 \u5230 q8\uff0c\u5e76\u8fd4\u56de\u7279\u5b9a\u683c\u5f0f\u7684 JSON\u3002\n\n\u9996\u5148\u5206\u6790\u6bcf\u4e2a\u95ee\u9898\uff1a\n\nq1: \u5f53\u524d\u83b7\u6279 rollout owner \u662f\u8c01\uff1f\n- [e2] Final CAB approval names Elena Park as the rollout owner for the approved Atlas migration.\n- \u7b54\u6848\uff1aElena Park\n- s: a\n- v: \"Elena Park\"\n\nq2: Priya Singh \u662f\u5426\u662f\u5f53\u524d rollout owner\uff1f\n- [e4] Priya Singh approved Elena's plan; approver is not the rollout owner.\n- [e2] Elena Park is the rollout owner\n- \u7b54\u6848\uff1ano\n- s: a\n- v: \"no\"\n\nq3: Elena \u4e0a\u5468\u8986\u76d6 EU rotation \u662f\u5426\u8db3\u4ee5\u786e\u5b9a\u5979\u7684 home region\uff1f\n- [e5] Elena covered the EU rotation last week, but that note does not define her home region.\n- \u7b54\u6848\uff1ano\n- s: a\n- v: \"no\"\n\nq4: \u5982\u679c Elena \u5728 rollback \u65f6\u79bb\u7ebf\uff0c\u7531\u8c01\u63a5\u624b\uff1f\n- [e7] Marco takes over only if Elena is offline during rollback.\n- \u7b54\u6848\uff1aMarco Ruiz\n- s: a\n- v: \"Marco Ruiz\"\n\nq5: \u73b0\u5728\u80fd\u5426\u786e\u5b9a Elena \u7684 home region\uff1f\n- \u68c0\u67e5\u8bc1\u636e\uff1a\n  - [e5] \u8bf4\u8986\u76d6 EU rotation \u4e0d\u80fd\u786e\u5b9a home region\n  - [e6] \u8bf4\u65b0\u52a0\u5761 drill traffic \u4e0d\u80fd\u786e\u5b9a owner's region\n  - [e3] \u8bf4\u5979\u662f Principal SRE\uff0c\u6ca1\u8bf4 region\n  - \u6ca1\u6709\u8bc1\u636e\u8868\u660e\u80fd\u786e\u5b9a\u5979\u7684 home region\n- \u7b54\u6848\uff1aunknown\n- s: u\n- v: null\n\nq6: \u65b0\u52a0\u5761 drill traffic \u662f\u5426\u8db3\u4ee5\u786e\u5b9a Elena \u7684 home region\uff1f\n- [e6] Atlas failover traffic is served from Singapore during drills; infra location does not identify the owner's region.\n- \u7b54\u6848\uff1ano\n- s: a\n- v: \"no\"\n\nq7: \u5df2\u6279\u51c6\u7684 execution window \u662f\u4ec0\u4e48\uff1f\n- [e8] The approved execution window is 2026-04-06 01:30 UTC.\n- \u7b54\u6848\uff1a2026-04-06 01:30 UTC\n- s: a\n- v: \"2026-04-06 01:30 UTC\"\n\nq8: Sunday fallback window \u662f\u5426\u5df2\u7ecf\u83b7\u6279\uff1f\n- [e1] February draft sheet listed Marco Ruiz as weekend coordinator and a Sunday fallback window.\n- [e8] \u63d0\u5230\u4e86 approved execution window\uff0c\u4f46\u6ca1\u6709\u63d0\u5230 Sunday fallback window \u83b7\u6279\n- [e1] \u8bf4\u7684\u662f February draft\uff0c\u4e0d\u662f final approval\n- \u6ca1\u6709\u8bc1\u636e\u8868\u660e Sunday fallback window \u5df2\u83b7\u6279\n- \u7b54\u6848\uff1ano\n- s: a\n- v: \"no\"\n\n\u73b0\u5728\u68c0\u67e5\u7ea6\u675f\u6761\u4ef6\uff1a\n- task_result \u5fc5\u987b\u5305\u542b q1 \u5230 q8\n- \u6bcf\u4e2a qN \u5fc5\u987b\u4e14\u53ea\u80fd\u662f {\"s\",\"v\"}\n- s \u53ea\u80fd\u662f a\u3001u\u3001c\uff0c\u5206\u522b\u8868\u793a answer\u3001unknown\u3001conflict_unresolved\u3002\n- s \u4e0d\u662f a \u65f6\uff0cv \u5fc5\u987b\u662f null\u3002\n\nq1: s=a, v=\"Elena Park\"\nq2: s=a, v=\"no\"\nq3: s=a, v=\"no\"\nq4: s=a, v=\"Marco Ruiz\"\nq5: s=u, v=null (\u56e0\u4e3a\u65e0\u6cd5\u786e\u5b9a)\nq6: s=a, v=\"no\"\nq7: s=a, v=\"2026-04-06 01:30 UTC\"\nq8: s=a, v=\"no\"\n\nevidence \u53ea\u5141\u8bb8\u7ed9 q1\u3001q4\u3001q7\u3001q8 \u5199\u6700\u77ed\u5f15\u7528\uff1a\n- q1: [e2]\n- q4: [e7]\n- q7: [e8]\n- q8: [e1] (\u56e0\u4e3a[e1]\u63d0\u5230February draft\u6709Sunday fallback window\uff0c\u4f46[e8]\u53ea\u63d0\u5230approved execution window\uff0c\u6ca1\u6709\u8bf4Sunday fallback window\u83b7\u6279\uff0c\u6240\u4ee5\u6839\u636e[e1]\u548c\u7f3a\u4e4f\u5176\u4ed6\u8bc1\u636e\uff0c\u56de\u7b54no)\n\nunknowns \u53ea\u8bb0\u5f55 s=u \u7684\u9898\u53f7\uff1a\n- q5\n\nviolations: []\n\n\u68c0\u67e5 q5 \u7684\u903b\u8f91\uff1a\n\u95ee\u9898\u95ee\"\u73b0\u5728\u80fd\u5426\u786e\u5b9a Elena \u7684 home region\uff1f\"\n\u8bc1\u636e\uff1a\n- [e5] \u660e\u786e\u8bf4\u8986\u76d6 EU rotation \u4e0d\u80fd\u786e\u5b9a home region\n- [e6] \u660e\u786e\u8bf4 infra location \u4e0d\u80fd\u786e\u5b9a owner's region\n- \u6ca1\u6709\u5176\u4ed6\u8bc1\u636e\u63d0\u5230 Elena \u7684 home region\n\u56e0\u6b64\u65e0\u6cd5\u786e\u5b9a\uff0cs=u\uff0cv=null \u662f\u6b63\u786e\u7684\u3002\n\n\u68c0\u67e5 q8\uff1a\n[e1] February draft sheet listed ... a Sunday fallback window.\n[e8] The approved execution window is 2026-04-06 01:30 UTC.\n[e8] \u6ca1\u6709\u63d0\u5230 Sunday fallback window \u83b7\u6279\u3002\n[e1] \u662f February draft\uff0c\u4e0d\u662f final approval\u3002\n\u56e0\u6b64 Sunday fallback window \u672a\u83b7\u6279\uff0c\u7b54\u6848\u4e3a no\u3002\n\n\u683c\u5f0f\u8981\u6c42\uff1a\n- \u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u9644\u52a0\u89e3\u91ca\u3002\n- \u9876\u5c42\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b task_result\u3001evidence\u3001unknowns\u3001violations\u3002\n\nJSON \u7ed3\u6784\uff1a\n{\n  \"task_result\": {\n    \"q1\": {\"s\": \"a\", \"v\": \"Elena Park\"},\n    \"q2\": {\"s\": \"a\", \"v\": \"no\"},\n    \"q3\": {\"s\": \"a\", \"v\": \"no\"},\n    \"q4\": {\"s\": \"a\", \"v\": \"Marco Ruiz\"},\n    \"q5\": {\"s\": \"u\", \"v\": null},\n    \"q6\": {\"s\": \"a\", \"v\": \"no\"},\n    \"q7\": {\"s\": \"a\", \"v\": \"2026-04-06 01:30 UTC\"},\n    \"q8\": {\"s\": \"a\", \"v\": \"no\"}\n  },\n  \"evidence\": {\n    \"q1\": [\"e2\"],\n    \"q4\": [\"e7\"],\n    \"q7\": [\"e8\"],\n    \"q8\": [\"e1\"]\n  },\n  \"unknowns\": [\"q5\"],\n  \"violations\": []\n}\n\n\u68c0\u67e5 evidence \u5f15\u7528\u662f\u5426\u6700\u77ed\uff1a\n- q1: [e2] \u786e\u5b9e\u662f\u6700\u77ed\u5f15\u7528\uff0c\u76f4\u63a5\u8bf4\u660e Elena Park \u662f rollout owner\n- q4: [e7] \u786e\u5b9e\u662f\u6700\u77ed\u5f15\u7528\uff0c\u8bf4\u660e Marco takes over\n- q7: [e8] \u786e\u5b9e\u662f\u6700\u77ed\u5f15\u7528\uff0c\u8bf4\u660e approved execution window\n- q8: [e1] \u63d0\u5230 February draft \u6709 Sunday fallback window\uff0c\u4f46\u7ed3\u5408\u5176\u4ed6\u8bc1\u636e\uff08\u7279\u522b\u662f[e8]\u53ea\u63d0\u5230\u53e6\u4e00\u4e2a\u7a97\u53e3\u83b7\u6279\uff09\uff0c\u53ef\u4ee5\u63a8\u65ad Sunday fallback window \u672a\u83b7\u6279\u3002\u5f15\u7528 [e1] \u662f\u5408\u7406\u7684\uff0c\u56e0\u4e3a\u5b83\u63d0\u5230\u4e86\u8be5\u7a97\u53e3\u4f46\u8868\u660e\u662f draft\u3002\n\n\u7b49\u7b49\uff0cq8 \u7684\u8bc1\u636e\u5f15\u7528\u5e94\u8be5\u8bf4\u660e\u4e3a\u4ec0\u4e48\u56de\u7b54\"no\"\u3002[e1]\u8bf4 February draft \u5217\u51fa\u4e86 Sunday fallback window\uff0c\u4f46\u6ca1\u6709\u8bf4\u5b83\u88ab\u6279\u51c6\u4e86\u3002\u5b9e\u9645\u4e0a\uff0c[e8]\u63d0\u5230\u4e86 approved execution window\uff0c\u4f46\u6ca1\u6709\u63d0\u5230 Sunday fallback window\u3002\u56e0\u6b64\uff0c\u6839\u636e [e1]\uff08\u5b83\u662f draft\uff09\u548c\u7f3a\u4e4f\u6279\u51c6\u8bc1\u636e\uff0c\u56de\u7b54 no\u3002\u5f15\u7528 [e1] \u662f\u5408\u9002\u7684\u3002\n\n\u6216\u8005\uff0cq8 \u53ef\u4ee5\u4e0d\u5f15\u7528\u8bc1\u636e\uff0c\u56e0\u4e3a\u8bc1\u636e\u53ea\u5141\u8bb8\u7ed9 q1\u3001q4\u3001q7\u3001q8 \u5199\u6700\u77ed\u5f15\u7528\uff0c\u4f46\u4e0d\u662f\u8bf4\u5fc5\u987b",
+        "reasoning_visible": true,
+        "usage": {
+          "input_tokens": 529,
+          "output_tokens": 1500,
+          "reasoning_tokens": 1496,
+          "total_tokens": 2029
+        }
+      },
+      "error": null,
+      "features": {
+        "answer.answered_count": 0,
+        "answer.conflict_count": 0,
+        "answer.evidence_field_count": 0,
+        "answer.unknown_count": 0,
+        "answer.violation_count": 0,
+        "reasoning.backtrack_markers": 1,
+        "reasoning.hedge_density": 0.0,
+        "reasoning.step_count": 115,
+        "reasoning.uses_numbered_outline": false,
+        "score.boundary_accuracy": 0.0,
+        "score.decision_accuracy": 0.0,
+        "score.evidence_alignment": 1.0,
+        "score.match_q1": false,
+        "score.match_q2": false,
+        "score.match_q3": false,
+        "score.match_q4": false,
+        "score.match_q5": false,
+        "score.match_q6": false,
+        "score.match_q7": false,
+        "score.match_q8": false,
+        "score.violation_free": true,
+        "surface.constraint_retention": false,
+        "surface.field_order_match": false,
+        "surface.had_markdown_fence": false,
+        "surface.has_extra_prefix_text": false,
+        "surface.has_extra_suffix_text": false,
+        "surface.has_extra_text": false,
+        "surface.key_alias_normalized": false,
+        "surface.parse_repaired": false,
+        "surface.repair_event_count": 0,
+        "transport.finish_reason": "length",
+        "transport.latency_bucket_ms": 42000,
+        "transport.reasoning_tokens": 1496,
+        "transport.reasoning_visible": true
+      },
+      "prompt_id": "p041",
+      "raw_output": "{\n    \"q1\": [\"e2\"],\n    \"q4\": [\"e7\"],\n    \"q7\": [\"e8\"],\n    \"q8\": [\"e1\"]\n  }",
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 190,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u9644\u52a0\u89e3\u91ca\u3002\n\u9876\u5c42\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b task_result\u3001evidence\u3001unknowns\u3001violations\u3002\ntask_result \u5fc5\u987b\u5305\u542b q1 \u5230 q8\u3002\n\u6bcf\u4e2a qN \u5fc5\u987b\u4e14\u53ea\u80fd\u662f {\"s\",\"v\"}\u3002\ns \u53ea\u80fd\u662f a\u3001u\u3001c\uff0c\u5206\u522b\u8868\u793a answer\u3001unknown\u3001conflict_unresolved\u3002\ns \u4e0d\u662f a \u65f6\uff0cv \u5fc5\u987b\u662f null\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u53ea\u6839\u636e\u4e0b\u5217\u8bc1\u636e\u56de\u7b54 q1 \u5230 q8\u3002\n\n[e1] February draft sheet listed Marco Ruiz as weekend coordinator and a Sunday fallback window.\n[e2] Final CAB approval names Elena Park as the rollout owner for the approved Atlas migration.\n[e3] Elena Park is the current Principal SRE for Atlas Payments.\n[e4] Priya Singh approved Elena's plan; approver is not the rollout owner.\n[e5] Elena covered the EU rotation last week, but that note does not define her home region.\n[e6] Atlas failover traffic is served from Singapore during drills; infra location does not identify the owner's region.\n[e7] Marco takes over only if Elena is offline during rollback.\n[e8] The approved execution window is 2026-04-06 01:30 UTC.\n\n\u56de\u7b54\uff1a\n- q1: \u5f53\u524d\u83b7\u6279 rollout owner \u662f\u8c01\uff1f\n- q2: Priya Singh \u662f\u5426\u662f\u5f53\u524d rollout owner\uff1f\n- q3: Elena \u4e0a\u5468\u8986\u76d6 EU rotation \u662f\u5426\u8db3\u4ee5\u786e\u5b9a\u5979\u7684 home region\uff1f\n- q4: \u5982\u679c Elena \u5728 rollback \u65f6\u79bb\u7ebf\uff0c\u7531\u8c01\u63a5\u624b\uff1f\n- q5: \u73b0\u5728\u80fd\u5426\u786e\u5b9a Elena \u7684 home region\uff1f\n- q6: \u65b0\u52a0\u5761 drill traffic \u662f\u5426\u8db3\u4ee5\u786e\u5b9a Elena \u7684 home region\uff1f\n- q7: \u5df2\u6279\u51c6\u7684 execution window \u662f\u4ec0\u4e48\uff1f\n- q8: Sunday fallback window \u662f\u5426\u5df2\u7ecf\u83b7\u6279\uff1f\n\n\u8fd4\u56de JSON\uff0c\u5bf9\u8c61\u5b57\u6bb5\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b\uff1a\n- task_result: {q1..q8}\n- q1.v \u53ea\u80fd\u662f \"Elena Park\"\n- q2.v \u53ea\u80fd\u662f \"no\"\n- q3.v \u53ea\u80fd\u662f \"no\"\n- q4.v \u53ea\u80fd\u662f \"Marco Ruiz\"\n- q6.v \u53ea\u80fd\u662f \"no\"\n- q7.v \u53ea\u80fd\u662f \"2026-04-06 01:30 UTC\"\n- q8.v \u53ea\u80fd\u662f \"no\"\n- q5 \u82e5\u4e0d\u662f answer\uff0cv \u5fc5\u987b\u662f null\n- evidence \u53ea\u5141\u8bb8\u7ed9 q1\u3001q4\u3001q7\u3001q8 \u5199\u6700\u77ed\u5f15\u7528\n- unknowns \u53ea\u8bb0\u5f55 s=u \u7684\u9898\u53f7\n- violations: []\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "completed",
+      "usage": {
+        "input_tokens": 529,
+        "output_tokens": 1500,
+        "reasoning_tokens": 1496,
+        "total_tokens": 2029
+      }
+    },
+    {
+      "attempts": [
+        {
+          "abort_reason": null,
+          "answer_text_present": true,
+          "bytes_received": null,
+          "completed": true,
+          "connect_timeout_seconds": 15,
+          "error_kind": null,
+          "finish_reason": "stop",
+          "first_byte_latency_ms": null,
+          "first_byte_timeout_seconds": 45,
+          "http_attempt_index": null,
+          "http_status": null,
+          "idle_timeout_seconds": 20,
+          "last_progress_latency_ms": null,
+          "latency_ms": 31565,
+          "output_token_cap": 1500,
+          "read_timeout_seconds": 120,
+          "reasoning_visible": true,
+          "request_attempt_index": 1,
+          "round_index": null,
+          "runtime_intent": "structured_extraction",
+          "runtime_tier_index": 0,
+          "status": "completed",
+          "total_deadline_seconds": 120,
+          "window_index": null,
+          "write_timeout_seconds": 15
+        }
+      ],
+      "canonical_output": {
+        "format_id": "tolerant_json_v3",
+        "payload": {
+          "evidence": {},
+          "task_result": {
+            "m1": "I",
+            "m10": "V",
+            "m2": "R",
+            "m3": "I",
+            "m4": "R",
+            "m5": "I",
+            "m6": "R",
+            "m7": "I",
+            "m8": "V",
+            "m9": "A"
+          },
+          "unknowns": {},
+          "violations": []
+        }
+      },
+      "canonicalization_events": [],
+      "completion": {
+        "answer_text": "{\"task_result\":{\"m1\":\"I\",\"m2\":\"R\",\"m3\":\"I\",\"m4\":\"R\",\"m5\":\"I\",\"m6\":\"R\",\"m7\":\"I\",\"m8\":\"V\",\"m9\":\"A\",\"m10\":\"V\"},\"evidence\":{},\"unknowns\":{},\"violations\":[]}",
+        "finish_reason": "stop",
+        "latency_ms": 31565,
+        "raw_response_path": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-17/kimi-k2.5-v32-r1.fingerprint-suite-v32/p042.response.json",
+        "reasoning_text": "\u7528\u6237\u8981\u6c42\u6211\u5904\u740610\u4e2amention\uff0c\u5e76\u6839\u636e\u7279\u5b9a\u89c4\u5219\u4e3a\u6bcf\u4e2amention\u5206\u914d\u6807\u7b7e\u3002\u6807\u7b7e\u53ea\u80fd\u662fI\u3001A\u3001V\u6216R\u3002\n\n\u8ba9\u6211\u9010\u4e00\u5206\u6790\u6bcf\u4e2amention\uff1a\n\n1. m1: Arbor - \u89c4\u5219\u8bf4\"Arbor\u3001Beacon\u3001Cinder\u3001Drift \u662f active canonical service mention\uff0c\u6240\u4ee5\u6807 I\u3002\" \u2192 I\n2. m2: Arbor-review - \u89c4\u5219\u8bf4\"Arbor-review\u3001Beacon Ops\u3001Project Cinder \u90fd\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\u3002\" \u2192 R\n3. m3: Beacon - \u89c4\u5219\u8bf4\"Arbor\u3001Beacon\u3001Cinder\u3001Drift \u662f active canonical service mention\uff0c\u6240\u4ee5\u6807 I\u3002\" \u2192 I\n4. m4: Beacon Ops - \u89c4\u5219\u8bf4\"Arbor-review\u3001Beacon Ops\u3001Project Cinder \u90fd\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\u3002\" \u2192 R\n5. m5: Cinder - \u89c4\u5219\u8bf4\"Arbor\u3001Beacon\u3001Cinder\u3001Drift \u662f active canonical service mention\uff0c\u6240\u4ee5\u6807 I\u3002\" \u2192 I\n6. m6: Project Cinder - \u89c4\u5219\u8bf4\"Arbor-review\u3001Beacon Ops\u3001Project Cinder \u90fd\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\u3002\" \u2192 R\n7. m7: Drift - \u89c4\u5219\u8bf4\"Arbor\u3001Beacon\u3001Cinder\u3001Drift \u662f active canonical service mention\uff0c\u6240\u4ee5\u6807 I\u3002\" \u2192 I\n8. m8: Drift-east - \u89c4\u5219\u8bf4\"Drift-east\u3001Harbor shadow \u662f variant\u3001shard \u6216 disabled shadow mention\uff0c\u6240\u4ee5\u6807 V\u3002\" \u2192 V\n9. m9: Atlas East - \u89c4\u5219\u8bf4\"Atlas East \u662f\u77ed\u540d\uff0c\u4e0d\u8db3\u4ee5\u552f\u4e00\u5f52\u4e00\uff0c\u6240\u4ee5\u6807 A\u3002\" \u2192 A\n10. m10: Harbor shadow - \u89c4\u5219\u8bf4\"Drift-east\u3001Harbor shadow \u662f variant\u3001shard \u6216 disabled shadow mention\uff0c\u6240\u4ee5\u6807 V\u3002\" \u2192 V\n\n\u6240\u4ee5\u7ed3\u679c\u662f\uff1a\n- m1: I\n- m2: R\n- m3: I\n- m4: R\n- m5: I\n- m6: R\n- m7: I\n- m8: V\n- m9: A\n- m10: V\n\n\u6211\u9700\u8981\u8fd4\u56de\u4e00\u4e2aJSON\u5bf9\u8c61\uff0c\u5305\u542b\uff1a\n- task_result: \u5305\u542bm1\u5230m10\n- evidence: \u7a7a\u5bf9\u8c61\n- unknowns: \u7a7a\u5bf9\u8c61\n- violations: \u7a7a\u6570\u7ec4\n\n\u5e76\u4e14\u4e0d\u8981\u8f93\u51famarkdown\uff0c\u4e0d\u8981\u9644\u52a0\u89e3\u91ca\u3002",
+        "reasoning_visible": true,
+        "usage": {
+          "input_tokens": 315,
+          "output_tokens": 563,
+          "reasoning_tokens": 498,
+          "total_tokens": 878
+        }
+      },
+      "error": null,
+      "features": {
+        "answer.ambiguous_count": 1,
+        "answer.include_count": 4,
+        "answer.label_m1": "I",
+        "answer.label_m10": "V",
+        "answer.label_m2": "R",
+        "answer.label_m3": "I",
+        "answer.label_m4": "R",
+        "answer.label_m5": "I",
+        "answer.label_m6": "R",
+        "answer.label_m7": "I",
+        "answer.label_m8": "V",
+        "answer.label_m9": "A",
+        "answer.rejected_count": 3,
+        "answer.variant_count": 2,
+        "answer.violation_count": 0,
+        "reasoning.backtrack_markers": 0,
+        "reasoning.hedge_density": 0.0,
+        "reasoning.step_count": 29,
+        "reasoning.uses_numbered_outline": true,
+        "score.ambiguity_accuracy": 1.0,
+        "score.classification_accuracy": 1.0,
+        "score.match_m1": true,
+        "score.match_m10": true,
+        "score.match_m2": true,
+        "score.match_m3": true,
+        "score.match_m4": true,
+        "score.match_m5": true,
+        "score.match_m6": true,
+        "score.match_m7": true,
+        "score.match_m8": true,
+        "score.match_m9": true,
+        "score.rejection_accuracy": 1.0,
+        "score.selection_accuracy": 1.0,
+        "score.variant_accuracy": 1.0,
+        "score.violation_free": true,
+        "surface.constraint_retention": true,
+        "surface.field_order_match": true,
+        "surface.had_markdown_fence": false,
+        "surface.has_extra_prefix_text": false,
+        "surface.has_extra_suffix_text": false,
+        "surface.has_extra_text": false,
+        "surface.key_alias_normalized": false,
+        "surface.parse_repaired": false,
+        "surface.repair_event_count": 0,
+        "transport.finish_reason": "stop",
+        "transport.latency_bucket_ms": 31000,
+        "transport.reasoning_tokens": 498,
+        "transport.reasoning_visible": true
+      },
+      "prompt_id": "p042",
+      "raw_output": "{\"task_result\":{\"m1\":\"I\",\"m2\":\"R\",\"m3\":\"I\",\"m4\":\"R\",\"m5\":\"I\",\"m6\":\"R\",\"m7\":\"I\",\"m8\":\"V\",\"m9\":\"A\",\"m10\":\"V\"},\"evidence\":{},\"unknowns\":{},\"violations\":[]}",
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 140,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de\u4e00\u4e2a JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u9644\u52a0\u89e3\u91ca\u3002\n\u9876\u5c42\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b task_result\u3001evidence\u3001unknowns\u3001violations\u3002\ntask_result \u5fc5\u987b\u5305\u542b m1 \u5230 m10\u3002\n\u6bcf\u4e2a mN \u53ea\u80fd\u662f\u5b57\u7b26\u4e32\u3002\n\u5141\u8bb8\u7684\u503c\u53ea\u6709 I\u3001A\u3001V\u3001R\u3002\nI \u8868\u793a active canonical service mention\u3002\nA \u8868\u793a ambiguous shortname\uff0c\u4e0d\u8db3\u4ee5\u552f\u4e00\u5f52\u4e00\u3002\nV \u8868\u793a variant\u3001shard \u6216 disabled shadow mention\uff0c\u4e0d\u5c5e\u4e8e active canonical service\u3002\nR \u8868\u793a review\u3001team label\u3001project codename \u8fd9\u7c7b\u975e\u5b9e\u4f53 mention\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u53ea\u5904\u7406\u4e0b\u9762 10 \u4e2a mention\uff0c\u5e76\u6309\u89c4\u5219\u7ed9\u6bcf\u4e2a mention \u6807\u4e00\u4e2a\u6807\u7b7e\u3002\n\nmention:\n- m1 Arbor\n- m2 Arbor-review\n- m3 Beacon\n- m4 Beacon Ops\n- m5 Cinder\n- m6 Project Cinder\n- m7 Drift\n- m8 Drift-east\n- m9 Atlas East\n- m10 Harbor shadow\n\n\u89c4\u5219\uff1a\n- Arbor\u3001Beacon\u3001Cinder\u3001Drift \u662f active canonical service mention\uff0c\u6240\u4ee5\u6807 I\u3002\n- Atlas East \u662f\u77ed\u540d\uff0c\u4e0d\u8db3\u4ee5\u552f\u4e00\u5f52\u4e00\uff0c\u6240\u4ee5\u6807 A\u3002\n- Drift-east\u3001Harbor shadow \u662f variant\u3001shard \u6216 disabled shadow mention\uff0c\u6240\u4ee5\u6807 V\u3002\n- Arbor-review\u3001Beacon Ops\u3001Project Cinder \u90fd\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\u3002\n\n\u8fd4\u56de JSON\uff1a\n- task_result: {m1..m10}\n- evidence: {}\n- unknowns: {}\n- violations: []\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "completed",
+      "usage": {
+        "input_tokens": 315,
+        "output_tokens": 563,
+        "reasoning_tokens": 498,
+        "total_tokens": 878
+      }
+    },
+    {
+      "attempts": [
+        {
+          "abort_reason": null,
+          "answer_text_present": true,
+          "bytes_received": null,
+          "completed": true,
+          "connect_timeout_seconds": 15,
+          "error_kind": null,
+          "finish_reason": "length",
+          "first_byte_latency_ms": null,
+          "first_byte_timeout_seconds": 45,
+          "http_attempt_index": null,
+          "http_status": null,
+          "idle_timeout_seconds": 20,
+          "last_progress_latency_ms": null,
+          "latency_ms": 40138,
+          "output_token_cap": 1500,
+          "read_timeout_seconds": 120,
+          "reasoning_visible": true,
+          "request_attempt_index": 1,
+          "round_index": null,
+          "runtime_intent": "structured_extraction",
+          "runtime_tier_index": 0,
+          "status": "completed",
+          "total_deadline_seconds": 120,
+          "window_index": null,
+          "write_timeout_seconds": 15
+        }
+      ],
+      "canonical_output": {
+        "format_id": "tolerant_json_v3",
+        "payload": {
+          "q1": {
+            "status": "answer",
+            "value": "yes"
+          },
+          "q2": {
+            "status": "unknown",
+            "value": null
+          },
+          "q3": {
+            "status": "answer",
+            "value": "Mara Singh"
+          },
+          "q4": {
+            "status": "conflict_unresolved",
+            "value": null
+          },
+          "q5": {
+            "status": "answer",
+            "value": "no"
+          },
+          "q6": {
+            "status": "answer",
+            "value": "no"
+          }
+        }
+      },
+      "canonicalization_events": [
+        {
+          "code": "stripped_prefix_text",
+          "message": "removed explanatory text before JSON object"
+        },
+        {
+          "code": "stripped_suffix_text",
+          "message": "removed explanatory text after JSON object"
+        }
+      ],
+      "completion": {
+        "answer_text": "{\n  \"task_result\": {\n    \"q1\": {\"status\": \"answer\", \"value\": \"yes\"},\n    \"q2\": {\"status\": \"unknown\", \"value\": null},\n    \"q3\": {\"status\": \"answer\", \"value\": \"Mara Singh\"},\n    \"q4\": {\"status\": \"conflict_unresolved\", \"value\": null},\n    \"q5\": {\"status\": \"answer\", \"value\": \"no\"},\n    \"q6\": {\"status\": \"answer\", \"value\": \"no\"}\n  },\n  \"evidence\": {\n    \"q1\": [\"e1\"],\n    \"q3\": [\"e3\"],\n    \"q5\": [\"e5\"],",
+        "finish_reason": "length",
+        "latency_ms": 40138,
+        "raw_response_path": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-17/kimi-k2.5-v32-r1.fingerprint-suite-v32/p043.response.json",
+        "reasoning_text": "\u7528\u6237\u8981\u6c42\u6211\u6839\u636e\u63d0\u4f9b\u7684\u8bb0\u5f55\u56de\u7b54\u516d\u4e2a\u95ee\u9898\uff0c\u5e76\u4ee5\u7279\u5b9a\u7684JSON\u683c\u5f0f\u8fd4\u56de\u7ed3\u679c\u3002\n\n \u9996\u5148\u5206\u6790\u6bcf\u4e2a\u8bb0\u5f55\uff1a\n - [e1] \u660e\u786e\u6279\u51c6\u4e86\u4e34\u65f6\u8bfb\u53d6\u8bbf\u95ee\u6743\u9650\uff08temporary read access approved\uff09\n - [e2] \u5199\u5165\u8bbf\u95ee\u6743\u9650\u5c1a\u672a\u51b3\u5b9a\uff0c\u4e0d\u5f97\u6700\u7ec8\u786e\u5b9a\uff08write access undecided, must not be finalized\uff09\n - [e3] Mara Singh \u662f\u5f53\u524d\u503c\u73ed\u8d1f\u8d23\u4eba\uff08current duty owner\uff09\n - [e4] \u4e00\u4e2a\u8bb0\u5f55\u63d0\u8bae Jordan Lee \u4f5c\u4e3a\u6545\u969c\u8f6c\u79fb\u8054\u7cfb\u4eba\uff08proposes Jordan Lee as failover contact\uff09\n - [e5] \u53e6\u4e00\u4e2a\u8bb0\u5f55\u8bf4\u6545\u969c\u8f6c\u79fb\u8054\u7cfb\u4eba\u4ecd\u672a\u89e3\u51b3\uff0c\u4e0d\u5f97\u6700\u7ec8\u786e\u5b9a\uff08failover contact unresolved and must not be finalized\uff09\n\n \u73b0\u5728\u9010\u4e00\u56de\u7b54\u95ee\u9898\uff1a\n\n q1: Was temporary read access approved?\uff08\u4e34\u65f6\u8bfb\u53d6\u8bbf\u95ee\u88ab\u6279\u51c6\u4e86\u5417\uff1f\uff09\n - \u6839\u636e [e1]\uff0c\u660e\u786e\u6279\u51c6\u4e86\u3002\n - status: answer\n - value: \"yes\"\n - evidence: [\"e1\"]\n\n q2: Was write access granted?\uff08\u5199\u5165\u8bbf\u95ee\u88ab\u6388\u4e88\u4e86\u5417\uff1f\uff09\n - \u6839\u636e [e2]\uff0c\u5199\u5165\u8bbf\u95ee\u5c1a\u672a\u51b3\u5b9a\uff0c\u4e0d\u5f97\u6700\u7ec8\u786e\u5b9a\u3002\n - \u95ee\u9898\u662f\"\u662f\u5426\u88ab\u6388\u4e88\"\uff0c\u8bb0\u5f55\u8bf4\"\u672a\u51b3\u5b9a\"\uff0c\u6240\u4ee5\u662f\u672a\u77e5\u7684\u3002\n - status: unknown\n - value: null\n - evidence: \u4e0d\u63d0\u4f9b\uff08\u6839\u636e\u89c4\u5219\uff0cevidence\u53ea\u5141\u8bb8\u4e3aq1\u3001q3\u3001q5\u3001q6\u63d0\u4f9b\uff09\n\n q3: Who is the current duty owner?\uff08\u5f53\u524d\u503c\u73ed\u8d1f\u8d23\u4eba\u662f\u8c01\uff1f\uff09\n - \u6839\u636e [e3]\uff0c\u662f Mara Singh\u3002\n - status: answer\n - value: \"Mara Singh\"\uff08\u9010\u5b57\u590d\u5236\uff09\n - evidence: [\"e3\"]\n\n q4: Who is the failover contact?\uff08\u6545\u969c\u8f6c\u79fb\u8054\u7cfb\u4eba\u662f\u8c01\uff1f\uff09\n - \u6839\u636e\u5224\u5b9a\u89c4\u5219\uff1a\u76f4\u63a5\u95ee\"who is the failover contact\"\u65f6\uff0c\u5982\u679c\u6709\u63d0\u540d\u8bb0\u5f55\uff08[e4] Jordan Lee\uff09\u4f46\u53c8\u660e\u786e\u5199\u7740 unresolved and must not be finalized\uff08[e5]\uff09\uff0c\u6309 conflict_unresolved \u5904\u7406\u3002\n - \u6240\u4ee5 status: conflict_unresolved\n - value: null\uff08\u6839\u636e\u89c4\u5219\uff0cq4.value \u5fc5\u987b\u662f null\uff09\n - evidence: \u4e0d\u63d0\u4f9b\uff08\u6839\u636e\u89c4\u5219\uff0cevidence\u53ea\u5141\u8bb8\u4e3aq1\u3001q3\u3001q5\u3001q6\u63d0\u4f9b\uff09\n\n q5: Is Jordan Lee finalized as the failover contact?\uff08Jordan Lee \u88ab\u6700\u7ec8\u786e\u5b9a\u4e3a\u6545\u969c\u8f6c\u79fb\u8054\u7cfb\u4eba\u4e86\u5417\uff1f\uff09\n - \u6839\u636e [e5]\uff0c\u6545\u969c\u8f6c\u79fb\u8054\u7cfb\u4eba\u4ecd\u672a\u89e3\u51b3\uff0c\u4e0d\u5f97\u6700\u7ec8\u786e\u5b9a\u3002\n - \u6839\u636e\u5224\u5b9a\u89c4\u5219\uff1a\u95ee \"is Jordan Lee finalized\" \u65f6\uff0c\u6309\u662f\u5426 finalized \u56de\u7b54\uff1b\u672c\u8bb0\u5f55\u91cc finalized answer \u5e94\u662f \"no\"\u3002\n - status: answer\n - value: \"no\"\n - evidence: [\"e5\"]\n\n q6: Has any failover contact been finalized?\uff08\u6709\u4efb\u4f55\u6545\u969c\u8f6c\u79fb\u8054\u7cfb\u4eba\u88ab\u6700\u7ec8\u786e\u5b9a\u4e86\u5417\uff1f\uff09\n - \u6839\u636e [e5]\uff0c\u6545\u969c\u8f6c\u79fb\u8054\u7cfb\u4eba\u4ecd\u672a\u89e3\u51b3\uff0c\u4e0d\u5f97\u6700\u7ec8\u786e\u5b9a\u3002\n - \u6839\u636e\u5224\u5b9a\u89c4\u5219\uff1a\u95ee \"has any failover contact been finalized\" \u65f6\uff0c\u6309\u662f\u5426 finalized \u56de\u7b54\uff1b\u672c\u8bb0\u5f55\u91cc finalized answer \u5e94\u662f \"no\"\u3002\n - status: answer\n - value: \"no\"\n - evidence: [\"e5\"]\n\n \u68c0\u67e5\u89c4\u5219\uff1a\n - \u9876\u5c42\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b task_result\u3001evidence\u3001unknowns\u3001violations\n - task_result \u5fc5\u987b\u5305\u542b q1, q2, q3, q4, q5, q6\n - \u6bcf\u4e2a qN \u5fc5\u987b\u662f {status, value}\n - status \u53ea\u80fd\u662f answer\u3001unknown\u3001conflict_unresolved\n - q1.value \u53ea\u80fd\u662f \"yes\" - \u7b26\u5408\n - q2.value \u548c q4.value \u5fc5\u987b\u662f null - q2\u662funknown\u6240\u4ee5value\u662fnull\uff0cq4\u662fconflict_unresolved\u6240\u4ee5value\u662fnull\uff0c\u7b26\u5408\n - q3.value \u5fc5\u987b\u9010\u5b57\u590d\u5236\u540d\u5b57 - \"Mara Singh\"\uff0c\u7b26\u5408\n - q5.value \u548c q6.value \u53ea\u80fd\u662f \"no\" - \u7b26\u5408\n - evidence \u53ea\u5141\u8bb8\u4e3a q1\u3001q3\u3001q5\u3001q6 \u63d0\u4f9b\u6700\u77ed\u5f15\u7528 - \u6211\u63d0\u4f9b\u4e86q1:[\"e1\"], q3:[\"e3\"], q5:[\"e5\"], q6:[\"e5\"]\uff0c\u7b26\u5408\n - unknowns \u53ea\u8bb0\u5f55 status \u662f unknown \u7684\u95ee\u9898 - \u53ea\u6709q2\u662funknown\uff0c\u6240\u4ee5[\"q2\"]\uff0c\u7b26\u5408\n - violations: \u5fc5\u987b\u662f [] - \u7b26\u5408\n\n \u7b49\u7b49\uff0c\u6211\u9700\u8981\u518d\u68c0\u67e5q2\u7684status\u3002\n q2: Was write access granted?\n [e2]\u8bf4\"Write access is still undecided and must not be finalized.\"\n \u95ee\u9898\u662f\"\u662f\u5426\u88ab\u6388\u4e88\"\uff0c\u8bb0\u5f55\u660e\u786e\u8bf4\"\u672a\u51b3\u5b9a\"\uff0c\u6240\u4ee5\u4e0d\u662f\"\u662f\"\u4e5f\u4e0d\u662f\"\u5426\"\uff0c\u800c\u662f\u672a\u77e5\u3002\n status\u5e94\u8be5\u662funknown\uff0cvalue\u662fnull\u3002\n\n \u518d\u68c0\u67e5q4\u3002\n q4: Who is the failover contact?\n [e4]\u8bf4\u63d0\u8baeJordan Lee\uff0c[e5]\u8bf4\u4ecd\u672a\u89e3\u51b3\u4e14\u4e0d\u5f97\u6700\u7ec8\u786e\u5b9a\u3002\n \u6839\u636e\u5224\u5b9a\u89c4\u5219\uff1a\u76f4\u63a5\u95ee\"who is the failover contact\"\u65f6\uff0c\u5982\u679c\u6709\u63d0\u540d\u8bb0\u5f55\u4f46\u53c8\u660e\u786e\u5199\u7740unresolved and must not be finalized\uff0c\u6309conflict_unresolved\u3002\n \u6240\u4ee5status\u662fconflict_unresolved\uff0cvalue\u662fnull\u3002\n\n \u4e00\u5207\u770b\u8d77\u6765\u90fd\u6b63\u786e\u3002\n\n \u6784\u5efaJSON\uff1a\n {\n   \"task_result\": {\n     \"q1\": {\"status\": \"answer\", \"value\": \"yes\"},\n     \"q2\": {\"status\": \"unknown\", \"value\": null},\n     \"q3\": {\"status\": \"answer\", \"value\": \"Mara Singh\"},\n     \"q4\": {\"status\": \"conflict_unresolved\", \"value\": null},\n     \"q5\": {\"status\": \"answer\", \"value\": \"no\"},\n     \"q6\": {\"status\": \"answer\", \"value\": \"no\"}\n   },\n   \"evidence\": {\n     \"q1\": [\"e1\"],\n     \"q3\": [\"e3\"],\n     \"q5\": [\"e5\"],\n     \"q6\": [\"e5\"]\n   },\n   \"unknowns\": [\"q2\"],\n   \"violations\": []\n }\n\n \u7b49\u7b49\uff0c\u6211\u6ce8\u610f\u5230q6\u7684evidence\u4e5f\u662fe5\uff0c\u8fd9\u662f\u6b63\u786e\u7684\uff0c\u56e0\u4e3ae5\u8bf4\u6545\u969c\u8f6c\u79fb\u8054\u7cfb\u4eba\u4ecd\u672a\u89e3\u51b3\u3002\n\n \u518d\u68c0\u67e5\u4e00\u904dq5\u548cq6\u7684value\u53ea\u80fd\u662f\"no\"\uff0c\u6211\u8bbe\u7f6e\u7684\u662f\"no\"\uff0c\u6b63\u786e\u3002\n\n \u518d\u68c0\u67e5q3\u7684value\u5fc5\u987b\u9010\u5b57\u590d\u5236\u540d\u5b57\uff0ce3\u4e2d\u662f\"Mara Singh\"\uff0c\u6211\u590d\u5236\u4e86\uff0c\u6b63\u786e\u3002\n\n \u518d\u68c0\u67e5q1\u7684value\u53ea\u80fd\u662f\"yes\"\uff0c\u6211\u8bbe\u7f6e\u4e86\"yes\"\uff0c\u6b63\u786e\u3002\n\n \u518d\u68c0\u67e5status\u4e0d\u662fanswer\u65f6value\u5fc5\u987b\u662fnull\uff1a\n - q2: unknown, value null - \u6b63\u786e\n - q4: conflict_unresolved, value null - \u6b63\u786e\n\n \u4e00\u5207\u7b26\u5408\u8981\u6c42\u3002",
+        "reasoning_visible": true,
+        "usage": {
+          "input_tokens": 467,
+          "output_tokens": 1500,
+          "reasoning_tokens": 1549,
+          "total_tokens": 1967
+        }
+      },
+      "error": null,
+      "features": {
+        "answer.answered_count": 0,
+        "answer.conflict_count": 0,
+        "answer.evidence_field_count": 0,
+        "answer.unknown_count": 0,
+        "answer.violation_count": 0,
+        "reasoning.backtrack_markers": 0,
+        "reasoning.hedge_density": 0.0,
+        "reasoning.step_count": 91,
+        "reasoning.uses_numbered_outline": false,
+        "score.answer_accuracy": 0.0,
+        "score.conflict_accuracy": 0.0,
+        "score.evidence_alignment": 0.0,
+        "score.match_q1": false,
+        "score.match_q2": true,
+        "score.match_q3": false,
+        "score.match_q4": false,
+        "score.match_q5": false,
+        "score.match_q6": false,
+        "score.unknown_accuracy": 1.0,
+        "score.violation_free": true,
+        "surface.constraint_retention": false,
+        "surface.field_order_match": false,
+        "surface.had_markdown_fence": false,
+        "surface.has_extra_prefix_text": true,
+        "surface.has_extra_suffix_text": true,
+        "surface.has_extra_text": true,
+        "surface.key_alias_normalized": false,
+        "surface.parse_repaired": true,
+        "surface.repair_event_count": 2,
+        "transport.finish_reason": "length",
+        "transport.latency_bucket_ms": 40000,
+        "transport.reasoning_tokens": 1549,
+        "transport.reasoning_visible": true
+      },
+      "prompt_id": "p043",
+      "raw_output": "{\n  \"task_result\": {\n    \"q1\": {\"status\": \"answer\", \"value\": \"yes\"},\n    \"q2\": {\"status\": \"unknown\", \"value\": null},\n    \"q3\": {\"status\": \"answer\", \"value\": \"Mara Singh\"},\n    \"q4\": {\"status\": \"conflict_unresolved\", \"value\": null},\n    \"q5\": {\"status\": \"answer\", \"value\": \"no\"},\n    \"q6\": {\"status\": \"answer\", \"value\": \"no\"}\n  },\n  \"evidence\": {\n    \"q1\": [\"e1\"],\n    \"q3\": [\"e3\"],\n    \"q5\": [\"e5\"],",
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 210,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de\u4e00\u4e2a JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u9644\u52a0\u89e3\u91ca\u3002\n\u9876\u5c42\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b task_result\u3001evidence\u3001unknowns\u3001violations\u3002\n\u4e0d\u8981\u7701\u7565 task_result\uff0c\u4e0d\u8981\u8fd4\u56de\u5355\u4e2a qN \u5bf9\u8c61\u3002\nstatus \u4e0d\u662f answer \u65f6\uff0cvalue \u5fc5\u987b\u662f null\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u53ea\u6839\u636e\u4e0b\u9762\u8bb0\u5f55\u56de\u7b54\u95ee\u9898\uff0c\u4e0d\u8981\u6839\u636e\u5e38\u8bc6\u8865\u5168\u3002\n\n[e1] The review explicitly approves temporary read access.\n[e2] Write access is still undecided and must not be finalized.\n[e3] Mara Singh is the current duty owner.\n[e4] One note proposes Jordan Lee as the failover contact.\n[e5] Another note says the failover contact remains unresolved and must not be finalized.\n\n\u5224\u5b9a\u89c4\u5219\uff1a\n- \u76f4\u63a5\u95ee \u201cwho is the failover contact\u201d \u65f6\uff0c\u5982\u679c\u6709\u63d0\u540d\u8bb0\u5f55\u4f46\u53c8\u660e\u786e\u5199\u7740 unresolved and must not be finalized\uff0c\u6309 conflict_unresolved\u3002\n- \u95ee \u201cis Jordan Lee finalized\u201d \u6216 \u201chas any failover contact been finalized\u201d \u65f6\uff0c\u6309\u662f\u5426 finalized \u56de\u7b54\uff1b\u672c\u8bb0\u5f55\u91cc finalized answer \u5e94\u662f \"no\"\u3002\n\n\u56de\u7b54\u4e0b\u5217\u95ee\u9898\uff1a\n- q1: Was temporary read access approved?\n- q2: Was write access granted?\n- q3: Who is the current duty owner?\n- q4: Who is the failover contact?\n- q5: Is Jordan Lee finalized as the failover contact?\n- q6: Has any failover contact been finalized?\n\n\u8fd4\u56de JSON\uff0c\u5bf9\u8c61\u5b57\u6bb5\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b\uff1a\n- task_result: {q1, q2, q3, q4, q5, q6}\n- every qN must be {status, value}\n- status \u53ea\u80fd\u662f answer\u3001unknown\u3001conflict_unresolved\n- q1.value \u53ea\u80fd\u662f \"yes\"\n- q2.value \u548c q4.value \u5fc5\u987b\u662f null\n- q3.value \u5fc5\u987b\u9010\u5b57\u590d\u5236\u540d\u5b57\n- q5.value \u548c q6.value \u53ea\u80fd\u662f \"no\"\n- evidence \u53ea\u5141\u8bb8\u4e3a q1\u3001q3\u3001q5\u3001q6 \u63d0\u4f9b\u6700\u77ed\u5f15\u7528\uff0c\u4f8b\u5982 {\"q1\":[\"e1\"],\"q3\":[\"e3\"],\"q5\":[\"e5\"],\"q6\":[\"e5\"]}\n- unknowns \u53ea\u8bb0\u5f55 status \u662f unknown \u7684\u95ee\u9898\uff0c\u4f8b\u5982 [\"q2\"]\n- violations: \u5fc5\u987b\u662f []\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "completed",
+      "usage": {
+        "input_tokens": 467,
+        "output_tokens": 1500,
+        "reasoning_tokens": 1549,
+        "total_tokens": 1967
+      }
+    },
+    {
+      "attempts": [
+        {
+          "abort_reason": null,
+          "answer_text_present": true,
+          "bytes_received": null,
+          "completed": true,
+          "connect_timeout_seconds": 15,
+          "error_kind": null,
+          "finish_reason": "length",
+          "first_byte_latency_ms": null,
+          "first_byte_timeout_seconds": 45,
+          "http_attempt_index": null,
+          "http_status": null,
+          "idle_timeout_seconds": 20,
+          "last_progress_latency_ms": null,
+          "latency_ms": 31063,
+          "output_token_cap": 1500,
+          "read_timeout_seconds": 120,
+          "reasoning_visible": true,
+          "request_attempt_index": 1,
+          "round_index": null,
+          "runtime_intent": "structured_extraction",
+          "runtime_tier_index": 0,
+          "status": "completed",
+          "total_deadline_seconds": 120,
+          "window_index": null,
+          "write_timeout_seconds": 15
+        }
+      ],
+      "canonical_output": {
+        "format_id": "tolerant_json_v3",
+        "payload": {
+          "evidence": {
+            "q1": [
+              "r1",
+              "r5"
+            ],
+            "q4": [
+              "r2"
+            ],
+            "q5": [
+              "r5"
+            ],
+            "q6": [
+              "r7",
+              "r8"
+            ]
+          },
+          "task_result": {
+            "q1": {
+              "s": "a",
+              "v": "ops"
+            },
+            "q2": {
+              "s": "a",
+              "v": "no"
+            },
+            "q3": {
+              "s": "a",
+              "v": "no"
+            },
+            "q4": {
+              "s": "a",
+              "v": "override"
+            },
+            "q5": {
+              "s": "a",
+              "v": "yes"
+            },
+            "q6": {
+              "s": "c",
+              "v": null
+            },
+            "q7": {
+              "s": "u",
+              "v": null
+            }
+          },
+          "unknowns": [
+            "q7"
+          ],
+          "violations": []
+        }
+      },
+      "canonicalization_events": [],
+      "completion": {
+        "answer_text": "{\n  \"task_result\": {\n    \"q1\": {\"s\": \"a\", \"v\": \"ops\"},\n    \"q2\": {\"s\": \"a\", \"v\": \"no\"},\n    \"q3\": {\"s\": \"a\", \"v\": \"no\"},\n    \"q4\": {\"s\": \"a\", \"v\": \"override\"},\n    \"q5\": {\"s\": \"a\", \"v\": \"yes\"},\n    \"q6\": {\"s\": \"c\", \"v\": null},\n    \"q7\": {\"s\": \"u\", \"v\": null}\n  },\n  \"evidence\": {\n    \"q1\": [\"r1\", \"r5\"],\n    \"q4\": [\"r2\"],\n    \"q5\": [\"r5\"],\n    \"q6\": [\"r7\", \"r8\"]\n  },\n  \"unknowns\": [\"q7\"],\n  \"violations\": []\n}",
+        "finish_reason": "length",
+        "latency_ms": 31063,
+        "raw_response_path": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-17/kimi-k2.5-v32-r1.fingerprint-suite-v32/p044.response.json",
+        "reasoning_text": "\u7528\u6237\u8981\u6c42\u6211\u6839\u636e\u63d0\u4f9b\u7684\u89c4\u5219\u548c\u8bb0\u5f55\u56de\u7b54\u95ee\u9898\uff0c\u5e76\u8fd4\u56de\u7279\u5b9a\u683c\u5f0f\u7684JSON\u3002\n\n\u9996\u5148\uff0c\u8ba9\u6211\u5206\u6790\u89c4\u5219\u548c\u8bb0\u5f55\uff1a\n\n\u89c4\u5219\uff1a\n1. create\u65f6\u9ed8\u8ba4priority\u662fp2\n2. override\u4f1a\u8986\u76d6\u9ed8\u8ba4priority\n3. approver\u4e0d\u7b49\u4e8e\u6700\u7ec8owner\uff0c\u9664\u975e\u6709\u663e\u5f0ftransfer\n4. acting owner\u53ea\u5728handoff\u7a97\u53e3\u5185\u751f\u6548\uff0c\u4e0d\u81ea\u52a8\u6210\u4e3a\u6700\u7ec8owner\n5. close\u4f1a\u4fdd\u7559\u6700\u540e\u4e00\u4e2a\u6700\u7ec8owner\n6. suspend\u4f1a\u4fdd\u7559\u6700\u540e\u4e00\u4e2a\u6700\u7ec8owner\n\n\u8bb0\u5f55\uff1a\n- r1: create ticket_a owner=ops\n- r2: override ticket_a priority=p1\n- r3: Priya approved ticket_a\n- r4: Elena acted as owner during handoff\n- r5: close ticket_a\n- r6: create worker_x owner=ops\n- r7: update worker_x priority=p1\n- r8: another note says worker_x priority remains p3 pending verification\n- r9: suspend worker_x\n- r10: no explicit transfer to Priya or Elena was recorded\n\n\u95ee\u9898\uff1a\nq1: ticket_a\u7684\u6700\u7ec8owner\u662f\u8c01\uff1f\n- r1\u521b\u5efa\u65f6owner=ops\n- r3 Priya approved\uff0c\u4f46\u6839\u636e\u89c4\u52193\uff0capprover\u4e0d\u7b49\u4e8e\u6700\u7ec8owner\uff0c\u9664\u975e\u6709\u663e\u5f0ftransfer\n- r4 Elena acted as owner\uff0c\u4f46\u6839\u636e\u89c4\u52194\uff0cacting owner\u53ea\u5728handoff\u7a97\u53e3\u5185\u751f\u6548\uff0c\u4e0d\u81ea\u52a8\u6210\u4e3a\u6700\u7ec8owner\n- r10\u660e\u786e\u8bf4\u6ca1\u6709\u663e\u5f0ftransfer\u7ed9Priya\u6216Elena\n- r5 close ticket_a\uff0c\u6839\u636e\u89c4\u52195\uff0cclose\u4f1a\u4fdd\u7559\u6700\u540e\u4e00\u4e2a\u6700\u7ec8owner\n- \u6240\u4ee5\u6700\u7ec8owner\u5e94\u8be5\u662fops\uff08\u6765\u81ear1\uff09\n- \u7b54\u6848\u5e94\u8be5\u662f\"ops\"\n\nq2: Priya\u662f\u5426\u662fticket_a\u7684\u6700\u7ec8owner\uff1f\n- \u6839\u636e\u4e0a\u8ff0\u5206\u6790\uff0c\u4e0d\u662f\n- \u7b54\u6848\u5e94\u8be5\u662f\"no\"\n\nq3: Elena\u662f\u5426\u662fticket_a\u7684\u6700\u7ec8owner\uff1f\n- \u6839\u636e\u4e0a\u8ff0\u5206\u6790\uff0c\u4e0d\u662f\n- \u7b54\u6848\u5e94\u8be5\u662f\"no\"\n\nq4: ticket_a\u7684\u6700\u7ec8priority\u6765\u81eadefault\u8fd8\u662foverride\uff1f\n- r1 create\uff0c\u9ed8\u8ba4priority\u662fp2\uff08\u89c4\u52191\uff09\n- r2 override priority=p1\n- \u6839\u636e\u89c4\u52192\uff0coverride\u4f1a\u8986\u76d6\u9ed8\u8ba4priority\n- \u6240\u4ee5\u6700\u7ec8priority\u6765\u81eaoverride\n- \u7b54\u6848\u5e94\u8be5\u662f\"override\"\n\nq5: close\u4e4b\u540e\u662f\u5426\u4fdd\u7559\u6700\u7ec8owner\uff1f\n- \u89c4\u52195\u8bf4close\u4f1a\u4fdd\u7559\u6700\u540e\u4e00\u4e2a\u6700\u7ec8owner\n- \u6240\u4ee5\u7b54\u6848\u662f\"yes\"\n\nq6: worker_x\u7684\u6700\u7ec8priority\u662f\u5426\u80fd\u786e\u5b9a\uff1f\n- r6 create worker_x\n- r7 update priority=p1\n- r8\u8bf4priority remains p3 pending verification\n- r7\u548cr8\u6709\u51b2\u7a81\uff0c\u4e00\u4e2a\u8bf4p1\uff0c\u4e00\u4e2a\u8bf4p3\u5f85\u9a8c\u8bc1\n- \u6240\u4ee5\u662fconflict_unresolved\n- \u6839\u636e\u8981\u6c42\uff0cq6\u5fc5\u987b\u662f{\"s\":\"c\",\"v\":null}\n\nq7: worker_x\u7684region\u662f\u5426\u80fd\u786e\u5b9a\uff1f\n- \u67e5\u770b\u6240\u6709\u8bb0\u5f55\uff0c\u6ca1\u6709\u63d0\u5230worker_x\u7684region\n- \u6240\u4ee5\u662funknown\n- \u6839\u636e\u8981\u6c42\uff0cq7\u5fc5\u987b\u662f{\"s\":\"u\",\"v\":null}\n\n\u73b0\u5728\u68c0\u67e5\u8981\u6c42\u7684\u8f93\u51fa\u683c\u5f0f\uff1a\n- \u9876\u5c42\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542btask_result\u3001evidence\u3001unknowns\u3001violations\n- task_result\u5fc5\u987b\u5305\u542bq1\u5230q7\n- \u6bcf\u4e2aqN\u5fc5\u987b\u4e14\u53ea\u80fd\u662f{\"s\",\"v\"}\n- s\u53ea\u80fd\u662fa\u3001u\u3001c\uff0c\u5206\u522b\u8868\u793aanswer\u3001unknown\u3001conflict_unresolved\n- s\u4e0d\u662fa\u65f6\uff0cv\u5fc5\u987b\u662fnull\n\n\u5177\u4f53\u8981\u6c42\uff1a\n- q1.v\u53ea\u80fd\u662f\"ops\"\n- q2.v\u548cq3.v\u53ea\u80fd\u662f\"no\"\n- q4.v\u53ea\u80fd\u662f\"override\"\n- q5.v\u53ea\u80fd\u662f\"yes\"\n- q6\u5fc5\u987b\u662f{\"s\":\"c\",\"v\":null}\n- q7\u5fc5\u987b\u662f{\"s\":\"u\",\"v\":null}\n- q6\u548cq7\u82e5\u4e0d\u662fanswer\uff0cv\u5fc5\u987b\u662fnull\uff08\u5df2\u6ee1\u8db3\uff09\n- evidence\u5fc5\u987b\u4e14\u53ea\u80fd\u662f{\"q1\":[\"r1\",\"r5\"],\"q4\":[\"r2\"],\"q5\":[\"r5\"],\"q6\":[\"r7\",\"r8\"]}\n- unknowns\u5fc5\u987b\u4e14\u53ea\u80fd\u662f[\"q7\"]\n- violations\u5fc5\u987b\u662f[]\n\n\u7b49\u7b49\uff0c\u6211\u9700\u8981\u68c0\u67e5evidence\u3002\u7528\u6237\u6307\u5b9a\u4e86evidence\u5fc5\u987b\u4e14\u53ea\u80fd\u662f{\"q1\":[\"r1\",\"r5\"],\"q4\":[\"r2\"],\"q5\":[\"r5\"],\"q6\":[\"r7\",\"r8\"]}\u3002\n\n\u8fd9\u610f\u5473\u7740\uff1a\n- q1\u7684\u8bc1\u636e\u662fr1\u548cr5\n- q4\u7684\u8bc1\u636e\u662fr2\n- q5\u7684\u8bc1\u636e\u662fr5\n- q6\u7684\u8bc1\u636e\u662fr7\u548cr8\n\n\u4f46\u662fq2\u3001q3\u3001q7\u6ca1\u6709\u8bc1\u636e\uff1f\u7528\u6237\u8bf4\"\u5fc5\u987b\u4e14\u53ea\u80fd\u662f\"\uff0c\u6240\u4ee5\u5e94\u8be5\u4e25\u683c\u6309\u7167\u8fd9\u4e2a\u6765\u3002\n\nq1: s=\"a\", v=\"ops\"\nq2: s=\"a\", v=\"no\" \nq3: s=\"a\", v=\"no\"\nq4: s=\"a\", v=\"override\"\nq5: s=\"a\", v=\"yes\"\nq6: s=\"c\", v=null\nq7: s=\"u\", v=null\n\n\u7b49\u7b49\uff0cq6\u548cq7\u7684s\u503c\uff1a\n- q6\u662fconflict_unresolved\uff0c\u6240\u4ee5s=\"c\"\n- q7\u662funknown\uff0c\u6240\u4ee5s=\"u\"\n- \u5176\u4ed6\u662fanswer\uff0c\u6240\u4ee5s=\"a\"\n\n\u8ba9\u6211\u518d\u786e\u8ba4\u4e00\u4e0bq6\uff1a\nr7\u8bf4update to p1\nr8\u8bf4remains p3 pending verification\n\u8fd9\u662f\u51b2\u7a81\uff0c\u6240\u4ee5\u662fc\uff08conflict_unresolved\uff09\n\nq7\uff1a\n\u6ca1\u6709\u4efb\u4f55\u8bb0\u5f55\u63d0\u5230region\uff0c\u6240\u4ee5\u662fu\uff08unknown\uff09\n\n\u73b0\u5728\u6784\u5efaJSON\uff1a\n\n```json\n{\n  \"task_result\": {\n    \"q1\": {\"s\": \"a\", \"v\": \"ops\"},\n    \"q2\": {\"s\": \"a\", \"v\": \"no\"},\n    \"q3\": {\"s\": \"a\", \"v\": \"no\"},\n    \"q4\": {\"s\": \"a\", \"v\": \"override\"},\n    \"q5\": {\"s\": \"a\", \"v\": \"yes\"},\n    \"q6\": {\"s\": \"c\", \"v\": null},\n    \"q7\": {\"s\": \"u\", \"v\": null}\n  },\n  \"evidence\": {\n    \"q1\": [\"r1\", \"r5\"],\n    \"q4\": [\"r2\"],\n    \"q5\": [\"r5\"],\n    \"q6\": [\"r7\", \"r8\"]\n  },\n  \"unknowns\": [\"q7\"],\n  \"violations\": []\n}\n```\n\n\u68c0\u67e5\u662f\u5426\u6ee1\u8db3\u6240\u6709\u7ea6\u675f\uff1a\n1. \u9876\u5c42\u53ea\u5305\u542btask_result\u3001evidence\u3001unknowns\u3001violations - \u662f\n2. task_result\u5305\u542bq1-q7 - \u662f\n3. \u6bcf\u4e2aqN\u662f{\"s\",\"v\"} - \u662f\n4. s\u503c\u6b63\u786e\uff1aq1-a, q2-a, q3-a, q4-a, q5-a, q6-c, q7-u - \u662f\n5. s\u4e0d\u662fa\u65f6v\u662fnull\uff1aq6\u548cq7\u7684v\u662fnull - \u662f\n6. q1.v=\"ops\" - \u662f\n7. q2.v=\"no\", q3.v=\"no\" - \u662f\n8. q4.v=\"override\" - \u662f\n9. q5.v=\"yes\" - \u662f\n10. q6={\"s\":\"c\",\"v\":null} - \u662f\n11. q7={\"s\":\"u\",\"v\":null} -",
+        "reasoning_visible": true,
+        "usage": {
+          "input_tokens": 538,
+          "output_tokens": 1500,
+          "reasoning_tokens": 1441,
+          "total_tokens": 2038
+        }
+      },
+      "error": null,
+      "features": {
+        "answer.answered_count": 5,
+        "answer.conflict_count": 1,
+        "answer.evidence_field_count": 4,
+        "answer.status_q1": "a",
+        "answer.status_q2": "a",
+        "answer.status_q3": "a",
+        "answer.status_q4": "a",
+        "answer.status_q5": "a",
+        "answer.status_q6": "c",
+        "answer.status_q7": "u",
+        "answer.unknown_count": 1,
+        "answer.value_q1": "ops",
+        "answer.value_q2": "no",
+        "answer.value_q3": "no",
+        "answer.value_q4": "override",
+        "answer.value_q5": "yes",
+        "answer.violation_count": 0,
+        "reasoning.backtrack_markers": 0,
+        "reasoning.hedge_density": 0.0,
+        "reasoning.step_count": 130,
+        "reasoning.uses_numbered_outline": true,
+        "score.boundary_accuracy": 1.0,
+        "score.decision_accuracy": 1.0,
+        "score.evidence_alignment": 1.0,
+        "score.match_q1": true,
+        "score.match_q2": true,
+        "score.match_q3": true,
+        "score.match_q4": true,
+        "score.match_q5": true,
+        "score.match_q6": true,
+        "score.match_q7": true,
+        "score.violation_free": true,
+        "surface.constraint_retention": true,
+        "surface.field_order_match": true,
+        "surface.had_markdown_fence": false,
+        "surface.has_extra_prefix_text": false,
+        "surface.has_extra_suffix_text": false,
+        "surface.has_extra_text": false,
+        "surface.key_alias_normalized": false,
+        "surface.parse_repaired": false,
+        "surface.repair_event_count": 0,
+        "transport.finish_reason": "length",
+        "transport.latency_bucket_ms": 31000,
+        "transport.reasoning_tokens": 1441,
+        "transport.reasoning_visible": true
+      },
+      "prompt_id": "p044",
+      "raw_output": "{\n  \"task_result\": {\n    \"q1\": {\"s\": \"a\", \"v\": \"ops\"},\n    \"q2\": {\"s\": \"a\", \"v\": \"no\"},\n    \"q3\": {\"s\": \"a\", \"v\": \"no\"},\n    \"q4\": {\"s\": \"a\", \"v\": \"override\"},\n    \"q5\": {\"s\": \"a\", \"v\": \"yes\"},\n    \"q6\": {\"s\": \"c\", \"v\": null},\n    \"q7\": {\"s\": \"u\", \"v\": null}\n  },\n  \"evidence\": {\n    \"q1\": [\"r1\", \"r5\"],\n    \"q4\": [\"r2\"],\n    \"q5\": [\"r5\"],\n    \"q6\": [\"r7\", \"r8\"]\n  },\n  \"unknowns\": [\"q7\"],\n  \"violations\": []\n}",
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 220,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u9644\u52a0\u89e3\u91ca\u3002\n\u9876\u5c42\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b task_result\u3001evidence\u3001unknowns\u3001violations\u3002\ntask_result \u5fc5\u987b\u5305\u542b q1 \u5230 q7\u3002\n\u6bcf\u4e2a qN \u5fc5\u987b\u4e14\u53ea\u80fd\u662f {\"s\",\"v\"}\u3002\ns \u53ea\u80fd\u662f a\u3001u\u3001c\uff0c\u5206\u522b\u8868\u793a answer\u3001unknown\u3001conflict_unresolved\u3002\ns \u4e0d\u662f a \u65f6\uff0cv \u5fc5\u987b\u662f null\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u6839\u636e\u4e0b\u9762\u89c4\u5219\u548c\u8bb0\u5f55\u56de\u7b54\u95ee\u9898\u3002\n\n\u89c4\u5219\uff1a\n- create \u65f6\u9ed8\u8ba4 priority \u662f p2\u3002\n- override \u4f1a\u8986\u76d6\u9ed8\u8ba4 priority\u3002\n- approver \u4e0d\u7b49\u4e8e\u6700\u7ec8 owner\uff0c\u9664\u975e\u6709\u663e\u5f0f transfer\u3002\n- acting owner \u53ea\u5728 handoff \u7a97\u53e3\u5185\u751f\u6548\uff0c\u4e0d\u81ea\u52a8\u6210\u4e3a\u6700\u7ec8 owner\u3002\n- close \u4f1a\u4fdd\u7559\u6700\u540e\u4e00\u4e2a\u6700\u7ec8 owner\u3002\n- suspend \u4f1a\u4fdd\u7559\u6700\u540e\u4e00\u4e2a\u6700\u7ec8 owner\u3002\n\n\u8bb0\u5f55\uff1a\n- [r1] create ticket_a owner=ops\n- [r2] override ticket_a priority=p1\n- [r3] Priya approved ticket_a\n- [r4] Elena acted as owner during handoff\n- [r5] close ticket_a\n- [r6] create worker_x owner=ops\n- [r7] update worker_x priority=p1\n- [r8] another note says worker_x priority remains p3 pending verification\n- [r9] suspend worker_x\n- [r10] no explicit transfer to Priya or Elena was recorded\n\n\u56de\u7b54\uff1a\n- q1: ticket_a \u7684\u6700\u7ec8 owner \u662f\u8c01\uff1f\n- q2: Priya \u662f\u5426\u662f ticket_a \u7684\u6700\u7ec8 owner\uff1f\n- q3: Elena \u662f\u5426\u662f ticket_a \u7684\u6700\u7ec8 owner\uff1f\n- q4: ticket_a \u7684\u6700\u7ec8 priority \u6765\u81ea default \u8fd8\u662f override\uff1f\n- q5: close \u4e4b\u540e\u662f\u5426\u4fdd\u7559\u6700\u7ec8 owner\uff1f\n- q6: worker_x \u7684\u6700\u7ec8 priority \u662f\u5426\u80fd\u786e\u5b9a\uff1f\n- q7: worker_x \u7684 region \u662f\u5426\u80fd\u786e\u5b9a\uff1f\n\n\u8fd4\u56de JSON\uff1a\n- q1.v \u53ea\u80fd\u662f \"ops\"\n- q2.v \u548c q3.v \u53ea\u80fd\u662f \"no\"\n- q4.v \u53ea\u80fd\u662f \"override\"\n- q5.v \u53ea\u80fd\u662f \"yes\"\n- q6 \u5fc5\u987b\u662f {\"s\":\"c\",\"v\":null}\n- q7 \u5fc5\u987b\u662f {\"s\":\"u\",\"v\":null}\n- q6 \u548c q7 \u82e5\u4e0d\u662f answer\uff0cv \u5fc5\u987b\u662f null\n- evidence \u5fc5\u987b\u4e14\u53ea\u80fd\u662f {\"q1\":[\"r1\",\"r5\"],\"q4\":[\"r2\"],\"q5\":[\"r5\"],\"q6\":[\"r7\",\"r8\"]}\n- unknowns \u5fc5\u987b\u4e14\u53ea\u80fd\u662f [\"q7\"]\n- violations \u5fc5\u987b\u662f []\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "completed",
+      "usage": {
+        "input_tokens": 538,
+        "output_tokens": 1500,
+        "reasoning_tokens": 1441,
+        "total_tokens": 2038
+      }
+    },
+    {
+      "attempts": [
+        {
+          "abort_reason": null,
+          "answer_text_present": true,
+          "bytes_received": null,
+          "completed": true,
+          "connect_timeout_seconds": 15,
+          "error_kind": null,
+          "finish_reason": "stop",
+          "first_byte_latency_ms": null,
+          "first_byte_timeout_seconds": 45,
+          "http_attempt_index": null,
+          "http_status": null,
+          "idle_timeout_seconds": 20,
+          "last_progress_latency_ms": null,
+          "latency_ms": 23846,
+          "output_token_cap": 1500,
+          "read_timeout_seconds": 120,
+          "reasoning_visible": true,
+          "request_attempt_index": 1,
+          "round_index": null,
+          "runtime_intent": "structured_extraction",
+          "runtime_tier_index": 0,
+          "status": "completed",
+          "total_deadline_seconds": 120,
+          "window_index": null,
+          "write_timeout_seconds": 15
+        }
+      ],
+      "canonical_output": {
+        "format_id": "tolerant_json_v3",
+        "payload": {
+          "evidence": {},
+          "task_result": {
+            "m1": "C:openwhale_control",
+            "m10": "R",
+            "m11": "R",
+            "m12": "R",
+            "m2": "C:openwhale_control",
+            "m3": "C:atlas_db_east",
+            "m4": "C:atlas_db_east",
+            "m5": "M",
+            "m6": "M",
+            "m7": "M",
+            "m8": "R",
+            "m9": "R"
+          },
+          "unknowns": {},
+          "violations": []
+        }
+      },
+      "canonicalization_events": [],
+      "completion": {
+        "answer_text": "{\"task_result\":{\"m1\":\"C:openwhale_control\",\"m2\":\"C:openwhale_control\",\"m3\":\"C:atlas_db_east\",\"m4\":\"C:atlas_db_east\",\"m5\":\"M\",\"m6\":\"M\",\"m7\":\"M\",\"m8\":\"R\",\"m9\":\"R\",\"m10\":\"R\",\"m11\":\"R\",\"m12\":\"R\"},\"evidence\":{},\"unknowns\":{},\"violations\":[]}",
+        "finish_reason": "stop",
+        "latency_ms": 23846,
+        "raw_response_path": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-17/kimi-k2.5-v32-r1.fingerprint-suite-v32/p045.response.json",
+        "reasoning_text": "\u7528\u6237\u8981\u6c42\u5904\u740612\u4e2a\u539f\u59cbmention\uff0c\u5e76\u6839\u636e\u7279\u5b9a\u89c4\u5219\u8fdb\u884c\u5206\u7c7b\u3002\u6211\u9700\u8981\u4ed4\u7ec6\u5206\u6790\u6bcf\u4e2amention\uff1a\n\n1. m1 \"OpenWhale Control Plane\" - \u6839\u636e\u89c4\u5219\uff0c\u552f\u4e00\u5f52\u4e00\u5230 openwhale_control\uff0c\u6240\u4ee5\u662f C:openwhale_control\n2. m2 \"OW Control\" - \u6839\u636e\u89c4\u5219\uff0c\u552f\u4e00\u5f52\u4e00\u5230 openwhale_control\uff0c\u6240\u4ee5\u662f C:openwhale_control\n3. m3 \"Atlas East DB\" - \u6839\u636e\u89c4\u5219\uff0c\u552f\u4e00\u5f52\u4e00\u5230 atlas_db_east\uff0c\u6240\u4ee5\u662f C:atlas_db_east\n4. m4 \"atlas-db-east\" - \u6839\u636e\u89c4\u5219\uff0c\u552f\u4e00\u5f52\u4e00\u5230 atlas_db_east\uff0c\u6240\u4ee5\u662f C:atlas_db_east\n5. m5 \"OW\" - \u6839\u636e\u89c4\u5219\uff0c\u662f\"\u50cf\u5b9e\u4f53\u77ed\u540d\uff0c\u4f46\u4e0d\u80fd\u552f\u4e00\u5f52\u4e00\"\uff0c\u6240\u4ee5\u6807 M\n6. m6 \"Atlas\" - \u6839\u636e\u89c4\u5219\uff0c\u662f\"\u50cf\u5b9e\u4f53\u77ed\u540d\uff0c\u4f46\u4e0d\u80fd\u552f\u4e00\u5f52\u4e00\"\uff0c\u6240\u4ee5\u6807 M\n7. m7 \"Atlas East\" - \u6839\u636e\u89c4\u5219\uff0c\u662f\"\u50cf\u5b9e\u4f53\u77ed\u540d\uff0c\u4f46\u4e0d\u80fd\u552f\u4e00\u5f52\u4e00\"\uff0c\u6240\u4ee5\u6807 M\n8. m8 \"OpenWhale Controls\" - \u6839\u636e\u89c4\u5219\uff0c\u4e0d\u662f\u5df2\u77e5\u5b9e\u4f53\u540d\uff0c\u662f\u6cdb\u5316\u540d\u79f0\uff0c\u6240\u4ee5\u6807 R\uff0c\u4e0d\u662f M\n9. m9 \"Project Mercury\" - \u6839\u636e\u89c4\u5219\uff0c\u662f\u9879\u76ee\u540d\uff0c\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\uff0c\u4e0d\u662f M\n10. m10 \"mercury-cutover\" - \u6839\u636e\u89c4\u5219\uff0c\u662f cutover \u540d\uff0c\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\uff0c\u4e0d\u662f M\n11. m11 \"control\" - \u6839\u636e\u89c4\u5219\uff0c\u662f\u666e\u901a\u8bcd\uff0c\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\uff0c\u4e0d\u662f M\n12. m12 \"staging-note\" - \u6839\u636e\u89c4\u5219\uff0c\u662f\u6ce8\u91ca\u6807\u7b7e\uff0c\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\uff0c\u4e0d\u662f M\n\n\u68c0\u67e5\u7ea6\u675f\uff1a\n- \u9876\u5c42\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b task_result\u3001evidence\u3001unknowns\u3001violations\n- task_result \u5fc5\u987b\u5305\u542b m1 \u5230 m12\n- \u6bcf\u4e2a mN \u53ea\u80fd\u662f\u5b57\u7b26\u4e32\n- \u5141\u8bb8\u7684\u503c\u53ea\u6709\uff1aC:openwhale_control\u3001C:atlas_db_east\u3001M\u3001R\n\n\u786e\u8ba4\u6bcf\u4e2a\u503c\uff1a\n- m1: C:openwhale_control\n- m2: C:openwhale_control\n- m3: C:atlas_db_east\n- m4: C:atlas_db_east\n- m5: M\n- m6: M\n- m7: M\n- m8: R\n- m9: R\n- m10: R\n- m11: R\n- m12: R\n\nevidence \u548c unknowns \u5e94\u8be5\u662f\u7a7a\u5bf9\u8c61\uff0cviolations \u5e94\u8be5\u662f\u7a7a\u6570\u7ec4\u3002\n\n\u683c\u5f0f\u8981\u6c42\uff1a\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u9644\u52a0\u89e3\u91ca\u3002",
+        "reasoning_visible": true,
+        "usage": {
+          "input_tokens": 429,
+          "output_tokens": 682,
+          "reasoning_tokens": 589,
+          "total_tokens": 1111
+        }
+      },
+      "error": null,
+      "features": {
+        "answer.ambiguous_count": 3,
+        "answer.canonical_count": 4,
+        "answer.rejected_count": 5,
+        "answer.violation_count": 0,
+        "reasoning.backtrack_markers": 0,
+        "reasoning.hedge_density": 0.0,
+        "reasoning.step_count": 33,
+        "reasoning.uses_numbered_outline": true,
+        "score.ambiguity_accuracy": 1.0,
+        "score.classification_accuracy": 1.0,
+        "score.rejection_accuracy": 1.0,
+        "score.threshold_accuracy": 1.0,
+        "score.violation_free": true,
+        "surface.constraint_retention": true,
+        "surface.field_order_match": true,
+        "surface.had_markdown_fence": false,
+        "surface.has_extra_prefix_text": false,
+        "surface.has_extra_suffix_text": false,
+        "surface.has_extra_text": false,
+        "surface.key_alias_normalized": false,
+        "surface.parse_repaired": false,
+        "surface.repair_event_count": 0,
+        "transport.finish_reason": "stop",
+        "transport.latency_bucket_ms": 23000,
+        "transport.reasoning_tokens": 589,
+        "transport.reasoning_visible": true
+      },
+      "prompt_id": "p045",
+      "raw_output": "{\"task_result\":{\"m1\":\"C:openwhale_control\",\"m2\":\"C:openwhale_control\",\"m3\":\"C:atlas_db_east\",\"m4\":\"C:atlas_db_east\",\"m5\":\"M\",\"m6\":\"M\",\"m7\":\"M\",\"m8\":\"R\",\"m9\":\"R\",\"m10\":\"R\",\"m11\":\"R\",\"m12\":\"R\"},\"evidence\":{},\"unknowns\":{},\"violations\":[]}",
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 130,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u9644\u52a0\u89e3\u91ca\u3002\n\u9876\u5c42\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b task_result\u3001evidence\u3001unknowns\u3001violations\u3002\ntask_result \u5fc5\u987b\u5305\u542b m1 \u5230 m12\u3002\n\u6bcf\u4e2a mN \u53ea\u80fd\u662f\u5b57\u7b26\u4e32\u3002\n\u5141\u8bb8\u7684\u503c\u53ea\u6709\uff1a\n- C:openwhale_control\n- C:atlas_db_east\n- M\n- R\nM \u53ea\u7528\u4e8e\u201c\u50cf\u5b9e\u4f53\u7f29\u5199\u6216\u77ed\u540d\uff0c\u4f46\u4e0d\u80fd\u552f\u4e00\u5f52\u4e00\u201d\u7684 mention\u3002\nR \u53ea\u7528\u4e8e\u201c\u6839\u672c\u4e0d\u662f\u5b9e\u4f53 mention\u201d\u7684\u9879\u76ee\u540d\u3001cutover \u540d\u3001\u6ce8\u91ca\u6807\u7b7e\u6216\u666e\u901a\u8bcd\u3002\n\u4e0d\u80fd\u628a\u9879\u76ee\u540d\u3001cutover \u540d\u3001\u6ce8\u91ca\u6807\u7b7e\u6216\u666e\u901a\u8bcd\u6807\u6210 M\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u53ea\u5904\u7406\u4e0b\u9762 12 \u4e2a\u539f\u59cb mention\uff0c\u9010\u9879\u5224\u65ad\uff1a\n\n- m1 OpenWhale Control Plane\n- m2 OW Control\n- m3 Atlas East DB\n- m4 atlas-db-east\n- m5 OW\n- m6 Atlas\n- m7 Atlas East\n- m8 OpenWhale Controls\n- m9 Project Mercury\n- m10 mercury-cutover\n- m11 control\n- m12 staging-note\n\n\u89c4\u5219\uff1a\n- OpenWhale Control Plane\u3001OW Control \u552f\u4e00\u5f52\u4e00\u5230 openwhale_control\n- Atlas East DB\u3001atlas-db-east \u552f\u4e00\u5f52\u4e00\u5230 atlas_db_east\n- OW\u3001Atlas\u3001Atlas East \u662f\u201c\u50cf\u5b9e\u4f53\u77ed\u540d\uff0c\u4f46\u4e0d\u80fd\u552f\u4e00\u5f52\u4e00\u201d\uff0c\u6240\u4ee5\u6807 M\n- OpenWhale Controls \u4e0d\u662f\u5df2\u77e5\u5b9e\u4f53\u540d\uff0c\u5b83\u662f\u6cdb\u5316\u540d\u79f0\uff0c\u6240\u4ee5\u6807 R\uff0c\u4e0d\u662f M\n- Project Mercury \u662f\u9879\u76ee\u540d\uff0c\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\uff0c\u4e0d\u662f M\n- mercury-cutover \u662f cutover \u540d\uff0c\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\uff0c\u4e0d\u662f M\n- control \u662f\u666e\u901a\u8bcd\uff0c\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\uff0c\u4e0d\u662f M\n- staging-note \u662f\u6ce8\u91ca\u6807\u7b7e\uff0c\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\uff0c\u4e0d\u662f M\n\n\u8fd4\u56de JSON\uff1a\n- task_result: {m1..m12}\n- evidence: {}\n- unknowns: {}\n- violations: []\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "completed",
+      "usage": {
+        "input_tokens": 429,
+        "output_tokens": 682,
+        "reasoning_tokens": 589,
+        "total_tokens": 1111
+      }
+    }
+  ],
+  "protocol_compatibility": {
+    "issues": [],
+    "required_capabilities": [
+      "chat_completions"
+    ],
+    "satisfied": true
+  },
+  "reasoning_coverage_ratio": 1.0,
+  "run_id": "kimi-k2.5-v32-r1.fingerprint-suite-v32",
+  "run_kind": "full_suite",
+  "runtime_policy": {
+    "default_intent": "structured_extraction",
+    "execution_class": "thinking",
+    "intent_policies": [
+      {
+        "attempts": [
+          {
+            "attempt_index": 1,
+            "connect_timeout_seconds": 15,
+            "escalate_on": [
+              "finish_reason_length",
+              "missing_answer_text",
+              "invalid_structured_output",
+              "retryable_transport_error"
+            ],
+            "first_byte_timeout_seconds": 45,
+            "idle_timeout_seconds": 20,
+            "output_token_cap": 1500,
+            "output_token_cap_multiplier": null,
+            "request_body_overrides": {},
+            "total_deadline_seconds": 120,
+            "use_prompt_output_token_cap": false,
+            "write_timeout_seconds": 15
+          },
+          {
+            "attempt_index": 2,
+            "connect_timeout_seconds": 15,
+            "escalate_on": [],
+            "first_byte_timeout_seconds": 60,
+            "idle_timeout_seconds": 30,
+            "output_token_cap": 3000,
+            "output_token_cap_multiplier": null,
+            "request_body_overrides": {},
+            "total_deadline_seconds": 180,
+            "use_prompt_output_token_cap": false,
+            "write_timeout_seconds": 15
+          }
+        ],
+        "intent": "structured_extraction"
+      },
+      {
+        "attempts": [
+          {
+            "attempt_index": 1,
+            "connect_timeout_seconds": 15,
+            "escalate_on": [],
+            "first_byte_timeout_seconds": 15,
+            "idle_timeout_seconds": 10,
+            "output_token_cap": 256,
+            "output_token_cap_multiplier": null,
+            "request_body_overrides": {},
+            "total_deadline_seconds": 30,
+            "use_prompt_output_token_cap": false,
+            "write_timeout_seconds": 15
+          }
+        ],
+        "intent": "capability_probe"
+      },
+      {
+        "attempts": [
+          {
+            "attempt_index": 1,
+            "connect_timeout_seconds": 15,
+            "escalate_on": [
+              "finish_reason_length",
+              "missing_answer_text",
+              "missing_reasoning_text",
+              "retryable_transport_error"
+            ],
+            "first_byte_timeout_seconds": 45,
+            "idle_timeout_seconds": 20,
+            "output_token_cap": 1500,
+            "output_token_cap_multiplier": null,
+            "request_body_overrides": {},
+            "total_deadline_seconds": 120,
+            "use_prompt_output_token_cap": false,
+            "write_timeout_seconds": 15
+          },
+          {
+            "attempt_index": 2,
+            "connect_timeout_seconds": 15,
+            "escalate_on": [],
+            "first_byte_timeout_seconds": 60,
+            "idle_timeout_seconds": 30,
+            "output_token_cap": 3000,
+            "output_token_cap_multiplier": null,
+            "request_body_overrides": {},
+            "total_deadline_seconds": 180,
+            "use_prompt_output_token_cap": false,
+            "write_timeout_seconds": 15
+          }
+        ],
+        "intent": "long_reasoning"
+      }
+    ],
+    "max_rounds": null,
+    "no_data_checkpoints_seconds": null,
+    "output_token_cap": null,
+    "policy_id": "intent_tiered_runtime_v1",
+    "progress_poll_interval_seconds": null,
+    "round_windows_seconds": null,
+    "thinking_probe_status": "supported",
+    "total_deadline_seconds": null
+  },
+  "suite_id": "fingerprint-suite-v32",
+  "target_label": "kimi-k2.5-v32-r1",
+  "trace_dir": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-17/kimi-k2.5-v32-r1.fingerprint-suite-v32"
+}

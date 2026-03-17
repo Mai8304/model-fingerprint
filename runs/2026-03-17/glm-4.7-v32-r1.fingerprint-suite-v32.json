@@ -1,0 +1,997 @@
+{
+  "answer_coverage_ratio": 1.0,
+  "capability_probe": {
+    "capabilities": {
+      "image_generation": {
+        "detail": "{\"error\":{\"message\":\"No endpoints found that support the requested output modalities: image, text\",\"code\":404}}",
+        "evidence": {
+          "http_status": 404
+        },
+        "http_status": 404,
+        "latency_ms": 1082,
+        "status": "unsupported"
+      },
+      "streaming": {
+        "detail": "response used SSE event chunks",
+        "evidence": {
+          "content_type": "",
+          "http_status": 200
+        },
+        "http_status": 200,
+        "latency_ms": 2841,
+        "status": "supported"
+      },
+      "thinking": {
+        "detail": "reasoning field is populated",
+        "evidence": {
+          "field": "reasoning",
+          "http_status": 200
+        },
+        "http_status": 200,
+        "latency_ms": 2224,
+        "status": "supported"
+      },
+      "tools": {
+        "detail": "response contains tool_calls",
+        "evidence": {
+          "finish_reason": "tool_calls",
+          "http_status": 200,
+          "tool_call_count": 1
+        },
+        "http_status": 200,
+        "latency_ms": 1935,
+        "status": "supported"
+      },
+      "vision_understanding": {
+        "detail": "{\"error\":{\"message\":\"No endpoints found that support image input\",\"code\":404}}",
+        "evidence": {
+          "http_status": 404
+        },
+        "http_status": 404,
+        "latency_ms": 846,
+        "status": "unsupported"
+      }
+    },
+    "coverage_ratio": 1.0,
+    "probe_mode": "minimal",
+    "probe_version": "v2"
+  },
+  "claimed_model": "glm-4.7",
+  "endpoint_profile_id": "openrouter-glm-4.7",
+  "prompt_count_completed": 5,
+  "prompt_count_scoreable": 5,
+  "prompt_count_total": 5,
+  "prompts": [
+    {
+      "attempts": [
+        {
+          "abort_reason": null,
+          "answer_text_present": false,
+          "bytes_received": null,
+          "completed": true,
+          "connect_timeout_seconds": 15,
+          "error_kind": "missing_answer_text",
+          "finish_reason": "length",
+          "first_byte_latency_ms": null,
+          "first_byte_timeout_seconds": 30,
+          "http_attempt_index": null,
+          "http_status": null,
+          "idle_timeout_seconds": 15,
+          "last_progress_latency_ms": null,
+          "latency_ms": 18606,
+          "output_token_cap": 500,
+          "read_timeout_seconds": 90,
+          "reasoning_visible": true,
+          "request_attempt_index": 1,
+          "round_index": null,
+          "runtime_intent": "structured_extraction",
+          "runtime_tier_index": 0,
+          "status": "invalid_response",
+          "total_deadline_seconds": 90,
+          "window_index": null,
+          "write_timeout_seconds": 15
+        },
+        {
+          "abort_reason": null,
+          "answer_text_present": true,
+          "bytes_received": null,
+          "completed": true,
+          "connect_timeout_seconds": 15,
+          "error_kind": null,
+          "finish_reason": "length",
+          "first_byte_latency_ms": null,
+          "first_byte_timeout_seconds": 40,
+          "http_attempt_index": null,
+          "http_status": null,
+          "idle_timeout_seconds": 20,
+          "last_progress_latency_ms": null,
+          "latency_ms": 77845,
+          "output_token_cap": 1500,
+          "read_timeout_seconds": 120,
+          "reasoning_visible": true,
+          "request_attempt_index": 2,
+          "round_index": null,
+          "runtime_intent": "structured_extraction",
+          "runtime_tier_index": 1,
+          "status": "completed",
+          "total_deadline_seconds": 120,
+          "window_index": null,
+          "write_timeout_seconds": 15
+        }
+      ],
+      "canonical_output": {
+        "format_id": "tolerant_json_v3",
+        "payload": {
+          "s": "a",
+          "v": "Marco Ruiz"
+        }
+      },
+      "canonicalization_events": [],
+      "completion": {
+        "answer_text": "{\n      \"s\": \"a\",\n      \"v\": \"Marco Ruiz\"\n    }",
+        "finish_reason": "length",
+        "latency_ms": 77845,
+        "raw_response_path": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-17/glm-4.7-v32-r1.fingerprint-suite-v32/p041.attempt-2.response.json",
+        "reasoning_text": "\u7528\u6237\u5e0c\u671b\u6211\u6839\u636e\u63d0\u4f9b\u7684\u8bc1\u636e\uff08[e1] \u5230 [e8]\uff09\u56de\u7b54 8 \u4e2a\u95ee\u9898\uff08q1 \u5230 q8\uff09\u3002\n\u8f93\u51fa\u5fc5\u987b\u662f\u4e00\u4e2a\u4e25\u683c\u7684 JSON \u5bf9\u8c61\uff0c\u4e0d\u5305\u542b markdown\uff0c\u4e0d\u5305\u542b\u89e3\u91ca\u3002\n\n**\u7ea6\u675f\u68c0\u67e5\u6e05\u5355\u4e0e\u7f6e\u4fe1\u5ea6\u8bc4\u5206\uff1a**\n1. \u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff1f\u662f\u3002\n2. \u65e0 markdown\uff1f\u662f\u3002\n3. \u65e0\u89e3\u91ca\uff1f\u662f\u3002\n4. \u9876\u5c42\u952e\uff1atask_result\u3001evidence\u3001unknowns\u3001violations\uff1f\u662f\u3002\n5. task_result \u5305\u542b q1 \u5230 q8\uff1f\u662f\u3002\n6. \u6bcf\u4e2a qN \u683c\u5f0f\uff1a{\"s\", \"v\"}\uff1f\u662f\u3002\n7. 's' \u503c\uff1a\"a\"\uff08answer\uff09\u3001\"u\"\uff08unknown\uff09\u3001\"c\"\uff08conflict_unresolved\uff09\uff1f\u662f\u3002\n8. \u5982\u679c s \u4e0d\u662f \"a\"\uff0cv \u5fc5\u987b\u662f null\uff1f\u662f\u3002\n9. q1.v \u5fc5\u987b\u662f \"Elena Park\"\uff1f\u662f\u3002\n10. q2.v \u5fc5\u987b\u662f \"no\"\uff1f\u662f\u3002\n11. q3.v \u5fc5\u987b\u662f \"no\"\uff1f\u662f\u3002\n12. q4.v \u5fc5\u987b\u662f \"Marco Ruiz\"\uff1f\u662f\u3002\n13. q6.v \u5fc5\u987b\u662f \"no\"\uff1f\u662f\u3002\n14. q7.v \u5fc5\u987b\u662f \"2026-04-06 01:30 UTC\"\uff1f\u662f\u3002\n15. q8.v \u5fc5\u987b\u662f \"no\"\uff1f\u662f\u3002\n16. q5 \u82e5\u4e0d\u662f answer\uff0cv \u5fc5\u987b\u662f null\uff1f\u662f\u3002\n17. evidence\uff1a\u4ec5\u5141\u8bb8\u7ed9 q1\u3001q4\u3001q7\u3001q8 \u5199\u6700\u77ed\u5f15\u7528\uff1f\u662f\u3002\n18. unknowns\uff1a\u4ec5\u8bb0\u5f55 s=u \u7684\u9898\u53f7\uff1f\u662f\u3002\n19. violations: []\uff1f\u662f\u3002\n\n\u7f6e\u4fe1\u5ea6\u8bc4\u5206\uff1a5/5\n\n**\u601d\u7ef4\u6c99\u7bb1\u6a21\u62df\uff1a**\n\n*   **q1: \u5f53\u524d\u83b7\u6279 rollout owner \u662f\u8c01\uff1f**\n    *   \u8bc1\u636e [e2]\uff1a\"Final CAB approval names Elena Park as the rollout owner...\"\n    *   \u7b54\u6848\uff1aElena Park\u3002\n    *   \u72b6\u6001\uff1as=\"a\", v=\"Elena Park\"\u3002\n    *   \u8bc1\u636e\u5f15\u7528\uff1a[e2]\u3002\n\n*   **q2: Priya Singh \u662f\u5426\u662f\u5f53\u524d rollout owner\uff1f**\n    *   \u8bc1\u636e [e2] \u8bf4 Elena Park \u662f owner\u3002\n    *   \u8bc1\u636e [e4] \u8bf4 Priya Singh \u6279\u51c6\u4e86\u8be5\u8ba1\u5212\uff0c\u4f46\u6279\u51c6\u4eba\u4e0d\u662f rollout owner\u3002\n    *   \u7b54\u6848\uff1ano\u3002\n    *   \u72b6\u6001\uff1as=\"a\", v=\"no\"\u3002\n    *   \u8bc1\u636e\u5f15\u7528\uff1a\u4e0d\u5141\u8bb8\uff08\u4ec5\u5141\u8bb8\u7ed9 q1\u3001q4\u3001q7\u3001q8\uff09\u3002\n\n*   **q3: Elena \u4e0a\u5468\u8986\u76d6 EU rotation \u662f\u5426\u8db3\u4ee5\u786e\u5b9a\u5979\u7684 home region\uff1f**\n    *   \u8bc1\u636e [e5]\uff1a\"Elena covered the EU rotation last week, but that note does not define her home region.\"\n    *   \u7b54\u6848\uff1ano\u3002\n    *   \u72b6\u6001\uff1as=\"a\", v=\"no\"\u3002\n    *   \u8bc1\u636e\u5f15\u7528\uff1a\u4e0d\u5141\u8bb8\u3002\n\n*   **q4: \u5982\u679c Elena \u5728 rollback \u65f6\u79bb\u7ebf\uff0c\u7531\u8c01\u63a5\u624b\uff1f**\n    *   \u8bc1\u636e [e7]\uff1a\"Marco takes over only if Elena is offline during rollback.\"\n    *   \u7b54\u6848\uff1aMarco Ruiz\u3002\n    *   \u72b6\u6001\uff1as=\"a\", v=\"Marco Ruiz\"\u3002\n    *   \u8bc1\u636e\u5f15\u7528\uff1a[e7]\u3002\n\n*   **q5: \u73b0\u5728\u80fd\u5426\u786e\u5b9a Elena \u7684 home region\uff1f**\n    *   \u8bc1\u636e [e5] \u8bf4\u8986\u76d6 EU rotation \u5e76\u672a\u5b9a\u4e49\u5979\u7684 home region\u3002\n    *   \u8bc1\u636e [e6] \u8bf4\u65b0\u52a0\u5761 drill traffic \u5e76\u672a\u8bc6\u522b owner \u7684 region\u3002\n    *   \u6ca1\u6709\u5176\u4ed6\u8bc1\u636e\u63d0\u53ca\u5979\u7684 home region\u3002\n    *   \u7b54\u6848\uff1aUnknown\u3002\n    *   \u72b6\u6001\uff1as=\"u\", v=null\u3002\n    *   \u8bc1\u636e\u5f15\u7528\uff1a\u4e0d\u5141\u8bb8\uff08\u4ec5\u5141\u8bb8\u7ed9 q1\u3001q4\u3001q7\u3001q8\uff09\u3002\n    *   \u6dfb\u52a0\u5230 unknowns\uff1a[\"q5\"]\u3002\n\n*   **q6: \u65b0\u52a0\u5761 drill traffic \u662f\u5426\u8db3\u4ee5\u786e\u5b9a Elena \u7684 home region\uff1f**\n    *   \u8bc1\u636e [e6]\uff1a\"Atlas failover traffic is served from Singapore during drills; infra location does not identify the owner's region.\"\n    *   \u7b54\u6848\uff1ano\u3002\n    *   \u72b6\u6001\uff1as=\"a\", v=\"no\"\u3002\n    *   \u8bc1\u636e\u5f15\u7528\uff1a\u4e0d\u5141\u8bb8\u3002\n\n*   **q7: \u5df2\u6279\u51c6\u7684 execution window \u662f\u4ec0\u4e48\uff1f**\n    *   \u8bc1\u636e [e8]\uff1a\"The approved execution window is 2026-04-06 01:30 UTC.\"\n    *   \u7b54\u6848\uff1a2026-04-06 01:30 UTC\u3002\n    *   \u72b6\u6001\uff1as=\"a\", v=\"2026-04-06 01:30 UTC\"\u3002\n    *   \u8bc1\u636e\u5f15\u7528\uff1a[e8]\u3002\n\n*   **q8: Sunday fallback window \u662f\u5426\u5df2\u7ecf\u83b7\u6279\uff1f**\n    *   \u8bc1\u636e [e1] \u63d0\u5230 \"February draft sheet listed... a Sunday fallback window.\"\n    *   \u8bc1\u636e [e2] \u63d0\u5230 \"Final CAB approval names Elena Park...\"\u3002\n    *   \u8bc1\u636e [e8] \u63d0\u5230 \"The approved execution window...\"\u3002\n    *   \u6ca1\u6709\u8bc1\u636e\u660e\u786e\u6307\u51fa \"Sunday fallback window\" \u5df2\u83b7\u6279\u3002\u5b83\u53ea\u51fa\u73b0\u5728\u8349\u6848\u4e2d\u3002\n    *   \u7b54\u6848\uff1ano\u3002\n    *   \u72b6\u6001\uff1as=\"a\", v=\"no\"\u3002\n    *   \u8bc1\u636e\u5f15\u7528\uff1a[e1]\uff08\u8349\u6848\u4e0e\u6700\u7ec8\u6279\u51c6\u7684\u5bf9\u6bd4\uff09\u3002\u7b49\u7b49\uff0c\u63d0\u793a\u8981\u6c42\u201c\u6700\u77ed\u5f15\u7528\u201d\u3002[e1] \u63d0\u5230\u4e86\u8349\u6848\u3002[e2] \u63d0\u5230\u4e86\u6700\u7ec8\u6279\u51c6\u3002\u7ed3\u5408\u4e0a\u4e0b\u6587\uff0c\u8349\u6848\u9879\u76ee\u4e0d\u4e00\u5b9a\u662f\u5df2\u6279\u51c6\u7684\u3002\u63d0\u793a\u8981\u6c42\u7279\u5b9a\u7684\u503c \"no\"\u3002\u6211\u9700\u8981\u63d0\u4f9b\u8bc1\u636e\u3002\u7531\u4e8e [e1] \u63d0\u5230\u4e86\u8349\u6848\uff0c\u800c [e2]/[e8] \u63d0\u5230\u4e86\u5df2\u6279\u51c6\u7684\u9879\u76ee\uff0c[e1] \u662f fallback window \u7684\u6765\u6e90\u3002\u7136\u800c\uff0c\u901a\u5e38\u201cno\u201d\u610f\u5473\u7740\u5b83\u4e0d\u5728\u5df2\u6279\u51c6\u5217\u8868\u4e2d\u3002\u63d0\u793a\u8981\u6c42\u201c\u6700\u77ed\u5f15\u7528\u201d\u3002\u6211\u5c06\u4f7f\u7528 [e1] \u4f5c\u4e3a\u8349\u6848\u9879\u76ee\u7684\u6765\u6e90\uff0c\u6697\u793a\u5b83\u53ef\u80fd\u4e0d\u662f\u5df2\u6279\u51c6\u7684\uff0c\u6216\u8005\u4ec5\u4f7f\u7528 [e1] \u4f5c\u4e3a\u8349\u6848\u9879\u76ee\u7684\u6765\u6e90\u3002\u5b9e\u9645\u4e0a\uff0c\u67e5\u770b\u7ea6\u675f\u6761\u4ef6\uff1a\u201cevidence \u53ea\u5141\u8bb8\u7ed9 q1\u3001q4\u3001q7\u3001q8 \u5199\u6700\u77ed\u5f15\u7528\u201d\u3002\u6240\u4ee5\u6211\u5fc5\u987b\u4e3a q8 \u63d0\u4f9b\u8bc1\u636e\u3002[e1] \u63d0\u5230\u4e86\u8349\u6848\u4e2d\u7684 Sunday fallback window\u3002\u7531\u4e8e\u5b83\u662f\u8349\u6848\uff0c\u5b83\u4e0d\u662f\u5df2\u6279\u51c6\u7684\u3002\u6240\u4ee5 [e1] \u662f\u76f8\u5173\u7684\u3002\n\n**\u6784\u5efa JSON\uff1a**\n\n```json\n{\n  \"task_result\": {\n    \"q1\": {\n      \"s\": \"a\",\n      \"v\": \"Elena Park\"\n    },\n    \"q2\": {\n      \"s\": \"a\",\n      \"v\": \"no\"\n    },\n    \"q3\": {\n      \"s\": \"a\",\n      \"v\": \"no\"\n    },\n    \"q4\": {\n      \"s\": \"a\",\n      \"v\": \"Marco Ruiz\"\n    },\n    \"q5\": {",
+        "reasoning_visible": true,
+        "usage": {
+          "input_tokens": 526,
+          "output_tokens": 1500,
+          "reasoning_tokens": 1488,
+          "total_tokens": 2026
+        }
+      },
+      "error": null,
+      "features": {
+        "answer.answered_count": 0,
+        "answer.conflict_count": 0,
+        "answer.evidence_field_count": 0,
+        "answer.unknown_count": 0,
+        "answer.violation_count": 0,
+        "reasoning.backtrack_markers": 1,
+        "reasoning.hedge_density": 0.0,
+        "reasoning.step_count": 92,
+        "reasoning.uses_numbered_outline": true,
+        "score.boundary_accuracy": 0.0,
+        "score.decision_accuracy": 0.0,
+        "score.evidence_alignment": 1.0,
+        "score.match_q1": false,
+        "score.match_q2": false,
+        "score.match_q3": false,
+        "score.match_q4": false,
+        "score.match_q5": false,
+        "score.match_q6": false,
+        "score.match_q7": false,
+        "score.match_q8": false,
+        "score.violation_free": true,
+        "surface.constraint_retention": false,
+        "surface.field_order_match": false,
+        "surface.had_markdown_fence": false,
+        "surface.has_extra_prefix_text": false,
+        "surface.has_extra_suffix_text": false,
+        "surface.has_extra_text": false,
+        "surface.key_alias_normalized": false,
+        "surface.parse_repaired": false,
+        "surface.repair_event_count": 0,
+        "transport.finish_reason": "length",
+        "transport.latency_bucket_ms": 77000,
+        "transport.reasoning_tokens": 1488,
+        "transport.reasoning_visible": true
+      },
+      "prompt_id": "p041",
+      "raw_output": "{\n      \"s\": \"a\",\n      \"v\": \"Marco Ruiz\"\n    }",
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 190,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u9644\u52a0\u89e3\u91ca\u3002\n\u9876\u5c42\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b task_result\u3001evidence\u3001unknowns\u3001violations\u3002\ntask_result \u5fc5\u987b\u5305\u542b q1 \u5230 q8\u3002\n\u6bcf\u4e2a qN \u5fc5\u987b\u4e14\u53ea\u80fd\u662f {\"s\",\"v\"}\u3002\ns \u53ea\u80fd\u662f a\u3001u\u3001c\uff0c\u5206\u522b\u8868\u793a answer\u3001unknown\u3001conflict_unresolved\u3002\ns \u4e0d\u662f a \u65f6\uff0cv \u5fc5\u987b\u662f null\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u53ea\u6839\u636e\u4e0b\u5217\u8bc1\u636e\u56de\u7b54 q1 \u5230 q8\u3002\n\n[e1] February draft sheet listed Marco Ruiz as weekend coordinator and a Sunday fallback window.\n[e2] Final CAB approval names Elena Park as the rollout owner for the approved Atlas migration.\n[e3] Elena Park is the current Principal SRE for Atlas Payments.\n[e4] Priya Singh approved Elena's plan; approver is not the rollout owner.\n[e5] Elena covered the EU rotation last week, but that note does not define her home region.\n[e6] Atlas failover traffic is served from Singapore during drills; infra location does not identify the owner's region.\n[e7] Marco takes over only if Elena is offline during rollback.\n[e8] The approved execution window is 2026-04-06 01:30 UTC.\n\n\u56de\u7b54\uff1a\n- q1: \u5f53\u524d\u83b7\u6279 rollout owner \u662f\u8c01\uff1f\n- q2: Priya Singh \u662f\u5426\u662f\u5f53\u524d rollout owner\uff1f\n- q3: Elena \u4e0a\u5468\u8986\u76d6 EU rotation \u662f\u5426\u8db3\u4ee5\u786e\u5b9a\u5979\u7684 home region\uff1f\n- q4: \u5982\u679c Elena \u5728 rollback \u65f6\u79bb\u7ebf\uff0c\u7531\u8c01\u63a5\u624b\uff1f\n- q5: \u73b0\u5728\u80fd\u5426\u786e\u5b9a Elena \u7684 home region\uff1f\n- q6: \u65b0\u52a0\u5761 drill traffic \u662f\u5426\u8db3\u4ee5\u786e\u5b9a Elena \u7684 home region\uff1f\n- q7: \u5df2\u6279\u51c6\u7684 execution window \u662f\u4ec0\u4e48\uff1f\n- q8: Sunday fallback window \u662f\u5426\u5df2\u7ecf\u83b7\u6279\uff1f\n\n\u8fd4\u56de JSON\uff0c\u5bf9\u8c61\u5b57\u6bb5\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b\uff1a\n- task_result: {q1..q8}\n- q1.v \u53ea\u80fd\u662f \"Elena Park\"\n- q2.v \u53ea\u80fd\u662f \"no\"\n- q3.v \u53ea\u80fd\u662f \"no\"\n- q4.v \u53ea\u80fd\u662f \"Marco Ruiz\"\n- q6.v \u53ea\u80fd\u662f \"no\"\n- q7.v \u53ea\u80fd\u662f \"2026-04-06 01:30 UTC\"\n- q8.v \u53ea\u80fd\u662f \"no\"\n- q5 \u82e5\u4e0d\u662f answer\uff0cv \u5fc5\u987b\u662f null\n- evidence \u53ea\u5141\u8bb8\u7ed9 q1\u3001q4\u3001q7\u3001q8 \u5199\u6700\u77ed\u5f15\u7528\n- unknowns \u53ea\u8bb0\u5f55 s=u \u7684\u9898\u53f7\n- violations: []\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "completed",
+      "usage": {
+        "input_tokens": 526,
+        "output_tokens": 1500,
+        "reasoning_tokens": 1488,
+        "total_tokens": 2026
+      }
+    },
+    {
+      "attempts": [
+        {
+          "abort_reason": null,
+          "answer_text_present": false,
+          "bytes_received": null,
+          "completed": true,
+          "connect_timeout_seconds": 15,
+          "error_kind": "missing_answer_text",
+          "finish_reason": "length",
+          "first_byte_latency_ms": null,
+          "first_byte_timeout_seconds": 30,
+          "http_attempt_index": null,
+          "http_status": null,
+          "idle_timeout_seconds": 15,
+          "last_progress_latency_ms": null,
+          "latency_ms": 13692,
+          "output_token_cap": 500,
+          "read_timeout_seconds": 90,
+          "reasoning_visible": true,
+          "request_attempt_index": 1,
+          "round_index": null,
+          "runtime_intent": "structured_extraction",
+          "runtime_tier_index": 0,
+          "status": "invalid_response",
+          "total_deadline_seconds": 90,
+          "window_index": null,
+          "write_timeout_seconds": 15
+        },
+        {
+          "abort_reason": null,
+          "answer_text_present": true,
+          "bytes_received": null,
+          "completed": true,
+          "connect_timeout_seconds": 15,
+          "error_kind": null,
+          "finish_reason": "stop",
+          "first_byte_latency_ms": null,
+          "first_byte_timeout_seconds": 40,
+          "http_attempt_index": null,
+          "http_status": null,
+          "idle_timeout_seconds": 20,
+          "last_progress_latency_ms": null,
+          "latency_ms": 52441,
+          "output_token_cap": 1500,
+          "read_timeout_seconds": 120,
+          "reasoning_visible": true,
+          "request_attempt_index": 2,
+          "round_index": null,
+          "runtime_intent": "structured_extraction",
+          "runtime_tier_index": 1,
+          "status": "completed",
+          "total_deadline_seconds": 120,
+          "window_index": null,
+          "write_timeout_seconds": 15
+        }
+      ],
+      "canonical_output": {
+        "format_id": "tolerant_json_v3",
+        "payload": {
+          "evidence": {},
+          "task_result": {
+            "m1": "I",
+            "m10": "V",
+            "m2": "R",
+            "m3": "I",
+            "m4": "R",
+            "m5": "I",
+            "m6": "R",
+            "m7": "I",
+            "m8": "V",
+            "m9": "A"
+          },
+          "unknowns": {},
+          "violations": []
+        }
+      },
+      "canonicalization_events": [],
+      "completion": {
+        "answer_text": "{\n  \"task_result\": {\n    \"m1\": \"I\",\n    \"m2\": \"R\",\n    \"m3\": \"I\",\n    \"m4\": \"R\",\n    \"m5\": \"I\",\n    \"m6\": \"R\",\n    \"m7\": \"I\",\n    \"m8\": \"V\",\n    \"m9\": \"A\",\n    \"m10\": \"V\"\n  },\n  \"evidence\": {},\n  \"unknowns\": {},\n  \"violations\": []\n}",
+        "finish_reason": "stop",
+        "latency_ms": 52441,
+        "raw_response_path": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-17/glm-4.7-v32-r1.fingerprint-suite-v32/p042.attempt-2.response.json",
+        "reasoning_text": "1. **\u5206\u6790\u8bf7\u6c42\uff1a**\n    *   **\u8f93\u5165\uff1a** 10 \u4e2a mention \u5217\u8868\uff08m1 \u5230 m10\uff09\u548c\u4e00\u5957\u5177\u4f53\u7684\u5206\u7c7b\u89c4\u5219\u3002\n    *   **\u8f93\u51fa\u683c\u5f0f\uff1a** \u4e00\u4e2a JSON \u5bf9\u8c61\uff08\u65e0 markdown\uff0c\u65e0\u89e3\u91ca\uff09\u3002\n    *   **\u7ed3\u6784\uff1a** \u9876\u5c42\u952e\uff1a`task_result`\u3001`evidence`\u3001`unknowns`\u3001`violations`\u3002\n    *   `task_result` \u7ea6\u675f\uff1a\u5fc5\u987b\u5305\u542b m1 \u5230 m10\u3002\u6bcf\u4e2a\u503c\u5fc5\u987b\u662f\u5b57\u7b26\u4e32\u3002\u5141\u8bb8\u7684\u503c\uff1aI\u3001A\u3001V\u3001R\u3002\n    *   **\u6807\u7b7e\u5b9a\u4e49\uff1a**\n        *   `I`\uff1aactive canonical service mention\uff08\u6d3b\u8dc3\u7684\u89c4\u8303\u670d\u52a1\u63d0\u53ca\uff09\u3002\n        *   `A`\uff1aambiguous shortname\uff08\u6b67\u4e49\u77ed\u540d\uff0c\u4e0d\u8db3\u4ee5\u552f\u4e00\u5f52\u4e00\uff09\u3002\n        *   `V`\uff1avariant\u3001shard \u6216 disabled shadow mention\uff08\u53d8\u4f53\u3001\u5206\u7247\u6216\u5df2\u7981\u7528\u7684\u5f71\u5b50\u63d0\u53ca\uff09\u3002\n        *   `R`\uff1areview\u3001team label\u3001project codename\uff08\u5ba1\u67e5\u3001\u56e2\u961f\u6807\u7b7e\u3001\u9879\u76ee\u4ee3\u53f7\uff0c\u975e\u5b9e\u4f53\u63d0\u53ca\uff09\u3002\n\n2.  **\u6839\u636e\u89c4\u5219\u5904\u7406\u6bcf\u4e2a mention\uff1a**\n\n    *   **m1: Arbor**\n        *   \u89c4\u5219\uff1a\"Arbor\u3001Beacon\u3001Cinder\u3001Drift \u662f active canonical service mention\uff0c\u6240\u4ee5\u6807 I\u3002\"\n        *   \u7ed3\u679c\uff1a`I`\n\n    *   **m2: Arbor-review**\n        *   \u89c4\u5219\uff1a\"Arbor-review\u3001Beacon Ops\u3001Project Cinder \u90fd\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\u3002\"\n        *   \u7ed3\u679c\uff1a`R`\n\n    *   **m3: Beacon**\n        *   \u89c4\u5219\uff1a\"Arbor\u3001Beacon\u3001Cinder\u3001Drift \u662f active canonical service mention\uff0c\u6240\u4ee5\u6807 I\u3002\"\n        *   \u7ed3\u679c\uff1a`I`\n\n    *   **m4: Beacon Ops**\n        *   \u89c4\u5219\uff1a\"Arbor-review\u3001Beacon Ops\u3001Project Cinder \u90fd\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\u3002\"\n        *   \u7ed3\u679c\uff1a`R`\n\n    *   **m5: Cinder**\n        *   \u89c4\u5219\uff1a\"Arbor\u3001Beacon\u3001Cinder\u3001Drift \u662f active canonical service mention\uff0c\u6240\u4ee5\u6807 I\u3002\"\n        *   \u7ed3\u679c\uff1a`I`\n\n    *   **m6: Project Cinder**\n        *   \u89c4\u5219\uff1a\"Arbor-review\u3001Beacon Ops\u3001Project Cinder \u90fd\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\u3002\"\n        *   \u7ed3\u679c\uff1a`R`\n\n    *   **m7: Drift**\n        *   \u89c4\u5219\uff1a\"Arbor\u3001Beacon\u3001Cinder\u3001Drift \u662f active canonical service mention\uff0c\u6240\u4ee5\u6807 I\u3002\"\n        *   \u7ed3\u679c\uff1a`I`\n\n    *   **m8: Drift-east**\n        *   \u89c4\u5219\uff1a\"Drift-east\u3001Harbor shadow \u662f variant\u3001shard \u6216 disabled shadow mention\uff0c\u6240\u4ee5\u6807 V\u3002\"\n        *   \u7ed3\u679c\uff1a`V`\n\n    *   **m9: Atlas East**\n        *   \u89c4\u5219\uff1a\"Atlas East \u662f\u77ed\u540d\uff0c\u4e0d\u8db3\u4ee5\u552f\u4e00\u5f52\u4e00\uff0c\u6240\u4ee5\u6807 A\u3002\"\n        *   \u7ed3\u679c\uff1a`A`\n\n    *   **m10: Harbor shadow**\n        *   \u89c4\u5219\uff1a\"Drift-east\u3001Harbor shadow \u662f variant\u3001shard \u6216 disabled shadow mention\uff0c\u6240\u4ee5\u6807 V\u3002\"\n        *   \u7ed3\u679c\uff1a`V`\n\n3.  **\u6784\u5efa JSON\uff1a**\n\n    *   `task_result`\uff1a\n        ```json\n        {\n          \"m1\": \"I\",\n          \"m2\": \"R\",\n          \"m3\": \"I\",\n          \"m4\": \"R\",\n          \"m5\": \"I\",\n          \"m6\": \"R\",\n          \"m7\": \"I\",\n          \"m8\": \"V\",\n          \"m9\": \"A\",\n          \"m10\": \"V\"\n        }\n        ```\n    *   `evidence`\uff1a`{}`\uff08\u6839\u636e\u63d0\u793a\u793a\u4f8b\u4e3a\u7a7a\uff09\u3002\n    *   `unknowns`\uff1a`{}`\uff08\u6839\u636e\u63d0\u793a\u793a\u4f8b\u4e3a\u7a7a\uff09\u3002\n    *   `violations`\uff1a`[]`\uff08\u6839\u636e\u63d0\u793a\u793a\u4f8b\u4e3a\u7a7a\uff09\u3002\n\n4.  **\u6700\u7ec8\u5ba1\u67e5\uff1a**\n    *   \u68c0\u67e5\u7ea6\u675f\uff1a\u4ec5 JSON\uff1f\u662f\u3002\u65e0 markdown\uff1f\u662f\u3002\u9876\u5c42\u952e\u6b63\u786e\uff1f\u662f\u3002m1-m10 \u5b58\u5728\uff1f\u662f\u3002\u503c\u4ec5\u4e3a I\u3001A\u3001V\u3001R\uff1f\u662f\u3002\u6839\u636e\u89c4\u5219\u903b\u8f91\u6b63\u786e\uff1f\u662f\u3002\n\n5.  **\u751f\u6210\u8f93\u51fa\u3002**",
+        "reasoning_visible": true,
+        "usage": {
+          "input_tokens": 306,
+          "output_tokens": 1039,
+          "reasoning_tokens": 962,
+          "total_tokens": 1345
+        }
+      },
+      "error": null,
+      "features": {
+        "answer.ambiguous_count": 1,
+        "answer.include_count": 4,
+        "answer.label_m1": "I",
+        "answer.label_m10": "V",
+        "answer.label_m2": "R",
+        "answer.label_m3": "I",
+        "answer.label_m4": "R",
+        "answer.label_m5": "I",
+        "answer.label_m6": "R",
+        "answer.label_m7": "I",
+        "answer.label_m8": "V",
+        "answer.label_m9": "A",
+        "answer.rejected_count": 3,
+        "answer.variant_count": 2,
+        "answer.violation_count": 0,
+        "reasoning.backtrack_markers": 0,
+        "reasoning.hedge_density": 0.0,
+        "reasoning.step_count": 63,
+        "reasoning.uses_numbered_outline": true,
+        "score.ambiguity_accuracy": 1.0,
+        "score.classification_accuracy": 1.0,
+        "score.match_m1": true,
+        "score.match_m10": true,
+        "score.match_m2": true,
+        "score.match_m3": true,
+        "score.match_m4": true,
+        "score.match_m5": true,
+        "score.match_m6": true,
+        "score.match_m7": true,
+        "score.match_m8": true,
+        "score.match_m9": true,
+        "score.rejection_accuracy": 1.0,
+        "score.selection_accuracy": 1.0,
+        "score.variant_accuracy": 1.0,
+        "score.violation_free": true,
+        "surface.constraint_retention": true,
+        "surface.field_order_match": true,
+        "surface.had_markdown_fence": false,
+        "surface.has_extra_prefix_text": false,
+        "surface.has_extra_suffix_text": false,
+        "surface.has_extra_text": false,
+        "surface.key_alias_normalized": false,
+        "surface.parse_repaired": false,
+        "surface.repair_event_count": 0,
+        "transport.finish_reason": "stop",
+        "transport.latency_bucket_ms": 52000,
+        "transport.reasoning_tokens": 962,
+        "transport.reasoning_visible": true
+      },
+      "prompt_id": "p042",
+      "raw_output": "{\n  \"task_result\": {\n    \"m1\": \"I\",\n    \"m2\": \"R\",\n    \"m3\": \"I\",\n    \"m4\": \"R\",\n    \"m5\": \"I\",\n    \"m6\": \"R\",\n    \"m7\": \"I\",\n    \"m8\": \"V\",\n    \"m9\": \"A\",\n    \"m10\": \"V\"\n  },\n  \"evidence\": {},\n  \"unknowns\": {},\n  \"violations\": []\n}",
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 140,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de\u4e00\u4e2a JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u9644\u52a0\u89e3\u91ca\u3002\n\u9876\u5c42\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b task_result\u3001evidence\u3001unknowns\u3001violations\u3002\ntask_result \u5fc5\u987b\u5305\u542b m1 \u5230 m10\u3002\n\u6bcf\u4e2a mN \u53ea\u80fd\u662f\u5b57\u7b26\u4e32\u3002\n\u5141\u8bb8\u7684\u503c\u53ea\u6709 I\u3001A\u3001V\u3001R\u3002\nI \u8868\u793a active canonical service mention\u3002\nA \u8868\u793a ambiguous shortname\uff0c\u4e0d\u8db3\u4ee5\u552f\u4e00\u5f52\u4e00\u3002\nV \u8868\u793a variant\u3001shard \u6216 disabled shadow mention\uff0c\u4e0d\u5c5e\u4e8e active canonical service\u3002\nR \u8868\u793a review\u3001team label\u3001project codename \u8fd9\u7c7b\u975e\u5b9e\u4f53 mention\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u53ea\u5904\u7406\u4e0b\u9762 10 \u4e2a mention\uff0c\u5e76\u6309\u89c4\u5219\u7ed9\u6bcf\u4e2a mention \u6807\u4e00\u4e2a\u6807\u7b7e\u3002\n\nmention:\n- m1 Arbor\n- m2 Arbor-review\n- m3 Beacon\n- m4 Beacon Ops\n- m5 Cinder\n- m6 Project Cinder\n- m7 Drift\n- m8 Drift-east\n- m9 Atlas East\n- m10 Harbor shadow\n\n\u89c4\u5219\uff1a\n- Arbor\u3001Beacon\u3001Cinder\u3001Drift \u662f active canonical service mention\uff0c\u6240\u4ee5\u6807 I\u3002\n- Atlas East \u662f\u77ed\u540d\uff0c\u4e0d\u8db3\u4ee5\u552f\u4e00\u5f52\u4e00\uff0c\u6240\u4ee5\u6807 A\u3002\n- Drift-east\u3001Harbor shadow \u662f variant\u3001shard \u6216 disabled shadow mention\uff0c\u6240\u4ee5\u6807 V\u3002\n- Arbor-review\u3001Beacon Ops\u3001Project Cinder \u90fd\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\u3002\n\n\u8fd4\u56de JSON\uff1a\n- task_result: {m1..m10}\n- evidence: {}\n- unknowns: {}\n- violations: []\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "completed",
+      "usage": {
+        "input_tokens": 306,
+        "output_tokens": 1039,
+        "reasoning_tokens": 962,
+        "total_tokens": 1345
+      }
+    },
+    {
+      "attempts": [
+        {
+          "abort_reason": null,
+          "answer_text_present": false,
+          "bytes_received": null,
+          "completed": true,
+          "connect_timeout_seconds": 15,
+          "error_kind": "missing_answer_text",
+          "finish_reason": "length",
+          "first_byte_latency_ms": null,
+          "first_byte_timeout_seconds": 30,
+          "http_attempt_index": null,
+          "http_status": null,
+          "idle_timeout_seconds": 15,
+          "last_progress_latency_ms": null,
+          "latency_ms": 9116,
+          "output_token_cap": 500,
+          "read_timeout_seconds": 90,
+          "reasoning_visible": true,
+          "request_attempt_index": 1,
+          "round_index": null,
+          "runtime_intent": "structured_extraction",
+          "runtime_tier_index": 0,
+          "status": "invalid_response",
+          "total_deadline_seconds": 90,
+          "window_index": null,
+          "write_timeout_seconds": 15
+        },
+        {
+          "abort_reason": null,
+          "answer_text_present": true,
+          "bytes_received": null,
+          "completed": true,
+          "connect_timeout_seconds": 15,
+          "error_kind": null,
+          "finish_reason": "length",
+          "first_byte_latency_ms": null,
+          "first_byte_timeout_seconds": 40,
+          "http_attempt_index": null,
+          "http_status": null,
+          "idle_timeout_seconds": 20,
+          "last_progress_latency_ms": null,
+          "latency_ms": 12328,
+          "output_token_cap": 1500,
+          "read_timeout_seconds": 120,
+          "reasoning_visible": true,
+          "request_attempt_index": 2,
+          "round_index": null,
+          "runtime_intent": "structured_extraction",
+          "runtime_tier_index": 1,
+          "status": "completed",
+          "total_deadline_seconds": 120,
+          "window_index": null,
+          "write_timeout_seconds": 15
+        }
+      ],
+      "canonical_output": {
+        "format_id": "tolerant_json_v3",
+        "payload": {
+          "evidence": {
+            "q1": [
+              "e1"
+            ],
+            "q3": [
+              "e3"
+            ],
+            "q5": [
+              "e5"
+            ],
+            "q6": [
+              "e5"
+            ]
+          },
+          "task_result": {
+            "q1": {
+              "status": "answer",
+              "value": "yes"
+            },
+            "q2": {
+              "status": "unknown",
+              "value": null
+            },
+            "q3": {
+              "status": "answer",
+              "value": "Mara Singh"
+            },
+            "q4": {
+              "status": "conflict_unresolved",
+              "value": null
+            },
+            "q5": {
+              "status": "answer",
+              "value": "no"
+            },
+            "q6": {
+              "status": "answer",
+              "value": "no"
+            }
+          },
+          "unknowns": [
+            "q2"
+          ],
+          "violations": []
+        }
+      },
+      "canonicalization_events": [],
+      "completion": {
+        "answer_text": "{\n  \"task_result\": {\n    \"q1\": {\n      \"status\": \"answer\",\n      \"value\": \"yes\"\n    },\n    \"q2\": {\n      \"status\": \"unknown\",\n      \"value\": null\n    },\n    \"q3\": {\n      \"status\": \"answer\",\n      \"value\": \"Mara Singh\"\n    },\n    \"q4\": {\n      \"status\": \"conflict_unresolved\",\n      \"value\": null\n    },\n    \"q5\": {\n      \"status\": \"answer\",\n      \"value\": \"no\"\n    },\n    \"q6\": {\n      \"status\": \"answer\",\n      \"value\": \"no\"\n    }\n  },\n  \"evidence\": {\n    \"q1\": [\"e1\"],\n    \"q3\": [\"e3\"],\n    \"q5\": [\"e5\"],\n    \"q6\": [\"e5\"]\n  },\n  \"unknowns\": [\"q2\"],\n  \"violations\": []\n}",
+        "finish_reason": "length",
+        "latency_ms": 12328,
+        "raw_response_path": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-17/glm-4.7-v32-r1.fingerprint-suite-v32/p043.attempt-2.response.json",
+        "reasoning_text": "\u7528\u6237\u60f3\u8981\u4e00\u4e2a\u57fa\u4e8e\u6240\u63d0\u4f9b\u6587\u672c\u548c\u7279\u5b9a\u89c4\u5219\u7684 JSON \u5bf9\u8c61\u3002\n\n**\u8f93\u5165\u6587\u672c\uff1a**\n[e1] The review explicitly approves temporary read access.\n[e2] Write access is still undecided and must not be finalized.\n[e3] Mara Singh is the current duty owner.\n[e4] One note proposes Jordan Lee as the failover contact.\n[e5] Another note says the failover contact remains unresolved and must not be finalized.\n\n**\u95ee\u9898\uff1a**\nq1: Was temporary read access approved?\nq2: Was write access granted?\nq3: Who is the current duty owner?\nq4: Who is the failover contact?\nq5: Is Jordan Lee finalized as the failover contact?\nq6: Has any failover contact been finalized?\n\n**\u89c4\u5219\u4e0e\u7ea6\u675f\uff1a**\n1.  **\u8f93\u51fa\u683c\u5f0f\uff1a** \u4ec5 JSON \u5bf9\u8c61\u3002\u65e0 markdown\uff0c\u65e0\u89e3\u91ca\u3002\n2.  **\u9876\u5c42\u952e\uff1a** `task_result`\u3001`evidence`\u3001`unknowns`\u3001`violations`\u3002\n3.  **`task_result` \u7ed3\u6784\uff1a** \u5305\u542b q1 \u5230 q6 \u7684\u5bf9\u8c61\u3002\n4.  **`qN` \u7ed3\u6784\uff1a** `{status, value}`\u3002\n5.  **\u72b6\u6001\uff1a** `answer`\u3001`unknown`\u3001`conflict_unresolved`\u3002\n6.  **\u7279\u5b9a\u503c\u7ea6\u675f\uff1a**\n    *   `q1.value` \u5fc5\u987b\u662f \"yes\"\u3002\n    *   `q2.value` \u5fc5\u987b\u662f null\u3002\n    *   `q4.value` \u5fc5\u987b\u662f null\u3002\n    *   `q3.value` \u5fc5\u987b\u662f\u9010\u5b57\u590d\u5236\u7684\u540d\u5b57\u3002\n    *   `q5.value` \u5fc5\u987b\u662f \"no\"\u3002\n    *   `q6.value` \u5fc5\u987b\u662f \"no\"\u3002\n7.  **\u903b\u8f91\u89c4\u5219\uff1a**\n    *   \"Who is the failover contact\" (q4)\uff1a\u5982\u679c\u6709\u63d0\u540d\u8bb0\u5f55\u4f46\u53c8\u660e\u786e\u5199\u7740 \"unresolved and must not be finalized\"\uff0c\u72b6\u6001\u4e3a `conflict_unresolved`\u3002\n    *   \"Is Jordan Lee finalized\" (q5) \u6216 \"Has any failover contact been finalized\" (q6)\uff1a\u6839\u636e\u662f\u5426 finalized \u56de\u7b54\u3002\u8bb0\u5f55\u8bf4\u662f \"no\"\u3002\n8.  **\u8bc1\u636e\uff1a** \u4ec5\u5141\u8bb8\u4e3a q1\u3001q3\u3001q5\u3001q6 \u63d0\u4f9b\u6700\u77ed\u5f15\u7528\u3002\n9.  **\u672a\u77e5\u9879\uff1a** \u4ec5\u5217\u51fa\u72b6\u6001\u4e3a `unknown` \u7684\u95ee\u9898\u3002\n10. **\u8fdd\u89c4\u9879\uff1a** \u5fc5\u987b\u662f `[]`\u3002\n\n**\u5904\u7406\u6bcf\u4e2a\u95ee\u9898\uff1a**\n\n*   **q1: Was temporary read access approved?**\n    *   \u8bc1\u636e\uff1a[e1] \"The review explicitly approves temporary read access.\"\n    *   \u72b6\u6001\uff1a`answer`\n    *   \u503c\uff1a\"yes\"\uff08\u6839\u636e\u7ea6\u675f\uff09\u3002\n    *   \u8bc1\u636e\u952e\uff1a[\"e1\"]\n\n*   **q2: Was write access granted?**\n    *   \u8bc1\u636e\uff1a[e2] \"Write access is still undecided...\"\n    *   \u72b6\u6001\uff1a`unknown`\uff08\u6587\u672c\u8bf4\u662f undecided\uff0c\u4e0d\u662f granted\uff0c\u4f46\u7ea6\u675f\u8bf4 `q2.value` \u5fc5\u987b\u662f null\u3002\u901a\u5e38\uff0c\u5982\u679c\u503c\u662f null\uff0c\u72b6\u6001\u662f unknown \u6216 conflict_unresolved\u3002\u65e2\u7136\u662f \"undecided\"\uff0c`unknown` \u6700\u5408\u9002\uff09\u3002\n    *   \u503c\uff1anull\uff08\u6839\u636e\u7ea6\u675f\uff09\u3002\n    *   \u8bc1\u636e\u952e\uff1a\u4e0d\u5141\u8bb8\uff08\u7ea6\u675f\u8bf4 \"evidence \u53ea\u5141\u8bb8\u4e3a q1\u3001q3\u3001q5\u3001q6 \u63d0\u4f9b\u6700\u77ed\u5f15\u7528\"\uff09\u3002\n\n*   **q3: Who is the current duty owner?**\n    *   \u8bc1\u636e\uff1a[e3] \"Mara Singh is the current duty owner.\"\n    *   \u72b6\u6001\uff1a`answer`\n    *   \u503c\uff1a\"Mara Singh\"\uff08\u9010\u5b57\u590d\u5236\uff09\u3002\n    *   \u8bc1\u636e\u952e\uff1a[\"e3\"]\n\n*   **q4: Who is the failover contact?**\n    *   \u8bc1\u636e\uff1a[e4] \u63d0\u540d Jordan Lee\u3002[e5] \u8bf4 \"unresolved and must not be finalized\"\u3002\n    *   \u89c4\u5219\uff1a\"\u5982\u679c\u6709\u63d0\u540d\u8bb0\u5f55\u4f46\u53c8\u660e\u786e\u5199\u7740 unresolved and must not be finalized\uff0c\u6309 conflict_unresolved\"\u3002\n    *   \u72b6\u6001\uff1a`conflict_unresolved`\n    *   \u503c\uff1anull\uff08\u6839\u636e\u7ea6\u675f\uff09\u3002\n    *   \u8bc1\u636e\u952e\uff1a\u4e0d\u5141\u8bb8\uff08\u7ea6\u675f\u8bf4 \"evidence \u53ea\u5141\u8bb8\u4e3a q1\u3001q3\u3001q5\u3001q6 \u63d0\u4f9b\u6700\u77ed\u5f15\u7528\"\uff09\u3002\n\n*   **q5: Is Jordan Lee finalized as the failover contact?**\n    *   \u8bc1\u636e\uff1a[e5] \"Another note says the failover contact remains unresolved and must not be finalized.\"\n    *   \u89c4\u5219\uff1a\"\u95ee 'is Jordan Lee finalized' ... \u6309\u662f\u5426 finalized \u56de\u7b54\uff1b\u672c\u8bb0\u5f55\u91cc finalized answer \u5e94\u662f 'no'\"\u3002\n    *   \u72b6\u6001\uff1a`answer`\n    *   \u503c\uff1a\"no\"\uff08\u6839\u636e\u7ea6\u675f\uff09\u3002\n    *   \u8bc1\u636e\u952e\uff1a[\"e5\"]\n\n*   **q6: Has any failover contact been finalized?**\n    *   \u8bc1\u636e\uff1a[e5] \"Another note says the failover contact remains unresolved and must not be finalized.\"\n    *   \u89c4\u5219\uff1a\"\u95ee 'has any failover contact been finalized' ... \u6309\u662f\u5426 finalized \u56de\u7b54\uff1b\u672c\u8bb0\u5f55\u91cc finalized answer \u5e94\u662f 'no'\"\u3002\n    *   \u72b6\u6001\uff1a`answer`\n    *   \u503c\uff1a\"no\"\uff08\u6839\u636e\u7ea6\u675f\uff09\u3002\n    *   \u8bc1\u636e\u952e\uff1a[\"e5\"]\n\n**\u6784\u5efa JSON\uff1a**\n\n```json\n{\n  \"task_result\": {\n    \"q1\": {\n      \"status\": \"answer\",\n      \"value\": \"yes\"\n    },\n    \"q2\": {\n      \"status\": \"unknown\",\n      \"value\": null\n    },\n    \"q3\": {\n      \"status\": \"answer\",\n      \"value\": \"Mara Singh\"\n    },\n    \"q4\": {\n      \"status\": \"conflict_unresolved\",\n      \"value\": null\n    },\n    \"q5\": {\n      \"status\": \"answer\",\n      \"value\": \"no\"\n    },\n    \"q6\": {\n      \"status\": \"answer\",\n      \"value\": \"no\"\n    }\n  },\n  \"evidence\": {\n    \"q1\": [\"e1\"],\n    \"q3\": [\"e3\"],\n    \"q5\": [\"e5\"],\n    \"q6\": [\"e5\"]\n  },\n  \"unknowns\": [\"q2\"],\n  \"violations\": []\n}\n```\n\n**\u590d\u6838\u7ea6\u675f\uff1a**\n- \u4ec5 JSON\uff1f\u662f\u3002\n- \u9876\u5c42\u952e\uff1atask_result, evidence, unknowns, violations\uff1f\u662f\u3002\n- task_result \u5305\u542b q1-q6\uff1f\u662f\u3002\n- \u6bcf\u4e2a qN \u6709 status, value\uff1f\u662f\u3002\n- \u72b6\u6001\u6709\u6548\uff1f\u662f\u3002\n- q1.value \"yes\"\uff1f\u662f\u3002\n- q2.value null\uff1f\u662f\u3002\n- q4.value null\uff1f\u662f\u3002\n- q3.value \"Mara Singh\"\uff1f\u662f\u3002\n- q5.value \"no\"\uff1f\u662f\u3002\n- q6.value \"no\"\uff1f\u662f\u3002\n- \u8bc1\u636e\u4ec5\u9488\u5bf9 q1, q3, q5, q6\uff1f\u662f\u3002\n- \u672a\u77e5\u9879",
+        "reasoning_visible": true,
+        "usage": {
+          "input_tokens": 468,
+          "output_tokens": 1500,
+          "reasoning_tokens": 1473,
+          "total_tokens": 1968
+        }
+      },
+      "error": null,
+      "features": {
+        "answer.answered_count": 4,
+        "answer.conflict_count": 1,
+        "answer.evidence_field_count": 4,
+        "answer.status_q1": "answer",
+        "answer.status_q2": "unknown",
+        "answer.status_q3": "answer",
+        "answer.status_q4": "conflict_unresolved",
+        "answer.status_q5": "answer",
+        "answer.status_q6": "answer",
+        "answer.unknown_count": 1,
+        "answer.value_q1": "yes",
+        "answer.value_q2": "__null__",
+        "answer.value_q3": "Mara Singh",
+        "answer.value_q4": "__null__",
+        "answer.value_q5": "no",
+        "answer.value_q6": "no",
+        "answer.violation_count": 0,
+        "reasoning.backtrack_markers": 0,
+        "reasoning.hedge_density": 0.0,
+        "reasoning.step_count": 120,
+        "reasoning.uses_numbered_outline": true,
+        "score.answer_accuracy": 1.0,
+        "score.conflict_accuracy": 1.0,
+        "score.evidence_alignment": 1.0,
+        "score.match_q1": true,
+        "score.match_q2": true,
+        "score.match_q3": true,
+        "score.match_q4": true,
+        "score.match_q5": true,
+        "score.match_q6": true,
+        "score.unknown_accuracy": 1.0,
+        "score.violation_free": true,
+        "surface.constraint_retention": true,
+        "surface.field_order_match": true,
+        "surface.had_markdown_fence": false,
+        "surface.has_extra_prefix_text": false,
+        "surface.has_extra_suffix_text": false,
+        "surface.has_extra_text": false,
+        "surface.key_alias_normalized": false,
+        "surface.parse_repaired": false,
+        "surface.repair_event_count": 0,
+        "transport.finish_reason": "length",
+        "transport.latency_bucket_ms": 12000,
+        "transport.reasoning_tokens": 1473,
+        "transport.reasoning_visible": true
+      },
+      "prompt_id": "p043",
+      "raw_output": "{\n  \"task_result\": {\n    \"q1\": {\n      \"status\": \"answer\",\n      \"value\": \"yes\"\n    },\n    \"q2\": {\n      \"status\": \"unknown\",\n      \"value\": null\n    },\n    \"q3\": {\n      \"status\": \"answer\",\n      \"value\": \"Mara Singh\"\n    },\n    \"q4\": {\n      \"status\": \"conflict_unresolved\",\n      \"value\": null\n    },\n    \"q5\": {\n      \"status\": \"answer\",\n      \"value\": \"no\"\n    },\n    \"q6\": {\n      \"status\": \"answer\",\n      \"value\": \"no\"\n    }\n  },\n  \"evidence\": {\n    \"q1\": [\"e1\"],\n    \"q3\": [\"e3\"],\n    \"q5\": [\"e5\"],\n    \"q6\": [\"e5\"]\n  },\n  \"unknowns\": [\"q2\"],\n  \"violations\": []\n}",
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 210,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de\u4e00\u4e2a JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u9644\u52a0\u89e3\u91ca\u3002\n\u9876\u5c42\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b task_result\u3001evidence\u3001unknowns\u3001violations\u3002\n\u4e0d\u8981\u7701\u7565 task_result\uff0c\u4e0d\u8981\u8fd4\u56de\u5355\u4e2a qN \u5bf9\u8c61\u3002\nstatus \u4e0d\u662f answer \u65f6\uff0cvalue \u5fc5\u987b\u662f null\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u53ea\u6839\u636e\u4e0b\u9762\u8bb0\u5f55\u56de\u7b54\u95ee\u9898\uff0c\u4e0d\u8981\u6839\u636e\u5e38\u8bc6\u8865\u5168\u3002\n\n[e1] The review explicitly approves temporary read access.\n[e2] Write access is still undecided and must not be finalized.\n[e3] Mara Singh is the current duty owner.\n[e4] One note proposes Jordan Lee as the failover contact.\n[e5] Another note says the failover contact remains unresolved and must not be finalized.\n\n\u5224\u5b9a\u89c4\u5219\uff1a\n- \u76f4\u63a5\u95ee \u201cwho is the failover contact\u201d \u65f6\uff0c\u5982\u679c\u6709\u63d0\u540d\u8bb0\u5f55\u4f46\u53c8\u660e\u786e\u5199\u7740 unresolved and must not be finalized\uff0c\u6309 conflict_unresolved\u3002\n- \u95ee \u201cis Jordan Lee finalized\u201d \u6216 \u201chas any failover contact been finalized\u201d \u65f6\uff0c\u6309\u662f\u5426 finalized \u56de\u7b54\uff1b\u672c\u8bb0\u5f55\u91cc finalized answer \u5e94\u662f \"no\"\u3002\n\n\u56de\u7b54\u4e0b\u5217\u95ee\u9898\uff1a\n- q1: Was temporary read access approved?\n- q2: Was write access granted?\n- q3: Who is the current duty owner?\n- q4: Who is the failover contact?\n- q5: Is Jordan Lee finalized as the failover contact?\n- q6: Has any failover contact been finalized?\n\n\u8fd4\u56de JSON\uff0c\u5bf9\u8c61\u5b57\u6bb5\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b\uff1a\n- task_result: {q1, q2, q3, q4, q5, q6}\n- every qN must be {status, value}\n- status \u53ea\u80fd\u662f answer\u3001unknown\u3001conflict_unresolved\n- q1.value \u53ea\u80fd\u662f \"yes\"\n- q2.value \u548c q4.value \u5fc5\u987b\u662f null\n- q3.value \u5fc5\u987b\u9010\u5b57\u590d\u5236\u540d\u5b57\n- q5.value \u548c q6.value \u53ea\u80fd\u662f \"no\"\n- evidence \u53ea\u5141\u8bb8\u4e3a q1\u3001q3\u3001q5\u3001q6 \u63d0\u4f9b\u6700\u77ed\u5f15\u7528\uff0c\u4f8b\u5982 {\"q1\":[\"e1\"],\"q3\":[\"e3\"],\"q5\":[\"e5\"],\"q6\":[\"e5\"]}\n- unknowns \u53ea\u8bb0\u5f55 status \u662f unknown \u7684\u95ee\u9898\uff0c\u4f8b\u5982 [\"q2\"]\n- violations: \u5fc5\u987b\u662f []\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "completed",
+      "usage": {
+        "input_tokens": 468,
+        "output_tokens": 1500,
+        "reasoning_tokens": 1473,
+        "total_tokens": 1968
+      }
+    },
+    {
+      "attempts": [
+        {
+          "abort_reason": null,
+          "answer_text_present": false,
+          "bytes_received": null,
+          "completed": true,
+          "connect_timeout_seconds": 15,
+          "error_kind": "missing_answer_text",
+          "finish_reason": "length",
+          "first_byte_latency_ms": null,
+          "first_byte_timeout_seconds": 30,
+          "http_attempt_index": null,
+          "http_status": null,
+          "idle_timeout_seconds": 15,
+          "last_progress_latency_ms": null,
+          "latency_ms": 4807,
+          "output_token_cap": 500,
+          "read_timeout_seconds": 90,
+          "reasoning_visible": true,
+          "request_attempt_index": 1,
+          "round_index": null,
+          "runtime_intent": "structured_extraction",
+          "runtime_tier_index": 0,
+          "status": "invalid_response",
+          "total_deadline_seconds": 90,
+          "window_index": null,
+          "write_timeout_seconds": 15
+        },
+        {
+          "abort_reason": null,
+          "answer_text_present": true,
+          "bytes_received": null,
+          "completed": true,
+          "connect_timeout_seconds": 15,
+          "error_kind": null,
+          "finish_reason": "length",
+          "first_byte_latency_ms": null,
+          "first_byte_timeout_seconds": 40,
+          "http_attempt_index": null,
+          "http_status": null,
+          "idle_timeout_seconds": 20,
+          "last_progress_latency_ms": null,
+          "latency_ms": 20167,
+          "output_token_cap": 1500,
+          "read_timeout_seconds": 120,
+          "reasoning_visible": true,
+          "request_attempt_index": 2,
+          "round_index": null,
+          "runtime_intent": "structured_extraction",
+          "runtime_tier_index": 1,
+          "status": "completed",
+          "total_deadline_seconds": 120,
+          "window_index": null,
+          "write_timeout_seconds": 15
+        }
+      ],
+      "canonical_output": {
+        "format_id": "tolerant_json_v3",
+        "payload": {
+          "q1": [
+            "r1",
+            "r5"
+          ],
+          "q4": [
+            "r2"
+          ],
+          "q5": [
+            "r5"
+          ],
+          "q6": [
+            "r7",
+            "r8"
+          ]
+        }
+      },
+      "canonicalization_events": [],
+      "completion": {
+        "answer_text": "{\n    \"q1\": [\n      \"r1\",\n      \"r5\"\n    ],\n    \"q4\": [\n      \"r2\"\n    ],\n    \"q5\": [\n      \"r5\"\n    ],\n    \"q6\": [\n      \"r7\",\n      \"r8\"\n    ]\n  }",
+        "finish_reason": "length",
+        "latency_ms": 20167,
+        "raw_response_path": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-17/glm-4.7-v32-r1.fingerprint-suite-v32/p044.attempt-2.response.json",
+        "reasoning_text": "\u7528\u6237\u5e0c\u671b\u6211\u6839\u636e\u4e00\u7ec4\u89c4\u5219\u548c\u8bb0\u5f55\u56de\u7b54\u4e03\u4e2a\u95ee\u9898\uff08q1 \u5230 q7\uff09\u3002\n\u8f93\u51fa\u5fc5\u987b\u662f\u4e00\u4e2a\u4e25\u683c\u7684 JSON \u5bf9\u8c61\uff0c\u6ca1\u6709 markdown\uff0c\u6ca1\u6709\u89e3\u91ca\u3002\n\n**\u89c4\u5219\u5206\u6790\uff1a**\n1.  `create`\uff1a\u9ed8\u8ba4 priority \u662f p2\u3002\n2.  `override`\uff1a\u8986\u76d6\u9ed8\u8ba4 priority\u3002\n3.  `approver` != \u6700\u7ec8 owner\uff0c\u9664\u975e\u6709\u663e\u5f0f transfer\u3002\n4.  `acting owner`\uff1a\u53ea\u5728 handoff \u7a97\u53e3\u5185\u751f\u6548\uff0c\u4e0d\u81ea\u52a8\u6210\u4e3a\u6700\u7ec8 owner\u3002\n5.  `close`\uff1a\u4fdd\u7559\u6700\u540e\u4e00\u4e2a\u6700\u7ec8 owner\u3002\n6.  `suspend`\uff1a\u4fdd\u7559\u6700\u540e\u4e00\u4e2a\u6700\u7ec8 owner\u3002\n\n**\u8bb0\u5f55\u5206\u6790\uff1a**\n- [r1] create ticket_a owner=ops\n- [r2] override ticket_a priority=p1\n- [r3] Priya approved ticket_a\n- [r4] Elena acted as owner during handoff\n- [r5] close ticket_a\n- [r6] create worker_x owner=ops\n- [r7] update worker_x priority=p1\n- [r8] another note says worker_x priority remains p3 pending verification\n- [r9] suspend worker_x\n- [r10] no explicit transfer to Priya or Elena was recorded\n\n**\u95ee\u9898\u5206\u6790\uff1a**\n\n*   **q1: ticket_a \u7684\u6700\u7ec8 owner \u662f\u8c01\uff1f**\n    *   r1 \u5c06 owner \u8bbe\u4e3a ops\u3002\n    *   r3 \u8bf4 Priya approved\uff08\u6279\u51c6\uff09\u3002\u89c4\u5219\uff1aapprover != owner\uff0c\u9664\u975e\u6709\u663e\u5f0f transfer\u3002\n    *   r4 \u8bf4 Elena acted as owner\uff08\u4f5c\u4e3a owner \u884c\u4e8b\uff09\u3002\u89c4\u5219\uff1aacting owner \u4e0d\u81ea\u52a8\u6210\u4e3a\u6700\u7ec8 owner\u3002\n    *   r10 \u786e\u8ba4\u6ca1\u6709\u663e\u5f0f transfer\u3002\n    *   r5 \u5173\u95ed\u4e86 ticket\u3002\u89c4\u5219\uff1aclose \u4fdd\u7559\u6700\u540e\u4e00\u4e2a\u6700\u7ec8 owner\u3002\n    *   \u6700\u540e\u4e00\u4e2a\u6700\u7ec8 owner \u662f ops\u3002\n    *   \u7ed3\u679c\uff1as=\"a\", v=\"ops\"\u3002\n\n*   **q2: Priya \u662f\u5426\u662f ticket_a \u7684\u6700\u7ec8 owner\uff1f**\n    *   Priya \u662f approver (r3)\u3002\n    *   \u89c4\u5219\uff1aapprover != \u6700\u7ec8 owner\uff0c\u9664\u975e\u6709\u663e\u5f0f transfer\u3002\n    *   r10 \u8bf4\u6ca1\u6709\u663e\u5f0f transfer\u3002\n    *   \u7ed3\u679c\uff1as=\"a\", v=\"no\"\u3002\n\n*   **q3: Elena \u662f\u5426\u662f ticket_a \u7684\u6700\u7ec8 owner\uff1f**\n    *   Elena \u662f acting owner (r4)\u3002\n    *   \u89c4\u5219\uff1aacting owner \u4e0d\u81ea\u52a8\u6210\u4e3a\u6700\u7ec8 owner\u3002\n    *   r10 \u8bf4\u6ca1\u6709\u663e\u5f0f transfer\u3002\n    *   \u7ed3\u679c\uff1as=\"a\", v=\"no\"\u3002\n\n*   **q4: ticket_a \u7684\u6700\u7ec8 priority \u6765\u81ea default \u8fd8\u662f override\uff1f**\n    *   r1 \u521b\u5efa ticket\uff08\u9ed8\u8ba4 p2\uff09\u3002\n    *   r2 override priority \u4e3a p1\u3002\n    *   \u7ed3\u679c\uff1as=\"a\", v=\"override\"\u3002\n\n*   **q5: close \u4e4b\u540e\u662f\u5426\u4fdd\u7559\u6700\u7ec8 owner\uff1f**\n    *   \u89c4\u5219\uff1aclose \u4f1a\u4fdd\u7559\u6700\u540e\u4e00\u4e2a\u6700\u7ec8 owner\u3002\n    *   \u7ed3\u679c\uff1as=\"a\", v=\"yes\"\u3002\n\n*   **q6: worker_x \u7684\u6700\u7ec8 priority \u662f\u5426\u80fd\u786e\u5b9a\uff1f**\n    *   r6 \u521b\u5efa worker_x\uff08\u9ed8\u8ba4 p2\uff09\u3002\n    *   r7 update priority \u4e3a p1\u3002\n    *   r8 \u8bf4 priority remains p3 pending verification\uff08\u5f85\u9a8c\u8bc1\uff09\u3002\n    *   \u5b58\u5728\u51b2\u7a81\uff1ar7 \u8bf4 p1\uff0cr8 \u8bf4 p3\u3002\u63d0\u793a\u6307\u4ee4\u660e\u786e\u6307\u51fa `q6 \u5fc5\u987b\u662f {\"s\":\"c\",\"v\":null}`\u3002\n    *   \u7ed3\u679c\uff1as=\"c\", v=null\u3002\n\n*   **q7: worker_x \u7684 region \u662f\u5426\u80fd\u786e\u5b9a\uff1f**\n    *   \u8bb0\u5f55 r6-r9 \u63d0\u5230\u4e86 owner \u548c priority\u3002\n    *   \u6ca1\u6709\u8bb0\u5f55\u63d0\u5230 \"region\"\u3002\n    *   \u63d0\u793a\u6307\u4ee4\u660e\u786e\u6307\u51fa `q7 \u5fc5\u987b\u662f {\"s\":\"u\",\"v\":null}`\u3002\n    *   \u7ed3\u679c\uff1as=\"u\", v=null\u3002\n\n**\u6784\u5efa JSON\uff1a**\n\n*   `task_result`\uff1a\n    *   q1: {\"s\": \"a\", \"v\": \"ops\"}\n    *   q2: {\"s\": \"a\", \"v\": \"no\"}\n    *   q3: {\"s\": \"a\", \"v\": \"no\"}\n    *   q4: {\"s\": \"a\", \"v\": \"override\"}\n    *   q5: {\"s\": \"a\", \"v\": \"yes\"}\n    *   q6: {\"s\": \"c\", \"v\": null}\n    *   q7: {\"s\": \"u\", \"v\": null}\n\n*   `evidence`\uff1a\n    *   \u63d0\u793a\u8981\u6c42\uff1a`{\"q1\":[\"r1\",\"r5\"],\"q4\":[\"r2\"],\"q5\":[\"r5\"],\"q6\":[\"r7\",\"r8\"]}`\n\n*   `unknowns`\uff1a\n    *   \u63d0\u793a\u8981\u6c42\uff1a`[\"q7\"]`\n\n*   `violations`\uff1a\n    *   \u63d0\u793a\u8981\u6c42\uff1a`[]`\n\n**\u6700\u7ec8\u68c0\u67e5\uff1a**\n- \u53ea\u8fd4\u56de JSON\uff1f\u662f\u3002\n- \u6ca1\u6709 markdown\uff1f\u662f\u3002\n- \u9876\u5c42\u952e\uff1atask_result, evidence, unknowns, violations\uff1f\u662f\u3002\n- task_result \u5305\u542b q1-q7\uff1f\u662f\u3002\n- qN \u683c\u5f0f\uff1a{\"s\", \"v\"}\uff1f\u662f\u3002\n- s \u503c\uff1aa, u, c\uff1f\u662f\u3002\n- v \u503c\uff1as=\"a\" \u65f6\u4e3a\u5b57\u7b26\u4e32\uff0c\u5426\u5219\u4e3a null\uff1f\u662f\u3002\n- q1.v=\"ops\"\uff1f\u662f\u3002\n- q2.v=\"no\"\uff1f\u662f\u3002\n- q3.v=\"no\"\uff1f\u662f\u3002\n- q4.v=\"override\"\uff1f\u662f\u3002\n- q5.v=\"yes\"\uff1f\u662f\u3002\n- q6.s=\"c\", v=null\uff1f\u662f\u3002\n- q7.s=\"u\", v=null\uff1f\u662f\u3002\n- evidence \u5339\u914d\u7279\u5b9a\u8981\u6c42\uff1f\u662f\u3002\n- unknowns \u5339\u914d\u7279\u5b9a\u8981\u6c42\uff1f\u662f\u3002\n- violations \u5339\u914d\u7279\u5b9a\u8981\u6c42\uff1f\u662f\u3002\n\n\u8ba9\u6211\u4eec\u7ec4\u88c5 JSON \u5b57\u7b26\u4e32\u3002\n\n```json\n{\n  \"task_result\": {\n    \"q1\": {\n      \"s\": \"a\",\n      \"v\": \"ops\"\n    },\n    \"q2\": {\n      \"s\": \"a\",\n      \"v\": \"no\"\n    },\n    \"q3\": {\n      \"s\": \"a\",\n      \"v\": \"no\"\n    },\n    \"q4\": {\n      \"s\": \"a\",\n      \"v\": \"override\"\n    },\n    \"q5\": {\n      \"s\": \"a\",\n      \"v\": \"yes\"\n    },\n    \"q6\": {\n      \"s\": \"c\",\n      \"v\": null\n    },\n    \"q7\": {\n      \"s\": \"u\",\n      \"v\": null\n    }\n  },\n  \"evidence\": {\n    \"q1\": [\n      \"r1\",\n      \"r5\"\n    ],\n    \"q4\": [\n      \"r2\"\n    ],\n    \"q5\": [\n      \"r5\"\n    ],\n    \"q6\": [\n      \"r7\",\n      \"r8\"\n    ]\n  },\n  \"unknowns\": [\n    \"q7\"",
+        "reasoning_visible": true,
+        "usage": {
+          "input_tokens": 541,
+          "output_tokens": 1500,
+          "reasoning_tokens": 1391,
+          "total_tokens": 2041
+        }
+      },
+      "error": null,
+      "features": {
+        "answer.answered_count": 0,
+        "answer.conflict_count": 0,
+        "answer.evidence_field_count": 0,
+        "answer.unknown_count": 0,
+        "answer.violation_count": 0,
+        "reasoning.backtrack_markers": 0,
+        "reasoning.hedge_density": 0.0,
+        "reasoning.step_count": 141,
+        "reasoning.uses_numbered_outline": true,
+        "score.boundary_accuracy": 0.0,
+        "score.decision_accuracy": 0.0,
+        "score.evidence_alignment": 1.0,
+        "score.match_q1": false,
+        "score.match_q2": false,
+        "score.match_q3": false,
+        "score.match_q4": false,
+        "score.match_q5": false,
+        "score.match_q6": false,
+        "score.match_q7": false,
+        "score.violation_free": true,
+        "surface.constraint_retention": false,
+        "surface.field_order_match": false,
+        "surface.had_markdown_fence": false,
+        "surface.has_extra_prefix_text": false,
+        "surface.has_extra_suffix_text": false,
+        "surface.has_extra_text": false,
+        "surface.key_alias_normalized": false,
+        "surface.parse_repaired": false,
+        "surface.repair_event_count": 0,
+        "transport.finish_reason": "length",
+        "transport.latency_bucket_ms": 20000,
+        "transport.reasoning_tokens": 1391,
+        "transport.reasoning_visible": true
+      },
+      "prompt_id": "p044",
+      "raw_output": "{\n    \"q1\": [\n      \"r1\",\n      \"r5\"\n    ],\n    \"q4\": [\n      \"r2\"\n    ],\n    \"q5\": [\n      \"r5\"\n    ],\n    \"q6\": [\n      \"r7\",\n      \"r8\"\n    ]\n  }",
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 220,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u9644\u52a0\u89e3\u91ca\u3002\n\u9876\u5c42\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b task_result\u3001evidence\u3001unknowns\u3001violations\u3002\ntask_result \u5fc5\u987b\u5305\u542b q1 \u5230 q7\u3002\n\u6bcf\u4e2a qN \u5fc5\u987b\u4e14\u53ea\u80fd\u662f {\"s\",\"v\"}\u3002\ns \u53ea\u80fd\u662f a\u3001u\u3001c\uff0c\u5206\u522b\u8868\u793a answer\u3001unknown\u3001conflict_unresolved\u3002\ns \u4e0d\u662f a \u65f6\uff0cv \u5fc5\u987b\u662f null\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u6839\u636e\u4e0b\u9762\u89c4\u5219\u548c\u8bb0\u5f55\u56de\u7b54\u95ee\u9898\u3002\n\n\u89c4\u5219\uff1a\n- create \u65f6\u9ed8\u8ba4 priority \u662f p2\u3002\n- override \u4f1a\u8986\u76d6\u9ed8\u8ba4 priority\u3002\n- approver \u4e0d\u7b49\u4e8e\u6700\u7ec8 owner\uff0c\u9664\u975e\u6709\u663e\u5f0f transfer\u3002\n- acting owner \u53ea\u5728 handoff \u7a97\u53e3\u5185\u751f\u6548\uff0c\u4e0d\u81ea\u52a8\u6210\u4e3a\u6700\u7ec8 owner\u3002\n- close \u4f1a\u4fdd\u7559\u6700\u540e\u4e00\u4e2a\u6700\u7ec8 owner\u3002\n- suspend \u4f1a\u4fdd\u7559\u6700\u540e\u4e00\u4e2a\u6700\u7ec8 owner\u3002\n\n\u8bb0\u5f55\uff1a\n- [r1] create ticket_a owner=ops\n- [r2] override ticket_a priority=p1\n- [r3] Priya approved ticket_a\n- [r4] Elena acted as owner during handoff\n- [r5] close ticket_a\n- [r6] create worker_x owner=ops\n- [r7] update worker_x priority=p1\n- [r8] another note says worker_x priority remains p3 pending verification\n- [r9] suspend worker_x\n- [r10] no explicit transfer to Priya or Elena was recorded\n\n\u56de\u7b54\uff1a\n- q1: ticket_a \u7684\u6700\u7ec8 owner \u662f\u8c01\uff1f\n- q2: Priya \u662f\u5426\u662f ticket_a \u7684\u6700\u7ec8 owner\uff1f\n- q3: Elena \u662f\u5426\u662f ticket_a \u7684\u6700\u7ec8 owner\uff1f\n- q4: ticket_a \u7684\u6700\u7ec8 priority \u6765\u81ea default \u8fd8\u662f override\uff1f\n- q5: close \u4e4b\u540e\u662f\u5426\u4fdd\u7559\u6700\u7ec8 owner\uff1f\n- q6: worker_x \u7684\u6700\u7ec8 priority \u662f\u5426\u80fd\u786e\u5b9a\uff1f\n- q7: worker_x \u7684 region \u662f\u5426\u80fd\u786e\u5b9a\uff1f\n\n\u8fd4\u56de JSON\uff1a\n- q1.v \u53ea\u80fd\u662f \"ops\"\n- q2.v \u548c q3.v \u53ea\u80fd\u662f \"no\"\n- q4.v \u53ea\u80fd\u662f \"override\"\n- q5.v \u53ea\u80fd\u662f \"yes\"\n- q6 \u5fc5\u987b\u662f {\"s\":\"c\",\"v\":null}\n- q7 \u5fc5\u987b\u662f {\"s\":\"u\",\"v\":null}\n- q6 \u548c q7 \u82e5\u4e0d\u662f answer\uff0cv \u5fc5\u987b\u662f null\n- evidence \u5fc5\u987b\u4e14\u53ea\u80fd\u662f {\"q1\":[\"r1\",\"r5\"],\"q4\":[\"r2\"],\"q5\":[\"r5\"],\"q6\":[\"r7\",\"r8\"]}\n- unknowns \u5fc5\u987b\u4e14\u53ea\u80fd\u662f [\"q7\"]\n- violations \u5fc5\u987b\u662f []\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "completed",
+      "usage": {
+        "input_tokens": 541,
+        "output_tokens": 1500,
+        "reasoning_tokens": 1391,
+        "total_tokens": 2041
+      }
+    },
+    {
+      "attempts": [
+        {
+          "abort_reason": null,
+          "answer_text_present": true,
+          "bytes_received": null,
+          "completed": true,
+          "connect_timeout_seconds": 15,
+          "error_kind": null,
+          "finish_reason": "stop",
+          "first_byte_latency_ms": null,
+          "first_byte_timeout_seconds": 30,
+          "http_attempt_index": null,
+          "http_status": null,
+          "idle_timeout_seconds": 15,
+          "last_progress_latency_ms": null,
+          "latency_ms": 36916,
+          "output_token_cap": 500,
+          "read_timeout_seconds": 90,
+          "reasoning_visible": true,
+          "request_attempt_index": 1,
+          "round_index": null,
+          "runtime_intent": "structured_extraction",
+          "runtime_tier_index": 0,
+          "status": "completed",
+          "total_deadline_seconds": 90,
+          "window_index": null,
+          "write_timeout_seconds": 15
+        }
+      ],
+      "canonical_output": {
+        "format_id": "tolerant_json_v3",
+        "payload": {
+          "evidence": {},
+          "task_result": {
+            "m1": "C:openwhale_control",
+            "m10": "R",
+            "m11": "R",
+            "m12": "R",
+            "m2": "C:openwhale_control",
+            "m3": "C:atlas_db_east",
+            "m4": "C:atlas_db_east",
+            "m5": "M",
+            "m6": "M",
+            "m7": "M",
+            "m8": "R",
+            "m9": "R"
+          },
+          "unknowns": {},
+          "violations": []
+        }
+      },
+      "canonicalization_events": [],
+      "completion": {
+        "answer_text": "{\n  \"task_result\": {\n    \"m1\": \"C:openwhale_control\",\n    \"m2\": \"C:openwhale_control\",\n    \"m3\": \"C:atlas_db_east\",\n    \"m4\": \"C:atlas_db_east\",\n    \"m5\": \"M\",\n    \"m6\": \"M\",\n    \"m7\": \"M\",\n    \"m8\": \"R\",\n    \"m9\": \"R\",\n    \"m10\": \"R\",\n    \"m11\": \"R\",\n    \"m12\": \"R\"\n  },\n  \"evidence\": {},\n  \"unknowns\": {},\n  \"violations\": []\n}",
+        "finish_reason": "stop",
+        "latency_ms": 36916,
+        "raw_response_path": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-17/glm-4.7-v32-r1.fingerprint-suite-v32/p045.response.json",
+        "reasoning_text": "\u7528\u6237\u5e0c\u671b\u6211\u6839\u636e\u7279\u5b9a\u89c4\u5219\u5c06 12 \u4e2a\u539f\u59cb mention\uff08m1 \u5230 m12\uff09\u6620\u5c04\u5230\u7279\u5b9a\u503c\uff08C:openwhale_control\u3001C:atlas_db_east\u3001M \u6216 R\uff09\u3002\n\u8f93\u51fa\u5fc5\u987b\u662f\u4e00\u4e2a\u4e25\u683c\u7684 JSON \u5bf9\u8c61\uff0c\u4e0d\u5305\u542b markdown\uff0c\u4e0d\u5305\u542b\u89e3\u91ca\u3002\n\n**\u8f93\u5165 Mention \u548c\u89c4\u5219\u5206\u6790\uff1a**\n\n1.  **m1: \"OpenWhale Control Plane\"**\n    *   \u89c4\u5219\uff1a\"OpenWhale Control Plane\u3001OW Control \u552f\u4e00\u5f52\u4e00\u5230 openwhale_control\"\n    *   \u7ed3\u679c\uff1a`C:openwhale_control`\n\n2.  **m2: \"OW Control\"**\n    *   \u89c4\u5219\uff1a\"OpenWhale Control Plane\u3001OW Control \u552f\u4e00\u5f52\u4e00\u5230 openwhale_control\"\n    *   \u7ed3\u679c\uff1a`C:openwhale_control`\n\n3.  **m3: \"Atlas East DB\"**\n    *   \u89c4\u5219\uff1a\"Atlas East DB\u3001atlas-db-east \u552f\u4e00\u5f52\u4e00\u5230 atlas_db_east\"\n    *   \u7ed3\u679c\uff1a`C:atlas_db_east`\n\n4.  **m4: \"atlas-db-east\"**\n    *   \u89c4\u5219\uff1a\"Atlas East DB\u3001atlas-db-east \u552f\u4e00\u5f52\u4e00\u5230 atlas_db_east\"\n    *   \u7ed3\u679c\uff1a`C:atlas_db_east`\n\n5.  **m5: \"OW\"**\n    *   \u89c4\u5219\uff1a\"OW\u3001Atlas\u3001Atlas East \u662f\u201c\u50cf\u5b9e\u4f53\u77ed\u540d\uff0c\u4f46\u4e0d\u80fd\u552f\u4e00\u5f52\u4e00\u201d\uff0c\u6240\u4ee5\u6807 M\"\n    *   \u7ed3\u679c\uff1a`M`\n\n6.  **m6: \"Atlas\"**\n    *   \u89c4\u5219\uff1a\"OW\u3001Atlas\u3001Atlas East \u662f\u201c\u50cf\u5b9e\u4f53\u77ed\u540d\uff0c\u4f46\u4e0d\u80fd\u552f\u4e00\u5f52\u4e00\u201d\uff0c\u6240\u4ee5\u6807 M\"\n    *   \u7ed3\u679c\uff1a`M`\n\n7.  **m7: \"Atlas East\"**\n    *   \u89c4\u5219\uff1a\"OW\u3001Atlas\u3001Atlas East \u662f\u201c\u50cf\u5b9e\u4f53\u77ed\u540d\uff0c\u4f46\u4e0d\u80fd\u552f\u4e00\u5f52\u4e00\u201d\uff0c\u6240\u4ee5\u6807 M\"\n    *   \u7ed3\u679c\uff1a`M`\n\n8.  **m8: \"OpenWhale Controls\"**\n    *   \u89c4\u5219\uff1a\"OpenWhale Controls \u4e0d\u662f\u5df2\u77e5\u5b9e\u4f53\u540d\uff0c\u5b83\u662f\u6cdb\u5316\u540d\u79f0\uff0c\u6240\u4ee5\u6807 R\uff0c\u4e0d\u662f M\"\n    *   \u7ed3\u679c\uff1a`R`\n\n9.  **m9: \"Project Mercury\"**\n    *   \u89c4\u5219\uff1a\"Project Mercury \u662f\u9879\u76ee\u540d\uff0c\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\uff0c\u4e0d\u662f M\"\n    *   \u7ed3\u679c\uff1a`R`\n\n10. **m10: \"mercury-cutover\"**\n    *   \u89c4\u5219\uff1a\"mercury-cutover \u662f cutover \u540d\uff0c\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\uff0c\u4e0d\u662f M\"\n    *   \u7ed3\u679c\uff1a`R`\n\n11. **m11: \"control\"**\n    *   \u89c4\u5219\uff1a\"control \u662f\u666e\u901a\u8bcd\uff0c\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\uff0c\u4e0d\u662f M\"\n    *   \u7ed3\u679c\uff1a`R`\n\n12. **m12: \"staging-note\"**\n    *   \u89c4\u5219\uff1a\"staging-note \u662f\u6ce8\u91ca\u6807\u7b7e\uff0c\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\uff0c\u4e0d\u662f M\"\n    *   \u7ed3\u679c\uff1a`R`\n\n**\u6784\u5efa JSON\uff1a**\n\n```json\n{\n  \"task_result\": {\n    \"m1\": \"C:openwhale_control\",\n    \"m2\": \"C:openwhale_control\",\n    \"m3\": \"C:atlas_db_east\",\n    \"m4\": \"C:atlas_db_east\",\n    \"m5\": \"M\",\n    \"m6\": \"M\",\n    \"m7\": \"M\",\n    \"m8\": \"R\",\n    \"m9\": \"R\",\n    \"m10\": \"R\",\n    \"m11\": \"R\",\n    \"m12\": \"R\"\n  },\n  \"evidence\": {},\n  \"unknowns\": {},\n  \"violations\": []\n}\n```\n\n**\u7ea6\u675f\u68c0\u67e5\uff1a**\n- \u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff1f\u662f\u3002\n- \u4e0d\u8981\u8f93\u51fa markdown\uff1f\u662f\u3002\n- \u4e0d\u8981\u9644\u52a0\u89e3\u91ca\uff1f\u662f\u3002\n- \u9876\u5c42\u952e\uff1atask_result\u3001evidence\u3001unknowns\u3001violations\uff1f\u662f\u3002\n- task_result \u5305\u542b m1 \u5230 m12\uff1f\u662f\u3002\n- \u6bcf\u4e2a\u503c\u90fd\u662f\u5b57\u7b26\u4e32\uff1f\u662f\u3002\n- \u5141\u8bb8\u7684\u503c\uff1aC:openwhale_control\u3001C:atlas_db_east\u3001M\u3001R\uff1f\u662f\u3002\n\n\u6700\u7ec8\u9a8c\u8bc1\u6620\u5c04\uff1a\nm1 -> C:openwhale_control\nm2 -> C:openwhale_control\nm3 -> C:atlas_db_east\nm4 -> C:atlas_db_east\nm5 -> M\nm6 -> M\nm7 -> M\nm8 -> R\nm9 -> R\nm10 -> R\nm11 -> R\nm12 -> R\n\n\u770b\u8d77\u6765\u6b63\u786e\u3002",
+        "reasoning_visible": true,
+        "usage": {
+          "input_tokens": 427,
+          "output_tokens": 1147,
+          "reasoning_tokens": 1001,
+          "total_tokens": 1574
+        }
+      },
+      "error": null,
+      "features": {
+        "answer.ambiguous_count": 3,
+        "answer.canonical_count": 4,
+        "answer.rejected_count": 5,
+        "answer.violation_count": 0,
+        "reasoning.backtrack_markers": 0,
+        "reasoning.hedge_density": 0.0,
+        "reasoning.step_count": 83,
+        "reasoning.uses_numbered_outline": true,
+        "score.ambiguity_accuracy": 1.0,
+        "score.classification_accuracy": 1.0,
+        "score.rejection_accuracy": 1.0,
+        "score.threshold_accuracy": 1.0,
+        "score.violation_free": true,
+        "surface.constraint_retention": true,
+        "surface.field_order_match": true,
+        "surface.had_markdown_fence": false,
+        "surface.has_extra_prefix_text": false,
+        "surface.has_extra_suffix_text": false,
+        "surface.has_extra_text": false,
+        "surface.key_alias_normalized": false,
+        "surface.parse_repaired": false,
+        "surface.repair_event_count": 0,
+        "transport.finish_reason": "stop",
+        "transport.latency_bucket_ms": 36000,
+        "transport.reasoning_tokens": 1001,
+        "transport.reasoning_visible": true
+      },
+      "prompt_id": "p045",
+      "raw_output": "{\n  \"task_result\": {\n    \"m1\": \"C:openwhale_control\",\n    \"m2\": \"C:openwhale_control\",\n    \"m3\": \"C:atlas_db_east\",\n    \"m4\": \"C:atlas_db_east\",\n    \"m5\": \"M\",\n    \"m6\": \"M\",\n    \"m7\": \"M\",\n    \"m8\": \"R\",\n    \"m9\": \"R\",\n    \"m10\": \"R\",\n    \"m11\": \"R\",\n    \"m12\": \"R\"\n  },\n  \"evidence\": {},\n  \"unknowns\": {},\n  \"violations\": []\n}",
+      "request_snapshot": {
+        "generation": {
+          "max_output_tokens": 130,
+          "reasoning_mode": "capture_if_available",
+          "response_format": "text",
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "messages": [
+          {
+            "content": "\u53ea\u8fd4\u56de JSON \u5bf9\u8c61\uff0c\u4e0d\u8981\u8f93\u51fa markdown\uff0c\u4e0d\u8981\u9644\u52a0\u89e3\u91ca\u3002\n\u9876\u5c42\u5fc5\u987b\u4e14\u53ea\u80fd\u5305\u542b task_result\u3001evidence\u3001unknowns\u3001violations\u3002\ntask_result \u5fc5\u987b\u5305\u542b m1 \u5230 m12\u3002\n\u6bcf\u4e2a mN \u53ea\u80fd\u662f\u5b57\u7b26\u4e32\u3002\n\u5141\u8bb8\u7684\u503c\u53ea\u6709\uff1a\n- C:openwhale_control\n- C:atlas_db_east\n- M\n- R\nM \u53ea\u7528\u4e8e\u201c\u50cf\u5b9e\u4f53\u7f29\u5199\u6216\u77ed\u540d\uff0c\u4f46\u4e0d\u80fd\u552f\u4e00\u5f52\u4e00\u201d\u7684 mention\u3002\nR \u53ea\u7528\u4e8e\u201c\u6839\u672c\u4e0d\u662f\u5b9e\u4f53 mention\u201d\u7684\u9879\u76ee\u540d\u3001cutover \u540d\u3001\u6ce8\u91ca\u6807\u7b7e\u6216\u666e\u901a\u8bcd\u3002\n\u4e0d\u80fd\u628a\u9879\u76ee\u540d\u3001cutover \u540d\u3001\u6ce8\u91ca\u6807\u7b7e\u6216\u666e\u901a\u8bcd\u6807\u6210 M\u3002\n",
+            "role": "system"
+          },
+          {
+            "content": "\u53ea\u5904\u7406\u4e0b\u9762 12 \u4e2a\u539f\u59cb mention\uff0c\u9010\u9879\u5224\u65ad\uff1a\n\n- m1 OpenWhale Control Plane\n- m2 OW Control\n- m3 Atlas East DB\n- m4 atlas-db-east\n- m5 OW\n- m6 Atlas\n- m7 Atlas East\n- m8 OpenWhale Controls\n- m9 Project Mercury\n- m10 mercury-cutover\n- m11 control\n- m12 staging-note\n\n\u89c4\u5219\uff1a\n- OpenWhale Control Plane\u3001OW Control \u552f\u4e00\u5f52\u4e00\u5230 openwhale_control\n- Atlas East DB\u3001atlas-db-east \u552f\u4e00\u5f52\u4e00\u5230 atlas_db_east\n- OW\u3001Atlas\u3001Atlas East \u662f\u201c\u50cf\u5b9e\u4f53\u77ed\u540d\uff0c\u4f46\u4e0d\u80fd\u552f\u4e00\u5f52\u4e00\u201d\uff0c\u6240\u4ee5\u6807 M\n- OpenWhale Controls \u4e0d\u662f\u5df2\u77e5\u5b9e\u4f53\u540d\uff0c\u5b83\u662f\u6cdb\u5316\u540d\u79f0\uff0c\u6240\u4ee5\u6807 R\uff0c\u4e0d\u662f M\n- Project Mercury \u662f\u9879\u76ee\u540d\uff0c\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\uff0c\u4e0d\u662f M\n- mercury-cutover \u662f cutover \u540d\uff0c\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\uff0c\u4e0d\u662f M\n- control \u662f\u666e\u901a\u8bcd\uff0c\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\uff0c\u4e0d\u662f M\n- staging-note \u662f\u6ce8\u91ca\u6807\u7b7e\uff0c\u4e0d\u662f\u5b9e\u4f53 mention\uff0c\u6240\u4ee5\u6807 R\uff0c\u4e0d\u662f M\n\n\u8fd4\u56de JSON\uff1a\n- task_result: {m1..m12}\n- evidence: {}\n- unknowns: {}\n- violations: []\n",
+            "role": "user"
+          }
+        ]
+      },
+      "status": "completed",
+      "usage": {
+        "input_tokens": 427,
+        "output_tokens": 1147,
+        "reasoning_tokens": 1001,
+        "total_tokens": 1574
+      }
+    }
+  ],
+  "protocol_compatibility": {
+    "issues": [],
+    "required_capabilities": [
+      "chat_completions"
+    ],
+    "satisfied": true
+  },
+  "reasoning_coverage_ratio": 1.0,
+  "run_id": "glm-4.7-v32-r1.fingerprint-suite-v32",
+  "run_kind": "full_suite",
+  "runtime_policy": {
+    "default_intent": "structured_extraction",
+    "execution_class": "thinking",
+    "intent_policies": [
+      {
+        "attempts": [
+          {
+            "attempt_index": 1,
+            "connect_timeout_seconds": 15,
+            "escalate_on": [
+              "finish_reason_length",
+              "missing_answer_text",
+              "invalid_structured_output",
+              "retryable_transport_error"
+            ],
+            "first_byte_timeout_seconds": 30,
+            "idle_timeout_seconds": 15,
+            "output_token_cap": 500,
+            "output_token_cap_multiplier": null,
+            "request_body_overrides": {},
+            "total_deadline_seconds": 90,
+            "use_prompt_output_token_cap": false,
+            "write_timeout_seconds": 15
+          },
+          {
+            "attempt_index": 2,
+            "connect_timeout_seconds": 15,
+            "escalate_on": [
+              "finish_reason_length",
+              "missing_answer_text",
+              "invalid_structured_output",
+              "retryable_transport_error"
+            ],
+            "first_byte_timeout_seconds": 40,
+            "idle_timeout_seconds": 20,
+            "output_token_cap": 1500,
+            "output_token_cap_multiplier": null,
+            "request_body_overrides": {},
+            "total_deadline_seconds": 120,
+            "use_prompt_output_token_cap": false,
+            "write_timeout_seconds": 15
+          },
+          {
+            "attempt_index": 3,
+            "connect_timeout_seconds": 15,
+            "escalate_on": [],
+            "first_byte_timeout_seconds": 60,
+            "idle_timeout_seconds": 30,
+            "output_token_cap": 3000,
+            "output_token_cap_multiplier": null,
+            "request_body_overrides": {},
+            "total_deadline_seconds": 180,
+            "use_prompt_output_token_cap": false,
+            "write_timeout_seconds": 15
+          }
+        ],
+        "intent": "structured_extraction"
+      },
+      {
+        "attempts": [
+          {
+            "attempt_index": 1,
+            "connect_timeout_seconds": 15,
+            "escalate_on": [],
+            "first_byte_timeout_seconds": 15,
+            "idle_timeout_seconds": 10,
+            "output_token_cap": 256,
+            "output_token_cap_multiplier": null,
+            "request_body_overrides": {},
+            "total_deadline_seconds": 30,
+            "use_prompt_output_token_cap": false,
+            "write_timeout_seconds": 15
+          }
+        ],
+        "intent": "capability_probe"
+      },
+      {
+        "attempts": [
+          {
+            "attempt_index": 1,
+            "connect_timeout_seconds": 15,
+            "escalate_on": [
+              "finish_reason_length",
+              "missing_answer_text",
+              "missing_reasoning_text",
+              "retryable_transport_error"
+            ],
+            "first_byte_timeout_seconds": 45,
+            "idle_timeout_seconds": 20,
+            "output_token_cap": 1500,
+            "output_token_cap_multiplier": null,
+            "request_body_overrides": {},
+            "total_deadline_seconds": 120,
+            "use_prompt_output_token_cap": false,
+            "write_timeout_seconds": 15
+          },
+          {
+            "attempt_index": 2,
+            "connect_timeout_seconds": 15,
+            "escalate_on": [],
+            "first_byte_timeout_seconds": 60,
+            "idle_timeout_seconds": 30,
+            "output_token_cap": 3000,
+            "output_token_cap_multiplier": null,
+            "request_body_overrides": {},
+            "total_deadline_seconds": 180,
+            "use_prompt_output_token_cap": false,
+            "write_timeout_seconds": 15
+          }
+        ],
+        "intent": "long_reasoning"
+      }
+    ],
+    "max_rounds": null,
+    "no_data_checkpoints_seconds": null,
+    "output_token_cap": null,
+    "policy_id": "intent_tiered_runtime_v1",
+    "progress_poll_interval_seconds": null,
+    "round_windows_seconds": null,
+    "thinking_probe_status": "supported",
+    "total_deadline_seconds": null
+  },
+  "suite_id": "fingerprint-suite-v32",
+  "target_label": "glm-4.7-v32-r1",
+  "trace_dir": "/Users/zhuangwei/Downloads/coding/modelfingerprint/traces/2026-03-17/glm-4.7-v32-r1.fingerprint-suite-v32"
+}

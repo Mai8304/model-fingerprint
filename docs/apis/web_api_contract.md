@@ -85,7 +85,7 @@ and avoid embedding user-facing English prose as the primary contract.
 {
   "id": "claude-3.7-sonnet",
   "label": "Claude 3.7 Sonnet",
-  "suite_id": "fingerprint-suite-v3",
+  "suite_id": "fingerprint-suite-v32",
   "available": true
 }
 ```
@@ -351,7 +351,7 @@ Response `200`:
     {
       "id": "claude-3.7-sonnet",
       "label": "Claude 3.7 Sonnet",
-      "suite_id": "fingerprint-suite-v3",
+      "suite_id": "fingerprint-suite-v32",
       "available": true
     }
   ]

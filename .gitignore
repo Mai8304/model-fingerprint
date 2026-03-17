@@ -5,7 +5,10 @@ __pycache__/
 *.egg-info/
 docs/plans/
 docs/tasks/
-runs/
+runs/*
+!runs/2026-03-17/
+runs/2026-03-17/*
+!runs/2026-03-17/*.fingerprint-suite-v32.json
 traces/
 output/
 apps/output/

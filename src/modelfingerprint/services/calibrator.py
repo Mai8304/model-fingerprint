@@ -35,13 +35,22 @@ COMPARISON_DIMENSION_WEIGHTS = {
     "capability": 0.3,
 }
 CAPABILITY_WEIGHTS = {
-    "thinking": 0.35,
-    "tools": 0.30,
-    "streaming": 0.20,
-    "image": 0.15,
+    "thinking": 0.30,
+    "tools": 0.25,
+    "streaming": 0.15,
     "image_generation": 0.15,
     "vision_understanding": 0.15,
 }
+IDENTITY_EXCLUDED_FEATURES = frozenset(
+    {
+        "transport.latency_bucket_ms",
+        "transport.reasoning_tokens",
+        "transport.finish_reason",
+        "surface.field_order_match",
+        "surface.had_markdown_fence",
+        "surface.key_alias_normalized",
+    }
+)
 CAPABILITY_MATCH_SCORES: dict[str, dict[str, float]] = {
     "supported": {
         "supported": 1.0,
@@ -337,6 +346,8 @@ def _score_prompt_channels(
 ) -> dict[str, float]:
     channel_feature_scores: dict[str, list[float]] = {}
     for feature_name, summary in profile_features.items():
+        if feature_name in IDENTITY_EXCLUDED_FEATURES:
+            continue
         if feature_name not in run_features:
             continue
         channel = feature_name.split(".", 1)[0]

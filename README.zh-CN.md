@@ -2,38 +2,62 @@
 
 # Model Fingerprint
 
-一个基于文件产物的 CLI，用于验证两个 LLM endpoint 是否很可能暴露的是同一个底层模型。
+验证模型身份，识别降智与替换。
 
-## 它验证什么
+[官方网站](https://model-fingerprint.com/) · [在线演示](https://model-fingerprint.com/) · [Web API 合同](./docs/apis/web_api_contract.md)
 
-Model Fingerprint 面向平台工程团队，帮助你在不同供应商名称、包装方式或协议行为存在差异时，判断两个 LLM endpoint 是否很可能代表同一个底层模型。
+Model Fingerprint 是一个面向开发者的模型身份核验工具，用来判断某个被声明的 endpoint 是否真的匹配你选择的指纹模型。仓库内同时包含 Python engine、CLI 工作流、Next.js Web console，以及由同一套 engine 驱动的 `/api/v1` 路由。
 
-典型场景：
+## 为什么团队会用它
 
-- 验证供应商关于模型身份的声明
-- 将托管 endpoint 与内部基线指纹做对比
-- 跟踪供应商切换或版本变更后的行为漂移
+- 在生产流量切换前验证供应商的模型声明
+- 识别降智、模型替换和供应商漂移
+- 把托管 endpoint 与 pinned reference fingerprint 做比对
+- 将协议兼容性与模型身份相似度分开判断
 
-## 工作原理
+## 官方演示
 
-Model Fingerprint 通过版本化 probe suite 和文件化产物，比较两个 endpoint 是否很可能暴露的是同一个底层模型。
+官方演示站点在 [model-fingerprint.com](https://model-fingerprint.com/)。它对应的正是本仓库描述的在线检测流程：列出可选指纹模型、发起一次 live run、轮询进度、获取终态结果，以及在需要时取消一个正在执行的检测。
 
-1. 发布一套 probe suite。版本化 suite 定义了用于产生可比较信号的 prompts 和 extractors。
-2. 对目标 endpoint 运行 suite。每次执行都会产出 run artifact，其中包含归一化输出、coverage 和协议观测结果。
-3. 用重复运行结果构建 reference profile。profile 会把同一已知模型的多次 run 聚合成更稳定的参考指纹。
-4. 用已知基线做阈值校准。calibration 会针对该 suite 推导阈值，而不是依赖固定的全局 cutoff。
-5. 用 suspect run 对比 reference profiles。比较结果会输出 similarity、coverage、protocol status 和最终 verdict。
+线上流程中的 API key 只用于当前这次检查，请求完成后不会被持久化保存。
 
-模型身份相似性与协议兼容性会被分开报告。
+## Case：Mismatch
+
+下面这个 case 展示的是：将一个声明为 `anthropic/claude-haiku-4.5` 的 endpoint，用 `Claude Opus 4.6` 指纹进行检测。最终结果是正式 `mismatch`，同时把 `Claude Haiku 4.5` 识别为最近候选模型。
+
+![官方演示流程中的 mismatch case](./docs/assets/readme/case-mismatch-claude-haiku-45-vs-opus-46.png)
+
+- 被测 endpoint：`anthropic/claude-haiku-4.5`，Base URL 为 `https://openrouter.ai/api/v1`
+- 选择的指纹：`Claude Opus 4.6`
+- 输出证据：指纹范围缺口、能力一致性，以及逐题 prompt similarity
+
+## 仓库里有什么
+
+- 用于 `run-suite`、`build-profile`、`calibrate`、`compare` 的 Python engine 与 CLI
+- 位于 `apps/web` 的 Next.js Web console
+- 位于 `apps/web/app/api/v1`、由 Python bridge 驱动的 Web API 路由
+- 已纳入仓库的 calibration manifest、reference profile 和离线 quickstart fixtures
 
 ## 快速开始
 
-前置要求：
+### 直接体验在线演示
 
-- Python 3.12+
-- `uv`
+打开 [model-fingerprint.com](https://model-fingerprint.com/)，选择一个指纹模型，填入 OpenAI-compatible base URL，然后发起 live check。
 
-下面这组命令会使用仓库内置的 `examples/quickstart/quick-check-v3/` 离线样例，完整跑通 `quick-check-v3` 工作流。
+### 本地运行 Web console
+
+```bash
+uv sync --extra dev
+cd apps/web
+pnpm install
+pnpm dev
+```
+
+然后打开 `http://localhost:3000`。Next.js 应用会通过 `uv run python -m modelfingerprint.webapi.bridge_cli` 调用本地 Python bridge，因此本地 Web console 和仓库内 engine 使用的是同一份合同与执行路径。
+
+### 运行离线 CLI 示例
+
+对外公开的离线 fixtures 位于 `examples/quickstart/quick-check-v3/`。
 
 ```bash
 uv sync --extra dev
@@ -50,116 +74,37 @@ uv run python -m modelfingerprint.cli run-suite quick-check-v3 \
   --claimed-model glm-5 \
   --fixture-responses "$EXAMPLES/glm-5-a1.json" \
   --run-date "$RUN_DATE"
-
-uv run python -m modelfingerprint.cli run-suite quick-check-v3 \
-  --root . \
-  --target-label glm-5-a2 \
-  --claimed-model glm-5 \
-  --fixture-responses "$EXAMPLES/glm-5-a2.json" \
-  --run-date "$RUN_DATE"
-
-uv run python -m modelfingerprint.cli run-suite quick-check-v3 \
-  --root . \
-  --target-label claude-ops-4.6-a1 \
-  --claimed-model claude-ops-4.6 \
-  --fixture-responses "$EXAMPLES/claude-ops-4.6-a1.json" \
-  --run-date "$RUN_DATE"
-
-uv run python -m modelfingerprint.cli run-suite quick-check-v3 \
-  --root . \
-  --target-label claude-ops-4.6-a2 \
-  --claimed-model claude-ops-4.6 \
-  --fixture-responses "$EXAMPLES/claude-ops-4.6-a2.json" \
-  --run-date "$RUN_DATE"
-
-uv run python -m modelfingerprint.cli run-suite quick-check-v3 \
-  --root . \
-  --target-label suspect-v3 \
-  --claimed-model glm-5 \
-  --fixture-responses "$EXAMPLES/suspect.json" \
-  --run-date "$RUN_DATE"
-
-uv run python -m modelfingerprint.cli build-profile \
-  --root . \
-  --model-id glm-5 \
-  --run "runs/$RUN_DATE/glm-5-a1.quick-check-v3.json" \
-  --run "runs/$RUN_DATE/glm-5-a2.quick-check-v3.json"
-
-uv run python -m modelfingerprint.cli build-profile \
-  --root . \
-  --model-id claude-ops-4.6 \
-  --run "runs/$RUN_DATE/claude-ops-4.6-a1.quick-check-v3.json" \
-  --run "runs/$RUN_DATE/claude-ops-4.6-a2.quick-check-v3.json"
-
-uv run python -m modelfingerprint.cli calibrate \
-  --root . \
-  --profile profiles/quick-check-v3/glm-5.json \
-  --profile profiles/quick-check-v3/claude-ops-4.6.json \
-  --run "runs/$RUN_DATE/glm-5-a1.quick-check-v3.json" \
-  --run "runs/$RUN_DATE/glm-5-a2.quick-check-v3.json" \
-  --run "runs/$RUN_DATE/claude-ops-4.6-a1.quick-check-v3.json" \
-  --run "runs/$RUN_DATE/claude-ops-4.6-a2.quick-check-v3.json"
-
-uv run python -m modelfingerprint.cli compare \
-  --run "runs/$RUN_DATE/suspect-v3.quick-check-v3.json" \
-  --profile profiles/quick-check-v3/glm-5.json \
-  --profile profiles/quick-check-v3/claude-ops-4.6.json \
-  --calibration calibration/quick-check-v3.json \
-  --artifact-json > comparison.json
 ```
 
-生成的 `comparison.json` 应该会把 `glm-5` 排在第一，并给出兼容协议的结果，例如：
+接下来可以继续使用同一批 fixtures 跑 `build-profile`、`calibrate` 和 `compare`，完整走通文件化 pipeline。
 
-```json
-{
-  "summary": {
-    "top1_model": "glm-5",
-    "verdict": "match"
-  },
-  "coverage": {
-    "protocol_status": "compatible"
-  }
-}
-```
+## 工作原理
 
-如果你只想看精简版对比摘要，可以把 `--artifact-json` 换成 `--json`。
+1. 通过重复基线 run 构建稳定的 reference fingerprint。
+2. 对 suspect endpoint 或离线 fixtures 执行某个已发布 suite。
+3. 将 prompt、capability 和 protocol 证据与 pinned profile 做比较。
+4. 在证据充足时输出正式结果，否则回退为 provisional 或 incompatible 状态。
 
-## 如何解读结果
+模型身份证据与协议兼容性会被分开报告。
 
-- `top1_model` 和 `top1_similarity` 表示最接近的 reference profile。
-- `content_similarity` 和 `capability_similarity` 是最主要的比较信号摘要。
-- `answer_coverage_ratio`、`reasoning_coverage_ratio` 和 `capability_coverage_ratio` 表示这套 suite 中有多少证据可用于判断。
-- `protocol_status` 和 `verdict` 需要一起看。协议问题是操作层面的证据，不会自动证明底层模型不同。
+## 如何理解结果
 
-## 限制
+- `formal_result`：证据充足，且协议路径兼容
+- `provisional`：证据不完整，但足以提供调试参考
+- `insufficient_evidence`：可用信号太少，无法可靠排序
+- `incompatible_protocol`：协议层问题阻断了正常比较
 
-- Model Fingerprint 给出的是证据，不是数学意义上的身份证明。
-- verdict 的质量依赖所选 suite 以及用于 calibration 的基线 runs。
-- 如果 coverage 很低，即使 similarity 很高，也应谨慎解释。
-- 协议不兼容并不自动意味着底层模型不同。
-
-## CLI 总览
-
-- `probe-capabilities`：探测 live endpoint 的能力信号
-- `validate-prompts`：校验 prompt 定义、suite 引用和发布子集关系
-- `validate-endpoints`：校验 endpoint-profile YAML 文件
-- `show-suite`：查看磁盘上的已发布 suite
-- `show-run`：查看已存储的 run artifact
-- `show-profile`：查看已存储的 profile artifact
-- `run-suite`：以离线 fixture 模式或 live endpoint 模式执行 suite
-- `build-profile`：将多次 run 聚合为 reference profile artifact
-- `calibrate`：基于已知基线推导 suite 专属阈值
-- `compare`：将 suspect run 与 reference profiles 对比，并输出摘要或完整 artifact
+Model Fingerprint 输出的是证据，不是数学意义上的身份证明。高 similarity 但 coverage 低时，结论需要谨慎解读。
 
 ## 仓库结构
 
-- `examples/quickstart/quick-check-v3/`：对外 quickstart 使用的离线 fixtures
-- `prompt-bank/`：prompt 定义和发布套件
+- `examples/quickstart/quick-check-v3/`：公开 quickstart 使用的离线 fixtures
+- `prompt-bank/`：prompt 定义与已发布 suites
 - `endpoint-profiles/`：按 dialect 组织的 endpoint capability profiles
-- `extractors/`：extractor 描述
-- `schemas/`：artifact contract 的 JSON Schema
-- `src/modelfingerprint/`：CLI、contracts、services、transports 和 adapters
-- `tests/`：contract、unit 和 end-to-end 测试
+- `profiles/` 与 `calibration/`：已纳入仓库的 reference artifacts 与 manifests
+- `src/modelfingerprint/`：CLI、contracts、services、transports、adapters 与 Web API bridge
+- `apps/web/`：Web console、本地 API routes 与浏览器端交互
+- `tests/`：contract、unit 与端到端测试
 
 ## 开发
 
@@ -168,8 +113,11 @@ uv sync --extra dev
 uv run pytest -q
 uv run ruff check src tests
 uv run mypy src
+
+cd apps/web
+pnpm test
 ```
 
-## 更多文档
+## 文档
 
-- `docs/apis/`：稳定的 API 与 contract 参考文档
+- [Web API 合同](./docs/apis/web_api_contract.md)
